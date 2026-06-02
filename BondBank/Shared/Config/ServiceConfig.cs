@@ -1,4 +1,4 @@
-namespace Shared;
+namespace Shared.Config;
 
 public class ServiceConfig
 {
