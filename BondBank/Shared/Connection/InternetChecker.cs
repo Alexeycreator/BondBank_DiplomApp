@@ -1,10 +1,11 @@
 using System.Net.NetworkInformation;
+using Microsoft.Extensions.Logging;
 
 namespace Shared.Connection;
 
-public sealed class InternetConnection
+public sealed class InternetChecker(ILogger<InternetChecker> logger)
 {
-    public static bool CheckingInternetConnection()
+    public bool CheckingInternetConnection()
     {
         try
         {
@@ -14,7 +15,7 @@ public sealed class InternetConnection
         }
         catch (Exception ex)
         {
-            //loggerInternetConnection.Error($"{ex.Message}");
+            logger.LogError($"{ex.Message}");
             return false;
         }
     }
