@@ -1,0 +1,6 @@
+{
+  "BotConfig": {
+    "IpAddress": "localhost",
+    "Port": 8888
+  }
+}
