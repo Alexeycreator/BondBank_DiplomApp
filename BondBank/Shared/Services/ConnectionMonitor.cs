@@ -1,210 +1,170 @@
 using System.Diagnostics;
 using System.Net;
+using Microsoft.Extensions.Logging;
+using Shared.BotHelpers;
+using Shared.Config;
 using Shared.Connection;
 
 namespace Shared.Services;
 
-public class ConnectionMonitor
+public class ConnectionMonitor(
+    HttpClient httpClient,
+    ILogger<ConnectionMonitor> logger,
+    BotService botService,
+    InternetChecker internetChecker)
 {
-    private static HttpStatusCode statusCode;
-    public string respBonds;
-    private HttpClient httpClient;
+    private HttpStatusCode statusCode;
+    private string respBondsHtml = string.Empty;
+    private readonly TimeSpan delayMonitoring = TimeSpan.FromMinutes(10);
+    private readonly TimeSpan delayMonitoringTry = TimeSpan.FromSeconds(30);
 
-    public ConnectionMonitor(HttpClient httpClient)
+    public string ResponseBondsContent()
     {
-        this.httpClient = httpClient;
+        return respBondsHtml;
     }
 
-    public bool ConnectionToData(string urlWebService)
+    public async Task<bool> ConnectionToDataAsync(string urlWebService)
     {
-        bool connect = InternetChecker.CheckingInternetConnection();
+        bool hasInternet = internetChecker.CheckingInternetConnection();
+        if (!hasInternet)
+        {
+            await StartMonitoringAsync(false, urlWebService);
+            return false;
+        }
+
         try
         {
-            if (connect)
+            logger.LogInformation($"Подключение к данным по адресу: {urlWebService}");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, urlWebService);
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            if (response.IsSuccessStatusCode)
             {
-                //loggerBondsParser.Info($"Подключение к данным по адресу: {urlSixGroup}");
-                HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, urlWebService);
-                var resultBonds = httpClient.SendAsync(requestMessage).Result;
-                if (resultBonds.IsSuccessStatusCode)
+                logger.LogInformation($"Подключение установлено. {response.StatusCode}");
+                statusCode = HttpStatusCode.OK;
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrEmpty(content))
                 {
-                    //loggerBondsParser.Info($"Подключение установлено. {resultBonds.StatusCode}");
-                    statusCode = HttpStatusCode.OK;
-                    var resp = resultBonds.Content.ReadAsStringAsync().Result;
-                    if (!string.IsNullOrEmpty(resp))
-                    {
-                        respBonds = resp;
-                        return true;
-                    }
-                    else
-                    {
-                        // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                        //     $"HTML ответ не может быть пустым, {nameof(resp)}");
-                        throw new ArgumentException($"HTML ответ не может быть пустым, {nameof(resp)}");
-                    }
+                    throw new ArgumentException($"HTML ответ не может быть пустым, {nameof(content)}");
                 }
-                else
-                {
-                    statusCode = resultBonds.StatusCode;
-                    throw new HttpRequestException(
-                        $"Не получилось подключиться к сайту {urlWebService}. StatusCode: {resultBonds.StatusCode}");
-                }
+
+                respBondsHtml = content;
+                return true;
             }
-            else
-            {
-                StartMonitoring(connect, urlWebService);
-            }
-        }
-        catch (AggregateException ex)
-        {
-            // loggerBondsParser.Error($"{ex.Message}. Проверьте строку подключения: {urlSixGroup}");
-            // _ = workBot.SendCommandToBotAsync(
-            //     botAddress, botPort, BotCommandsType.Info,
-            //     $"{ex.Message}. Проверьте строку подключения: {urlSixGroup}" + Environment.NewLine +
-            //     $"Попробуйте связаться с тех. поддержкой" + Environment.NewLine +
-            //     $"Парсер {Process.GetCurrentProcess().ProcessName} будет закрыт");
-            // Environment.Exit(0);
-        }
-        catch (ArgumentException ex)
-        {
-            // loggerBondsParser.Error($"{ex.Message}");
-            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info, $"{ex.Message}");
+
+            statusCode = response.StatusCode;
+            throw new HttpRequestException(
+                $"Не удалось подключиться к {urlWebService}. StatusCode: {response.StatusCode}");
         }
         catch (HttpRequestException ex)
         {
-            // loggerBondsParser.Warn($"{ex.Message} - запуск мониторинга подключения");
-            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-            //     $"{ex.Message} - запуск мониторинга подключения");
-            // MonitoringThread(connect);
+            logger.LogWarning($"{ex.Message} - запуск мониторинга подключения");
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+                BotCommand.Error, $"{ex.Message}");
+            await StartMonitoringAsync(true, urlWebService);
+            return false;
+        }
+        catch (ArgumentException ex)
+        {
+            logger.LogError(ex.Message);
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+                BotCommand.Error, $"{ex.Message}");
+            return false;
         }
         catch (Exception ex)
         {
-            // loggerBondsParser.Error($"{ex.Message}");
-            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info, $"{ex.Message}");
+            logger.LogError(ex.Message);
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+                BotCommand.Error,
+                $"Неизвестная ошибка: {ex.Message}");
+            return false;
         }
-
-        return false;
     }
 
-    public void StartMonitoring(bool connect, string urlWebService)
+    private async Task StartMonitoringAsync(bool connect, string urlWebService)
     {
-        Task.Run(() =>
+        const int MaxChecks = 10;
+        int checkCount = 0;
+        bool isConnected = connect;
+        while (ShouldContinue(isConnected, checkCount, MaxChecks))
         {
-            bool isConnected = connect;
-            int checkCount = 0;
-            const int maxChecks = 10;
+            checkCount++;
 
-            switch (connect)
+            bool hasConnection = connect
+                ? await CheckUrlConnectionAsync(urlWebService)
+                : internetChecker.CheckingInternetConnection();
+
+            if (hasConnection)
             {
-                case true:
-                    while (checkCount < maxChecks)
-                    {
-                        //loggerBondsParser.Info($"Проверка подключения #{checkCount + 1} в {DateTime.Now.TimeOfDay}");
-                        if (checkCount == maxChecks - 1)
-                        {
-                            // loggerBondsParser.Error($"Количество попыток равно максимуму");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Количество попыток равно максимуму" + Environment.NewLine +
-                            //     $"Парсер {Process.GetCurrentProcess().ProcessName} будет перезапущен");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Restart,
-                            //     $"{Process.GetCurrentProcess().ProcessName}");
-                            Environment.Exit(0);
-                            break;
-                        }
-                        else
-                        {
-                            // loggerBondsParser.Warn($"Задержка в {_tsDelayMonitoring} минут");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Задержка в {_tsDelayMonitoring} минут");
-                            // Task.Delay(_tsDelayMonitoring);
-                        }
-
-                        if (statusCode == HttpStatusCode.OK)
-                        {
-                            // loggerBondsParser.Info($"Подключение восстановлено!");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Подключение восстановлено!");
-                            ConnectionToData(urlWebService);
-                        }
-                        else
-                        {
-                            // loggerBondsParser.Warn(
-                            //     $"Нет подключения, следующая проверка через {_tsDelayMonitoringTry} секунд...");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Нет подключения, следующая проверка через {_tsDelayMonitoringTry} секунд...");
-                            // Task.Delay(_tsDelayMonitoringTry);
-                            checkCount++;
-                        }
-                    }
-
-                    if (statusCode != HttpStatusCode.OK)
-                    {
-                        // loggerBondsParser.Error($"Подключение не восстановлено после всех попыток");
-                        // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                        //     $"Подключение не восстановлено после всех попыток" + Environment.NewLine +
-                        //     $"Парсер {Process.GetCurrentProcess().ProcessName} будет перезапущен");
-                        // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Restart,
-                        //     $"{Process.GetCurrentProcess().ProcessName}");
-                        Environment.Exit(0);
-                    }
-
-                    break;
-                case false:
-                    while (!isConnected && checkCount < maxChecks)
-                    {
-                        // loggerBondsParser.Info($"Проверка подключения #{checkCount + 1} в {DateTime.Now.TimeOfDay}");
-                        // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                        //     $"Проверка подключения #{checkCount + 1} в {DateTime.Now.TimeOfDay}");
-                        if (checkCount == maxChecks - 1)
-                        {
-                            // loggerBondsParser.Error($"Количество попыток равно максимуму");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Количество попыток равно максимуму" + Environment.NewLine +
-                            //     $"Парсер {Process.GetCurrentProcess().ProcessName} будет перезапущен");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Restart,
-                            //     $"{Process.GetCurrentProcess().ProcessName}");
-                            Environment.Exit(0);
-                            break;
-                        }
-                        else
-                        {
-                            // loggerBondsParser.Warn($"Задержка потока в {_tsDelayMonitoring} минут");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Задержка потока в {_tsDelayMonitoring} минут");
-                            // Task.Delay(_tsDelayMonitoring);
-                        }
-
-                        isConnected = InternetChecker.CheckingInternetConnection();
-                        if (isConnected)
-                        {
-                            // loggerBondsParser.Info($"Подключение восстановлено!");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Подключение восстановлено!");
-                            ConnectionToData(urlWebService);
-                        }
-                        else
-                        {
-                            // loggerBondsParser.Warn(
-                            //     $"Нет подключения, следующая проверка через {_tsDelayMonitoringTry} секунд...");
-                            // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                            //     $"Нет подключения, следующая проверка через {_tsDelayMonitoringTry} секунд...");
-                            // Task.Delay(_tsDelayMonitoringTry);
-                            checkCount++;
-                        }
-                    }
-
-                    if (statusCode != HttpStatusCode.OK)
-                    {
-                        // loggerBondsParser.Error($"Подключение не восстановлено после всех попыток");
-                        // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Info,
-                        //     $"Подключение не восстановлено после всех попыток" + Environment.NewLine +
-                        //     $"Парсер {Process.GetCurrentProcess().ProcessName} будет перезапущен");
-                        // _ = workBot.SendCommandToBotAsync(botAddress, botPort, BotCommandsType.Restart,
-                        //     $"{Process.GetCurrentProcess().ProcessName}");
-                        Environment.Exit(0);
-                    }
-
-                    break;
+                await OnConnectionRestoredAsync(urlWebService);
+                return;
             }
-        });
+
+            if (checkCount >= MaxChecks)
+            {
+                await OnMaxAttemptsReachedAsync();
+                return;
+            }
+
+            await WaitBeforeNextAttemptAsync(connect, checkCount);
+            isConnected = hasConnection;
+        }
+    }
+
+    private bool ShouldContinue(bool isConnected, int checkCount, int maxChecks)
+    {
+        return isConnected
+            ? checkCount < maxChecks
+            : !isConnected && checkCount < maxChecks;
+    }
+
+    private async Task<bool> CheckUrlConnectionAsync(string url)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync(url);
+            statusCode = response.StatusCode;
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            statusCode = HttpStatusCode.ServiceUnavailable;
+            return false;
+        }
+    }
+
+    private async Task OnConnectionRestoredAsync(string urlWebService)
+    {
+        logger.LogInformation("Подключение восстановлено!");
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            BotCommand.Info, $"Подключение восстановлено!");
+        await ConnectionToDataAsync(urlWebService);
+    }
+
+    private async Task OnMaxAttemptsReachedAsync()
+    {
+        var processName = Process.GetCurrentProcess().ProcessName;
+        logger.LogError($"Количество попыток равно максимуму. Парсер {processName} будет перезапущен");
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            BotCommand.Info,
+            $"Количество попыток равно максимуму. " + Environment.NewLine + $"Парсер {processName} будет перезапущен.");
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            BotCommand.Restart, $"{processName}");
+        Environment.Exit(0);
+    }
+
+    private async Task WaitBeforeNextAttemptAsync(bool connect, int checkCount)
+    {
+        var delay = connect ? delayMonitoring : delayMonitoringTry;
+        var nextAttemptMsg =
+            $"Нет подключения, следующая проверка через {delay.TotalSeconds} секунд... (попытка {checkCount + 1})";
+
+        logger.LogWarning(nextAttemptMsg);
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            BotCommand.Info, $"{nextAttemptMsg}");
+        await Task.Delay(delay);
     }
 }
