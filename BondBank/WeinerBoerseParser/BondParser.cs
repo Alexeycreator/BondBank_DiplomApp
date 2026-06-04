@@ -25,6 +25,8 @@ public class BondParser(
     private List<BondModel> bonds = new List<BondModel>();
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
     private HtmlDocument document = new HtmlDocument();
+    private CsvService csvServiceDll;
+    private CsvWriter csvWriter = new CsvWriter();
 
     public async Task<List<BondModel>> GetBonds()
     {
@@ -44,6 +46,8 @@ public class BondParser(
             await botService.SendCommandToBotAsync(
                 ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                 $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
+            // logger.LogInformation($"Отправка сформированных данных на сервер...");
+            // SendFileOnWebServer();
         }
         catch (ArgumentException ex)
         {
@@ -109,16 +113,11 @@ public class BondParser(
                     {
                         logger.LogInformation(
                             $"Данные со страницы №{numberPage} извлечены. Количество: {bonds.Count}");
+                        logger.LogInformation($"Запись данных в файл...");
                         try
                         {
-                            logger.LogInformation($"Запись данных в файл");
-                            CsvWriter csvWriter = new CsvWriter();
-                            using var loggerFactory = LoggerFactory.Create(builder => { builder.AddNLog(); });
-                            var csvLogger = loggerFactory.CreateLogger<CsvService>();
-                            CsvService csvService = new CsvService(csvLogger, httpClient);
-                            csvService.EnsureDirectoryExists(dirPath);
-                            string filePath = Path.Combine(dirPath, $"Wb_Bonds_{csvService.GetDate()}.csv");
-                            csvWriter.Write(filePath, bonds);
+                            WorkingWithServiceDll();
+                            WriteInFileCsv();
                             logger.LogInformation($"Запись в файл прошла успешно");
                         }
                         catch (IOException ex)
@@ -181,5 +180,23 @@ public class BondParser(
         logger.LogInformation(
             $"Всего страниц с облигациями: {Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds))}");
         return Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds));
+    }
+
+    private void WorkingWithServiceDll()
+    {
+        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddNLog(); });
+        var csvLogger = loggerFactory.CreateLogger<CsvService>();
+        csvServiceDll = new CsvService(csvLogger, httpClient);
+    }
+
+    private void WriteInFileCsv()
+    {
+        csvServiceDll.EnsureDirectoryExists(dirPath);
+        string filePath = Path.Combine(dirPath, $"Wb_Bonds_{csvServiceDll.GetDate()}.csv");
+        csvWriter.Write(filePath, bonds);
+    }
+
+    private void SendFileOnWebServer()
+    {
     }
 }
