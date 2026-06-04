@@ -13,7 +13,7 @@ using NLog.Extensions.Logging;
 
 namespace WeinerBoerseParser;
 
-public class BondParser(
+public sealed class BondParser(
     ILogger<BondParser> logger,
     HttpClient httpClient,
     ConnectionMonitor connectionMonitor,
