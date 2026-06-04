@@ -60,9 +60,9 @@ public sealed class BotService(ILogger<BotService> logger)
         }
     }
 
-    public async Task UsageTaskBotAsync()
+    public async Task UsageTaskBotAsync(string processName)
     {
         await SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
-            BotCommand.ExecuteProgram, $"{Process.GetCurrentProcess().ProcessName}");
+            BotCommand.ExecuteProgram, $"{processName}");
     }
 }
