@@ -1,0 +1,184 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using NLog.Extensions.Logging;
+using Shared.BotHelpers;
+using Shared.Config;
+using Shared.Services;
+using Shared.Services.Interfaces;
+using Shared.WorkingWithFiles;
+using SixGroupParser.Models;
+using SixGroupParser.WorkingWithFiles;
+
+namespace SixGroupParser;
+
+public sealed class BondParser(
+    ILogger<BondParser> logger,
+    HttpClient httpClient,
+    ConnectionMonitor connectionMonitor,
+    BotService botService) : IBondProvider<BondModel>
+{
+    private readonly string urlBondsSixGroup =
+        $"https://www.six-group.com/fqs/ref.json?select=ShortName,ValorId,TradingBaseCurrency,CouponRate,MaturityDate,ClosingPrice,ClosingPerformance,BidPrice,AskPrice,MarketTime,MarketDate,IssuerNameFull,ProductLine,IndustrySectorCode,SecTypeCode,ISIN,AmountInIssue,YieldToWorst&where=PortalSegment=BO&orderby=ShortName&page=1&pagesize=20";
+
+    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
+    private List<BondModel> bonds = new List<BondModel>();
+    private CsvService csvServiceDll;
+    private CsvWriter csvWriter = new CsvWriter();
+
+    public async Task<List<BondModel>> GetBonds()
+    {
+        try
+        {
+            await botService.UsageTaskBotAsync(Process.GetCurrentProcess().ProcessName);
+            if (await connectionMonitor.ConnectionToDataAsync(urlBondsSixGroup))
+            {
+                await FillingBonds();
+            }
+
+            await botService.SendCommandToBotAsync(
+                ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
+                $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+                BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
+        }
+
+        return bonds;
+    }
+
+    public async Task<List<BondModel>> FillingBonds()
+    {
+        try
+        {
+            logger.LogInformation($"Получение облигаций...");
+            JObject jsonRespBonds = JObject.Parse(connectionMonitor.ResponseBondsContent());
+            int pageItemsBond = GettingPageItemsBond(jsonRespBonds);
+            int totalBonds = GettingTotalBonds(jsonRespBonds);
+            logger.LogInformation($"Всего {totalBonds} облигаций");
+            logger.LogInformation($"Обработка облигаций...");
+
+            string urlAllBonds = UrlGettingAllBonds(pageItemsBond, totalBonds);
+
+            await connectionMonitor.ConnectionToDataAsync(urlAllBonds);
+            JObject jsonData = JObject.Parse(connectionMonitor.ResponseBondsContent());
+            JArray jsonDataBonds = (JArray)jsonData["rowData"];
+
+            if (jsonDataBonds != null)
+                foreach (var bond in jsonDataBonds)
+                {
+                    var shortName = bond[0];
+                    var valorId = bond[1];
+                    var tradingBaseCurrency = bond[2];
+                    var couponRate = bond[3];
+                    var maturityDate = bond[4];
+                    var closingPrice = bond[5];
+                    var closingPerfomance = bond[6];
+                    var bidPrice = bond[7];
+                    var askPrice = bond[8];
+                    var marketTime = bond[9];
+                    var marketDate = bond[10];
+                    var issuerNameFull = bond[11];
+                    var productLine = bond[12];
+                    var industrySectorCode = bond[13];
+                    var secTypeCode = bond[14];
+                    var isin = bond[15];
+                    var amountInIssue = bond[16];
+                    var yieldToWorst = bond[17];
+                    bonds.Add(new BondModel()
+                    {
+                        Name = shortName?.ToString(),
+                        ValorId = valorId?.ToString(),
+                        TradingBaseCurrency = tradingBaseCurrency?.ToString(),
+                        CouponRate = couponRate?.ToString(),
+                        MaturityDate = maturityDate?.ToString(),
+                        ClosingPrice = closingPrice?.ToString(),
+                        ClosingPerfomance = closingPerfomance?.ToString(),
+                        BidPrice = bidPrice?.ToString(),
+                        AskPrice = askPrice?.ToString(),
+                        MarketTime = marketTime?.ToString(),
+                        MarketDate = marketDate?.ToString(),
+                        IssuerNameFull = issuerNameFull?.ToString(),
+                        ProductLine = productLine?.ToString(),
+                        IndustrySectorCode = industrySectorCode?.ToString(),
+                        SecTypeCode = secTypeCode?.ToString(),
+                        Isin = isin?.ToString(),
+                        AmountInIssue = amountInIssue?.ToString(),
+                        YieldToWorst = yieldToWorst?.ToString(),
+                        UpdatedAt = DateTime.Now
+                    });
+                }
+
+            if (bonds.Count > 0)
+            {
+                logger.LogInformation($"Данные извлечены. Всего {bonds.Count} из {totalBonds} облигаций");
+                await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
+                    ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
+                    $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
+                logger.LogInformation($"Запись данных в файл");
+                try
+                {
+                    WorkingWithServiceDll();
+                    WriteInFileCsv();
+                    logger.LogInformation($"Запись в файл прошла успешно");
+                }
+                catch (IOException ex)
+                {
+                    logger.LogError($"Запись в файл прервана: {ex.Message}");
+                }
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogError($"Ошибка операции преобразования бондов: {ex.Message}");
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+                BotCommand.Error, $"Ошибка операции преобразования бондов: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+                BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
+        }
+
+        return bonds;
+    }
+
+    private string UrlGettingAllBonds(int pageItemsBond, int totalBonds)
+    {
+        if (totalBonds != 0 && totalBonds > pageItemsBond)
+        {
+            return
+                $"https://www.six-group.com/fqs/ref.json?select=ShortName,ValorId,TradingBaseCurrency,CouponRate,MaturityDate,ClosingPrice,ClosingPerformance,BidPrice,AskPrice,MarketTime,MarketDate,IssuerNameFull,ProductLine,IndustrySectorCode,SecTypeCode,ISIN,AmountInIssue,YieldToWorst&where=PortalSegment=BO&orderby=ShortName&page=1&pagesize={totalBonds}";
+        }
+
+        return urlBondsSixGroup;
+    }
+
+    private int GettingPageItemsBond(JObject jsonRespBonds)
+    {
+        return (jsonRespBonds["pageSize"] ?? throw new InvalidOperationException()).Value<int>();
+    }
+
+    private int GettingTotalBonds(JObject jsonRespBonds)
+    {
+        return (jsonRespBonds["totalRows"] ?? throw new InvalidOperationException()).Value<int>();
+    }
+
+    private void WorkingWithServiceDll()
+    {
+        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddNLog(); });
+        var csvLogger = loggerFactory.CreateLogger<CsvService>();
+        csvServiceDll = new CsvService(csvLogger, httpClient);
+    }
+
+    private void WriteInFileCsv()
+    {
+        csvServiceDll.EnsureDirectoryExists(dirPath);
+        string filePath = Path.Combine(dirPath, $"Sg_Bonds_{csvServiceDll.GetDate()}.csv");
+        csvWriter.Write(filePath, bonds);
+    }
+}
