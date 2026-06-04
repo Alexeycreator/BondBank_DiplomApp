@@ -17,8 +17,7 @@ public sealed class BondParser(
     ILogger<BondParser> logger,
     HttpClient httpClient,
     ConnectionMonitor connectionMonitor,
-    BotService botService)
-    : IBondProvider<BondModel>
+    BotService botService) : IBondProvider<BondModel>
 {
     private int numberPage = 1;
     private const int CountCells = 9;
@@ -32,6 +31,7 @@ public sealed class BondParser(
     {
         try
         {
+            await botService.UsageTaskBotAsync(Process.GetCurrentProcess().ProcessName);
             logger.LogInformation($"Запуск парсинга данных...");
             do
             {
