@@ -9,8 +9,6 @@ using Shared.WorkingWithFiles;
 using WeinerBoerseParser;
 using WeinerBoerseParser.Models;
 
-Console.WriteLine("Hello, World!");
-
 var services = new ServiceCollection();
 
 // Логирование
