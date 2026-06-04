@@ -1,2 +1,22 @@
 bin/
 obj/
+
+# Основная папка .idea игнорируется
+.idea/
+
+# ! (восклицательный знак) означает, что нужно сделать исключение
+# Сохраняем общие настройки проекта, но игнорируем персональные
+!.idea/modules.xml
+!.idea/libraries/
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+!.idea/runConfigurations/
+!.idea/scopes/
+
+# Эти файлы и папки строго игнорируем — они персональные
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/dictionaries/
+.idea/httpRequests/
