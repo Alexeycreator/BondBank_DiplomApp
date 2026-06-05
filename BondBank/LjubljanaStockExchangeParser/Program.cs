@@ -36,4 +36,4 @@ var sp = services.BuildServiceProvider();
 
 // Получаем и запускаем парсер
 var parser = sp.GetRequiredService<BondParser>();
-await parser.GetBonds();
+await parser.GetBondsAsync();
