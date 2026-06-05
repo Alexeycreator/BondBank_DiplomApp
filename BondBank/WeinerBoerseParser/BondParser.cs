@@ -27,7 +27,7 @@ public sealed class BondParser(
     private CsvService csvServiceDll;
     private CsvWriter csvWriter = new CsvWriter();
 
-    public async Task<List<BondModel>> GetBonds()
+    public async Task<List<BondModel>> GetBondsAsync()
     {
         try
         {
@@ -37,7 +37,7 @@ public sealed class BondParser(
             {
                 if (await connectionMonitor.ConnectionToDataAsync(GetBondsUrl(numberPage)))
                 {
-                    await FillingBonds();
+                    await FillingBondsAsync();
                 }
 
                 numberPage++;
@@ -65,7 +65,7 @@ public sealed class BondParser(
         return bonds;
     }
 
-    public async Task<List<BondModel>> FillingBonds()
+    public async Task<List<BondModel>> FillingBondsAsync()
     {
         document.LoadHtml(connectionMonitor.ResponseBondsContent());
         var container = document.GetElementbyId($"c7928-module-container");

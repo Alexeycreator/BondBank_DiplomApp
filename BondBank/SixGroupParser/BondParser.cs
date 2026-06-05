@@ -26,14 +26,14 @@ public sealed class BondParser(
     private CsvService csvServiceDll;
     private CsvWriter csvWriter = new CsvWriter();
 
-    public async Task<List<BondModel>> GetBonds()
+    public async Task<List<BondModel>> GetBondsAsync()
     {
         try
         {
             await botService.UsageTaskBotAsync(Process.GetCurrentProcess().ProcessName);
             if (await connectionMonitor.ConnectionToDataAsync(urlBondsSixGroup))
             {
-                await FillingBonds();
+                await FillingBondsAsync();
             }
 
             await botService.SendCommandToBotAsync(
@@ -50,7 +50,7 @@ public sealed class BondParser(
         return bonds;
     }
 
-    public async Task<List<BondModel>> FillingBonds()
+    public async Task<List<BondModel>> FillingBondsAsync()
     {
         try
         {

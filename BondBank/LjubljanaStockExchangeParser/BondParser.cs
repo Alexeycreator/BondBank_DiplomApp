@@ -26,14 +26,14 @@ public sealed class BondParser(
     private CsvService csvServiceDll;
     private CsvWriter csvWriter = new CsvWriter();
 
-    public async Task<List<BondModel>> GetBonds()
+    public async Task<List<BondModel>> GetBondsAsync()
     {
         try
         {
             await botService.UsageTaskBotAsync(Process.GetCurrentProcess().ProcessName);
             if (await connectionMonitor.ConnectionToDataAsync(urlBonds))
             {
-                await FillingBonds();
+                await FillingBondsAsync();
             }
         }
         catch (Exception ex)
@@ -46,7 +46,7 @@ public sealed class BondParser(
         return bonds;
     }
 
-    public async Task<List<BondModel>> FillingBonds()
+    public async Task<List<BondModel>> FillingBondsAsync()
     {
         document.LoadHtml(connectionMonitor.ResponseBondsContent());
         var container = document.GetElementbyId("D");

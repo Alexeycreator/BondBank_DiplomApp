@@ -52,14 +52,14 @@ public sealed class BondParser(
         $@"https://iss.moex.com/iss/emitters/3455/securities.jsonp?iss.meta=off&iss.json=extended&callback=JSON_CALLBACK&lang=ru"
     ];
 
-    public async Task<List<Bond>> GetBonds()
+    public async Task<List<Bond>> GetBondsAsync()
     {
         try
         {
             await botService.UsageTaskBotAsync(Process.GetCurrentProcess().ProcessName);
             if (await connectionMonitor.ConnectionToDataAsync(urlMoscowExchange))
             {
-                await FillingBonds();
+                await FillingBondsAsync();
             }
         }
         catch (Exception ex)
@@ -72,7 +72,7 @@ public sealed class BondParser(
         return bonds;
     }
 
-    public async Task<List<Bond>> FillingBonds()
+    public async Task<List<Bond>> FillingBondsAsync()
     {
         try
         {
