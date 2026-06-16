@@ -69,26 +69,19 @@ public sealed class BondParser(
                     var cellListingDate = tableRow.SelectSingleNode($".//td[7]").InnerText;
                     var cellDelistingDate = tableRow.SelectSingleNode($".//td[8]").InnerText;
 
-                    if (cellDelistingDate is "-" or "")
+                    bonds.Add(new BondModel()
                     {
-                        bonds.Add(new BondModel()
-                        {
-                            Symbol = cellSymbol,
-                            Isin = cellIsin,
-                            Name = cellName,
-                            Sector = cellSector,
-                            ListedQuantity = cellListedQuantity,
-                            NominalValue = cellNominalValue,
-                            Currency = cellCurrency,
-                            ListingDate = cellListingDate,
-                            DelistingDate = cellDelistingDate,
-                            UpdatedAt = DateTime.Now
-                        });
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                        Symbol = cellSymbol,
+                        Isin = cellIsin,
+                        Name = cellName,
+                        Sector = cellSector,
+                        ListedQuantity = cellListedQuantity,
+                        NominalValue = cellNominalValue,
+                        Currency = cellCurrency,
+                        ListingDate = cellListingDate,
+                        DelistingDate = cellDelistingDate,
+                        UpdatedAt = DateTime.Now
+                    });
                 }
 
                 if (bonds.Count > 0)
