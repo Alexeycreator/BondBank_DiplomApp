@@ -124,7 +124,6 @@ public sealed class BondParser(
                                 FaceValue = b.FaceValue,
                                 FaceUnit = b.FaceUnit,
                                 Isin = b.Isin,
-                                Currency = "RUB",
                                 UpdatedAt = DateTime.Now
                             }).ToList();
                             var totalSecuritiesBonds = securitiesBonds.SecuritiesCursorBonds[0].Total;
