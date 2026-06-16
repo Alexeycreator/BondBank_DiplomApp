@@ -40,6 +40,4 @@ public sealed class Bond : BondBase
     
     [JsonProperty("FACEUNIT")]
     public string FaceUnit { get; set; }
-    
-    public string Currency { get; set; }
 }
