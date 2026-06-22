@@ -3,6 +3,7 @@ using System.Net;
 using Microsoft.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Config;
+using Shared.Config.Bot;
 using Shared.Connection;
 
 namespace Shared.Services;
@@ -14,13 +15,13 @@ public class ConnectionMonitor(
     InternetChecker internetChecker)
 {
     private HttpStatusCode statusCode;
-    private string respBondsHtml = string.Empty;
+    private string responseHtml = string.Empty;
     private readonly TimeSpan delayMonitoring = TimeSpan.FromMinutes(10);
     private readonly TimeSpan delayMonitoringTry = TimeSpan.FromSeconds(30);
 
-    public string ResponseBondsContent()
+    public string ResponseContent()
     {
-        return respBondsHtml;
+        return responseHtml;
     }
 
     public async Task<bool> ConnectionToDataAsync(string urlWebService)
@@ -51,7 +52,7 @@ public class ConnectionMonitor(
                     throw new ArgumentException($"HTML ответ не может быть пустым, {nameof(content)}");
                 }
 
-                respBondsHtml = content;
+                responseHtml = content;
                 return true;
             }
 
