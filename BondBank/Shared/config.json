@@ -2,5 +2,9 @@
   "Bot": {
     "IpAddress": "localhost",
     "Port": 8888
+  },
+  "WebService":{
+    "Host": "localhost",
+    "Port": 7240
   }
 }
