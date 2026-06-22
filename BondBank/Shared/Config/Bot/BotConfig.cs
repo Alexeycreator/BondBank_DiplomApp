@@ -1,6 +1,6 @@
-namespace Shared.Config;
+namespace Shared.Config.Bot;
 
-public class BotConfig
+public sealed class BotConfig
 {
     public string IpAddress { get; set; } = string.Empty;
     public int Port { get; set; }
