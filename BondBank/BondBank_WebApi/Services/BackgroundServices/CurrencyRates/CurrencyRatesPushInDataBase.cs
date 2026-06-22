@@ -1,0 +1,96 @@
+using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using BondBank_WebApi.Models.DataBase;
+using BondBank_WebApi.Services.DataBaseContext;
+using Microsoft.EntityFrameworkCore;
+
+namespace BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
+
+public sealed class CurrencyRatesPushInDataBase(ILogger<CurrencyRatesPushInDataBase> logger)
+{
+    [SuppressMessage("ReSharper.DPA", "DPA0006: Large number of DB commands", MessageId = "count: 55")]
+    public async Task PushingInDataBase(ApplicationContext dbContext, List<CurrencyRatesModel> currencyRates)
+    {
+        try
+        {
+            bool isConnectedToDataBase = await dbContext.Database.CanConnectAsync();
+            if (isConnectedToDataBase)
+            {
+                logger.LogInformation($"Подключение к БД прошло успешно");
+                if (!currencyRates.Any())
+                {
+                    logger.LogError($"Данные о курсах валют пустые и не могут быть добавлены в БД");
+                }
+                else
+                {
+                    int countUpdatedCurrency = 0;
+                    int countAddedCurrency = 0;
+                    foreach (var currency in currencyRates)
+                    {
+                        var existingCurrency = dbContext.CurrencyRates.FirstOrDefault(c =>
+                            c.LetterCode == currency.LetterCode && c.DateReceipt == currency.DateReceipt);
+                        if (existingCurrency == null)
+                        {
+                            await dbContext.CurrencyRates.AddAsync(currency);
+                            countAddedCurrency++;
+                        }
+                        else
+                        {
+                            if (UpdatedFieldsCurrencyRates(existingCurrency, currency))
+                            {
+                                dbContext.Entry(existingCurrency).State = EntityState.Modified;
+                                countUpdatedCurrency++;
+                            }
+                        }
+                    }
+
+                    logger.LogInformation(
+                        $"Обработано валют: {currencyRates.Count} (добавлено: {countAddedCurrency}, обновлено: {countUpdatedCurrency})" +
+                        Environment.NewLine + $"Все данные успешно сохранены в БД");
+                }
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
+        }
+        catch (DbException ex)
+        {
+            logger.LogError($"Не получилось установить соединение с БД: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+        }
+    }
+
+    private bool UpdatedFieldsCurrencyRates(CurrencyRatesModel existingCurrency, CurrencyRatesModel updatedCurrency)
+    {
+        bool hasChanges = false;
+        if (existingCurrency.DigitalCode != updatedCurrency.DigitalCode)
+        {
+            existingCurrency.DigitalCode = updatedCurrency.DigitalCode;
+            hasChanges = true;
+        }
+
+        if (existingCurrency.Units != updatedCurrency.Units)
+        {
+            existingCurrency.Units = updatedCurrency.Units;
+            hasChanges = true;
+        }
+
+        if (existingCurrency.Currency != updatedCurrency.Currency)
+        {
+            existingCurrency.Currency = updatedCurrency.Currency;
+            hasChanges = true;
+        }
+
+        if (existingCurrency.Rate != updatedCurrency.Rate)
+        {
+            existingCurrency.Rate = updatedCurrency.Rate;
+            hasChanges = true;
+        }
+
+        return hasChanges;
+    }
+}
