@@ -1,7 +1,7 @@
 using BondBank_WebApi.Models.DataBase;
 using Microsoft.EntityFrameworkCore;
 
-namespace BondBank_WebApi.Services;
+namespace BondBank_WebApi.Services.DataBaseContext;
 
 public sealed class ApplicationContext(DbContextOptions<ApplicationContext> options) : DbContext(options)
 {
