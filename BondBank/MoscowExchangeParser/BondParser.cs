@@ -51,6 +51,7 @@ public sealed class BondParser(
         $@"https://iss.moex.com/iss/emitters/4330/securities.jsonp?iss.meta=off&iss.json=extended&callback=JSON_CALLBACK&lang=ru",
         $@"https://iss.moex.com/iss/emitters/3455/securities.jsonp?iss.meta=off&iss.json=extended&callback=JSON_CALLBACK&lang=ru"
     ];
+    private string filePath => Path.Combine(dirPath, $"Me_Bonds_{csvServiceDll.GetDate()}.csv");
 
     public async Task<List<Bond>> GetBondsAsync()
     {
@@ -166,16 +167,7 @@ public sealed class BondParser(
                 ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                 $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество биржевых облигаций: {bonds.Count}");
             logger.LogInformation($"Запись данных в файл");
-            try
-            {
-                WorkingWithServiceDll();
-                WriteInFileCsv();
-                logger.LogInformation($"Запись в файл прошла успешно");
-            }
-            catch (IOException ex)
-            {
-                logger.LogError($"Ошибка при записи в файл: {ex.Message}");
-            }
+            WriteInFileCsv();
         }
         catch (Exception ex)
         {
@@ -197,8 +189,16 @@ public sealed class BondParser(
 
     private void WriteInFileCsv()
     {
-        csvServiceDll.EnsureDirectoryExists(dirPath);
-        string filePath = Path.Combine(dirPath, $"Me_Bonds_{csvServiceDll.GetDate()}.csv");
-        csvWriter.Write(filePath, bonds);
+        try
+        {
+            WorkingWithServiceDll();
+            csvServiceDll.EnsureDirectoryExists(dirPath);
+            csvWriter.Write(filePath, bonds);
+            logger.LogInformation($"Запись в файл прошла успешно");
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+        }
     }
 }

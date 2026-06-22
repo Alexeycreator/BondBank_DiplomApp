@@ -25,6 +25,7 @@ public sealed class BondParser(
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
     private CsvService csvServiceDll;
     private CsvWriter csvWriter = new CsvWriter();
+    private string filePath => Path.Combine(dirPath, $"Lse_Bonds_{csvServiceDll.GetDate()}.csv");
 
     public async Task<List<BondModel>> GetBondsAsync()
     {
@@ -48,7 +49,7 @@ public sealed class BondParser(
 
     public async Task<List<BondModel>> FillingBondsAsync()
     {
-        document.LoadHtml(connectionMonitor.ResponseBondsContent());
+        document.LoadHtml(connectionMonitor.ResponseContent());
         var container = document.GetElementbyId("D");
         if (container != null)
         {
@@ -91,16 +92,7 @@ public sealed class BondParser(
                         ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                         $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
                     logger.LogInformation($"Запись данных в файл");
-                    try
-                    {
-                        WorkingWithServiceDll();
-                        WriteInFileCsv();
-                        logger.LogInformation($"Запись в файл прошла успешно");
-                    }
-                    catch (IOException ex)
-                    {
-                        logger.LogError($"Ошибка при записи в файл: {ex.Message}");
-                    }
+                    WriteInFileCsv();
                 }
                 else
                 {
@@ -135,8 +127,16 @@ public sealed class BondParser(
 
     private void WriteInFileCsv()
     {
-        csvServiceDll.EnsureDirectoryExists(dirPath);
-        string filePath = Path.Combine(dirPath, $"Lse_Bonds_{csvServiceDll.GetDate()}.csv");
-        csvWriter.Write(filePath, bonds);
+        try
+        {
+            WorkingWithServiceDll();
+            csvServiceDll.EnsureDirectoryExists(dirPath);
+            csvWriter.Write(filePath, bonds);
+            logger.LogInformation($"Запись в файл прошла успешно");
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+        }
     }
 }

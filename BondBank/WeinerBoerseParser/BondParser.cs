@@ -3,13 +3,13 @@ using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Shared.BotHelpers;
-using Shared.Config;
 using Shared.Services;
 using Shared.Services.Interfaces;
 using Shared.WorkingWithFiles;
 using WeinerBoerseParser.Models;
 using WeinerBoerseParser.WorkingWithFiles;
 using NLog.Extensions.Logging;
+using Shared.Config;
 
 namespace WeinerBoerseParser;
 
@@ -26,6 +26,7 @@ public sealed class BondParser(
     private HtmlDocument document = new HtmlDocument();
     private CsvService csvServiceDll;
     private CsvWriter csvWriter = new CsvWriter();
+    private string filePath => Path.Combine(dirPath, $"Wb_Bonds_{csvServiceDll.GetDate()}.csv");
 
     public async Task<List<BondModel>> GetBondsAsync()
     {
@@ -41,13 +42,13 @@ public sealed class BondParser(
                 }
 
                 numberPage++;
-            } while (numberPage <= CountPagesWb());
+            } while (numberPage <= 2);
 
             await botService.SendCommandToBotAsync(
                 ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                 $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
-            // logger.LogInformation($"Отправка сформированных данных на сервер...");
-            // SendFileOnWebServer();
+            logger.LogInformation($"Отправка сформированных данных на сервер...");
+            SendFileOnWebServer();
         }
         catch (ArgumentException ex)
         {
@@ -67,7 +68,7 @@ public sealed class BondParser(
 
     public async Task<List<BondModel>> FillingBondsAsync()
     {
-        document.LoadHtml(connectionMonitor.ResponseBondsContent());
+        document.LoadHtml(connectionMonitor.ResponseContent());
         var container = document.GetElementbyId($"c7928-module-container");
         if (container != null)
         {
@@ -114,16 +115,7 @@ public sealed class BondParser(
                         logger.LogInformation(
                             $"Данные со страницы №{numberPage} извлечены. Количество: {bonds.Count}");
                         logger.LogInformation($"Запись данных в файл...");
-                        try
-                        {
-                            WorkingWithServiceDll();
-                            WriteInFileCsv();
-                            logger.LogInformation($"Запись в файл прошла успешно");
-                        }
-                        catch (IOException ex)
-                        {
-                            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
-                        }
+                        WriteInFileCsv();
                     }
                     else
                     {
@@ -191,12 +183,24 @@ public sealed class BondParser(
 
     private void WriteInFileCsv()
     {
-        csvServiceDll.EnsureDirectoryExists(dirPath);
-        string filePath = Path.Combine(dirPath, $"Wb_Bonds_{csvServiceDll.GetDate()}.csv");
-        csvWriter.Write(filePath, bonds);
+        try
+        {
+            WorkingWithServiceDll();
+            csvServiceDll.EnsureDirectoryExists(dirPath);
+            csvWriter.Write(filePath, bonds);
+            logger.LogInformation($"Запись в файл прошла успешно");
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+        }
     }
 
-    private void SendFileOnWebServer()
+    private async void SendFileOnWebServer()
     {
+        //var urlWebService = $"https://{ConfigLoader.Instance.WebService.Host}:{ConfigLoader.Instance.WebService.Port}/";
+        var urlWebService =
+            @$"C:/Users/Алексей/Desktop/Учеба/github/BondBank_DiplomApp/BondBank/BondBank_WebApi/bin/Debug/net9.0/test";
+        await csvServiceDll.FileSendAsync(filePath, urlWebService, "wb");
     }
 }

@@ -25,6 +25,7 @@ public sealed class BondParser(
     private List<BondModel> bonds = new List<BondModel>();
     private CsvService csvServiceDll;
     private CsvWriter csvWriter = new CsvWriter();
+    private string filePath => Path.Combine(dirPath, $"Sg_Bonds_{csvServiceDll.GetDate()}.csv");
 
     public async Task<List<BondModel>> GetBondsAsync()
     {
@@ -55,7 +56,7 @@ public sealed class BondParser(
         try
         {
             logger.LogInformation($"Получение облигаций...");
-            JObject jsonRespBonds = JObject.Parse(connectionMonitor.ResponseBondsContent());
+            JObject jsonRespBonds = JObject.Parse(connectionMonitor.ResponseContent());
             int pageItemsBond = GettingPageItemsBond(jsonRespBonds);
             int totalBonds = GettingTotalBonds(jsonRespBonds);
             logger.LogInformation($"Всего {totalBonds} облигаций");
@@ -64,7 +65,7 @@ public sealed class BondParser(
             string urlAllBonds = UrlGettingAllBonds(pageItemsBond, totalBonds);
 
             await connectionMonitor.ConnectionToDataAsync(urlAllBonds);
-            JObject jsonData = JObject.Parse(connectionMonitor.ResponseBondsContent());
+            JObject jsonData = JObject.Parse(connectionMonitor.ResponseContent());
             JArray jsonDataBonds = (JArray)jsonData["rowData"];
 
             if (jsonDataBonds != null)
@@ -119,16 +120,7 @@ public sealed class BondParser(
                     ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                     $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
                 logger.LogInformation($"Запись данных в файл");
-                try
-                {
-                    WorkingWithServiceDll();
-                    WriteInFileCsv();
-                    logger.LogInformation($"Запись в файл прошла успешно");
-                }
-                catch (IOException ex)
-                {
-                    logger.LogError($"Запись в файл прервана: {ex.Message}");
-                }
+                WriteInFileCsv();
             }
         }
         catch (InvalidOperationException ex)
@@ -177,8 +169,16 @@ public sealed class BondParser(
 
     private void WriteInFileCsv()
     {
-        csvServiceDll.EnsureDirectoryExists(dirPath);
-        string filePath = Path.Combine(dirPath, $"Sg_Bonds_{csvServiceDll.GetDate()}.csv");
-        csvWriter.Write(filePath, bonds);
+        try
+        {
+            WorkingWithServiceDll();
+            csvServiceDll.EnsureDirectoryExists(dirPath);
+            csvWriter.Write(filePath, bonds);
+            logger.LogInformation($"Запись в файл прошла успешно");
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+        }
     }
 }
