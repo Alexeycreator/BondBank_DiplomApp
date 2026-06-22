@@ -1,11 +1,11 @@
 using System.Text;
 using MoscowExchangeParser.Models;
 
-namespace MoscowExchangeParser.WorkingWithFiles;
+namespace MoscowExchangeParser.HelperMethods;
 
-public sealed class CsvWriter
+public class CsvWriter
 {
-    public void Write(string path, List<Bond> bonds)
+    protected void Write(string path, List<Bond> bonds)
     {
         StringBuilder csvBuilder = new StringBuilder();
         csvBuilder.AppendLine(

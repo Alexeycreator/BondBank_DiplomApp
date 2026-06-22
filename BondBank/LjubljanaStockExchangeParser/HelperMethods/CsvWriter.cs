@@ -1,11 +1,11 @@
 using System.Text;
 using LjubljanaStockExchangeParser.Models;
 
-namespace LjubljanaStockExchangeParser.WorkingWithFiles;
+namespace LjubljanaStockExchangeParser.HelperMethods;
 
-public sealed class CsvWriter
+public class CsvWriter
 {
-    public void Write(string csvPath, List<BondModel> bonds)
+    protected void Write(string csvPath, List<BondModel> bonds)
     {
         StringBuilder csvBuilder = new StringBuilder();
         csvBuilder.AppendLine(

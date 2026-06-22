@@ -7,25 +7,24 @@ using Shared.Config;
 using Shared.Services;
 using Shared.Services.Interfaces;
 using Shared.WorkingWithFiles;
+using SixGroupParser.HelperMethods;
 using SixGroupParser.Models;
-using SixGroupParser.WorkingWithFiles;
 
 namespace SixGroupParser;
 
 public sealed class BondParser(
     ILogger<BondParser> logger,
-    HttpClient httpClient,
     ConnectionMonitor connectionMonitor,
-    BotService botService) : IBondProvider<BondModel>
+    BotService botService,
+    CsvService csvServiceDll,
+    CsvHelper csvHelper) : IBondProvider<BondModel>
 {
     private readonly string urlBondsSixGroup =
         $"https://www.six-group.com/fqs/ref.json?select=ShortName,ValorId,TradingBaseCurrency,CouponRate,MaturityDate,ClosingPrice,ClosingPerformance,BidPrice,AskPrice,MarketTime,MarketDate,IssuerNameFull,ProductLine,IndustrySectorCode,SecTypeCode,ISIN,AmountInIssue,YieldToWorst&where=PortalSegment=BO&orderby=ShortName&page=1&pagesize=20";
 
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
     private List<BondModel> bonds = new List<BondModel>();
-    private CsvService csvServiceDll;
-    private CsvWriter csvWriter = new CsvWriter();
-    private string filePath => Path.Combine(dirPath, $"Sg_Bonds_{csvServiceDll.GetDate()}.csv");
+    private string FileName => $"Sg_Bonds_{csvServiceDll.GetDate()}.csv";
 
     public async Task<List<BondModel>> GetBondsAsync()
     {
@@ -120,7 +119,7 @@ public sealed class BondParser(
                     ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                     $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
                 logger.LogInformation($"Запись данных в файл");
-                WriteInFileCsv();
+                csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
             }
         }
         catch (InvalidOperationException ex)
@@ -158,27 +157,5 @@ public sealed class BondParser(
     private int GettingTotalBonds(JObject jsonRespBonds)
     {
         return (jsonRespBonds["totalRows"] ?? throw new InvalidOperationException()).Value<int>();
-    }
-
-    private void WorkingWithServiceDll()
-    {
-        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddNLog(); });
-        var csvLogger = loggerFactory.CreateLogger<CsvService>();
-        csvServiceDll = new CsvService(csvLogger, httpClient);
-    }
-
-    private void WriteInFileCsv()
-    {
-        try
-        {
-            WorkingWithServiceDll();
-            csvServiceDll.EnsureDirectoryExists(dirPath);
-            csvWriter.Write(filePath, bonds);
-            logger.LogInformation($"Запись в файл прошла успешно");
-        }
-        catch (IOException ex)
-        {
-            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
-        }
     }
 }

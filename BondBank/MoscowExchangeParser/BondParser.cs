@@ -1,9 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using MoscowExchangeParser.HelperMethods;
 using MoscowExchangeParser.Models;
-using MoscowExchangeParser.WorkingWithFiles;
 using Newtonsoft.Json;
-using NLog.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Config;
 using Shared.Services;
@@ -16,13 +15,13 @@ public sealed class BondParser(
     ILogger<BondParser> logger,
     HttpClient httpClient,
     ConnectionMonitor connectionMonitor,
-    BotService botService) : IBondProvider<Bond>
+    BotService botService,
+    CsvService csvServiceDll,
+    CsvHelper csvHelper) : IBondProvider<Bond>
 {
     private readonly string urlMoscowExchange = $"https://www.moex.com/";
     private List<Bond> bonds = new List<Bond>();
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
-    private CsvService csvServiceDll;
-    private CsvWriter csvWriter = new CsvWriter();
 
     private readonly string[] urlGettingBonds =
     [
@@ -51,7 +50,8 @@ public sealed class BondParser(
         $@"https://iss.moex.com/iss/emitters/4330/securities.jsonp?iss.meta=off&iss.json=extended&callback=JSON_CALLBACK&lang=ru",
         $@"https://iss.moex.com/iss/emitters/3455/securities.jsonp?iss.meta=off&iss.json=extended&callback=JSON_CALLBACK&lang=ru"
     ];
-    private string filePath => Path.Combine(dirPath, $"Me_Bonds_{csvServiceDll.GetDate()}.csv");
+
+    private string FileName => $"Me_Bonds_{csvServiceDll.GetDate()}.csv";
 
     public async Task<List<Bond>> GetBondsAsync()
     {
@@ -167,7 +167,7 @@ public sealed class BondParser(
                 ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                 $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество биржевых облигаций: {bonds.Count}");
             logger.LogInformation($"Запись данных в файл");
-            WriteInFileCsv();
+            csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
         }
         catch (Exception ex)
         {
@@ -178,27 +178,5 @@ public sealed class BondParser(
         }
 
         return bonds;
-    }
-
-    private void WorkingWithServiceDll()
-    {
-        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddNLog(); });
-        var csvLogger = loggerFactory.CreateLogger<CsvService>();
-        csvServiceDll = new CsvService(csvLogger, httpClient);
-    }
-
-    private void WriteInFileCsv()
-    {
-        try
-        {
-            WorkingWithServiceDll();
-            csvServiceDll.EnsureDirectoryExists(dirPath);
-            csvWriter.Write(filePath, bonds);
-            logger.LogInformation($"Запись в файл прошла успешно");
-        }
-        catch (IOException ex)
-        {
-            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
-        }
     }
 }

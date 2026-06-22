@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using LjubljanaStockExchangeParser.HelperMethods;
 using LjubljanaStockExchangeParser.Models;
-using LjubljanaStockExchangeParser.WorkingWithFiles;
 using Microsoft.Extensions.Logging;
-using NLog.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Config;
 using Shared.Services;
@@ -15,17 +14,16 @@ namespace LjubljanaStockExchangeParser;
 
 public sealed class BondParser(
     ILogger<BondParser> logger,
-    HttpClient httpClient,
     ConnectionMonitor connectionMonitor,
-    BotService botService) : IBondProvider<BondModel>
+    BotService botService,
+    CsvHelper csvHelper,
+    CsvService csvServiceDll) : IBondProvider<BondModel>
 {
     private readonly string urlBonds = $"https://ljse.si/en/financni-instrumenti/26?status=ALL&model=ALL&type=BOND";
     private List<BondModel> bonds = new List<BondModel>();
     private HtmlDocument document = new HtmlDocument();
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
-    private CsvService csvServiceDll;
-    private CsvWriter csvWriter = new CsvWriter();
-    private string filePath => Path.Combine(dirPath, $"Lse_Bonds_{csvServiceDll.GetDate()}.csv");
+    private string FileName => $"Lse_Bonds_{csvServiceDll.GetDate()}.csv";
 
     public async Task<List<BondModel>> GetBondsAsync()
     {
@@ -92,7 +90,7 @@ public sealed class BondParser(
                         ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                         $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
                     logger.LogInformation($"Запись данных в файл");
-                    WriteInFileCsv();
+                    csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
                 }
                 else
                 {
@@ -116,27 +114,5 @@ public sealed class BondParser(
     private string GetCorrectNumber(string line)
     {
         return Regex.Replace(line.Replace('.', ','), @"[^\d.]", "");
-    }
-
-    private void WorkingWithServiceDll()
-    {
-        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddNLog(); });
-        var csvLogger = loggerFactory.CreateLogger<CsvService>();
-        csvServiceDll = new CsvService(csvLogger, httpClient);
-    }
-
-    private void WriteInFileCsv()
-    {
-        try
-        {
-            WorkingWithServiceDll();
-            csvServiceDll.EnsureDirectoryExists(dirPath);
-            csvWriter.Write(filePath, bonds);
-            logger.LogInformation($"Запись в файл прошла успешно");
-        }
-        catch (IOException ex)
-        {
-            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
-        }
     }
 }

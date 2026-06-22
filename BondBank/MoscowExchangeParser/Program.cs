@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MoscowExchangeParser;
+using MoscowExchangeParser.HelperMethods;
 using MoscowExchangeParser.Models;
 using NLog.Extensions.Logging;
 using Shared.BotHelpers;
@@ -27,6 +28,7 @@ services.AddSingleton<InternetChecker>();
 services.AddSingleton<BotService>();
 services.AddSingleton<ConnectionMonitor>();
 services.AddSingleton<CsvService>();
+services.AddSingleton<CsvHelper>();
 
 // Сам парсер
 services.AddSingleton<BondParser>();

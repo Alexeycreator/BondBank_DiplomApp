@@ -1,11 +1,11 @@
 using System.Text;
 using WeinerBoerseParser.Models;
 
-namespace WeinerBoerseParser.WorkingWithFiles;
+namespace WeinerBoerseParser.HelperMethods;
 
 public class CsvWriter
 {
-    public void Write(string csvPath, List<BondModel> bonds)
+    protected void Write(string csvPath, List<BondModel> bonds)
     {
         StringBuilder csvBuilder = new StringBuilder();
         csvBuilder.AppendLine(

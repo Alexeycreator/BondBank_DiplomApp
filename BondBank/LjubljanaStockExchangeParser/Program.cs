@@ -1,4 +1,5 @@
 ﻿using LjubljanaStockExchangeParser;
+using LjubljanaStockExchangeParser.HelperMethods;
 using LjubljanaStockExchangeParser.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ services.AddSingleton<InternetChecker>();
 services.AddSingleton<BotService>();
 services.AddSingleton<ConnectionMonitor>();
 services.AddSingleton<CsvService>();
+services.AddSingleton<CsvHelper>();
 
 // Сам парсер
 services.AddSingleton<BondParser>();

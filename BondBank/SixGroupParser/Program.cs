@@ -7,6 +7,7 @@ using Shared.Services;
 using Shared.Services.Interfaces;
 using Shared.WorkingWithFiles;
 using SixGroupParser;
+using SixGroupParser.HelperMethods;
 using SixGroupParser.Models;
 
 var services = new ServiceCollection();
@@ -27,6 +28,7 @@ services.AddSingleton<InternetChecker>();
 services.AddSingleton<BotService>();
 services.AddSingleton<ConnectionMonitor>();
 services.AddSingleton<CsvService>();
+services.AddSingleton<CsvHelper>();
 
 // Сам парсер
 services.AddSingleton<BondParser>();
