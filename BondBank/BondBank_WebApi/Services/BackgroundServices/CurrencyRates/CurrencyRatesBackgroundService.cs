@@ -1,7 +1,9 @@
+using BondBank_WebApi.HelperMethods;
 using BondBank_WebApi.Services.DataBaseContext;
 using Shared.BotHelpers;
 using Shared.Config;
 using Shared.Services;
+using Shared.WorkingWithFiles;
 
 namespace BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
 
@@ -9,8 +11,13 @@ public sealed class CurrencyRatesBackgroundService(
     ILogger<CurrencyRatesBackgroundService> logger,
     ConnectionMonitor connectionMonitor,
     BotService botService,
-    IServiceScopeFactory serviceScopeFactory) : BackgroundService
+    IServiceScopeFactory serviceScopeFactory,
+    CsvHelper csvHelper,
+    CsvService csvServiceDll) : BackgroundService
 {
+    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "CurrencyRates");
+    private string FileName => $"Rates_{csvServiceDll.GetDate()}.csv";
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
@@ -36,6 +43,7 @@ public sealed class CurrencyRatesBackgroundService(
                         ConfigLoader.Instance.Bot.Port,
                         BotCommand.Error, $"Курсы валют успешно получены");
                     await currencyRatesPushInDataBase.PushingInDataBase(dbContext, currencyRates);
+                    csvHelper.WhiteInFileCsv(dirPath, FileName, currencyRates);
                 }
                 else
                 {
