@@ -39,6 +39,7 @@ public sealed class BondParser(
             await botService.SendCommandToBotAsync(
                 ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                 $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
+            await csvHelper.SendFileOnWebServer(dirPath, FileName);
         }
         catch (Exception ex)
         {

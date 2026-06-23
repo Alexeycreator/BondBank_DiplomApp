@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Shared.Config;
 using Shared.WorkingWithFiles;
 using SixGroupParser.Models;
 
@@ -20,5 +21,16 @@ public sealed class CsvHelper(ILogger<CsvHelper> logger, CsvService csvServiceDl
         {
             logger.LogError($"Ошибка при записи в файл: {ex.Message}");
         }
+    }
+    
+    public async Task SendFileOnWebServer(string directoryPath, string fileName)
+    {
+        var configWebService = ConfigLoader.Instance.WebService;
+        var protocol = configWebService.Protocol ?? "https";
+        var host = configWebService.Host ?? "localhost";
+        var port = configWebService.Port ?? 7240;
+        var urlWebService = $"{protocol}://{host}:{port}/api/ExportImportFiles/import-bonds";
+        string filePath = Path.Combine(directoryPath, fileName);
+        await csvServiceDll.FileSendAsync(filePath, urlWebService, "sg");
     }
 }

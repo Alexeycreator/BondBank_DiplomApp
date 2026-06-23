@@ -34,6 +34,8 @@ public sealed class BondParser(
             {
                 await FillingBondsAsync();
             }
+
+            await csvHelper.SendFileOnWebServer(dirPath, FileName);
         }
         catch (Exception ex)
         {

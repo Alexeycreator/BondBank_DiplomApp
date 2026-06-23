@@ -12,30 +12,25 @@ using WeinerBoerseParser.Models;
 
 var services = new ServiceCollection();
 
-// Логирование
 services.AddLogging(logging =>
 {
     logging.ClearProviders();
     logging.AddNLog();
 });
 
-// HTTP клиенты
 services.AddHttpClient();
 services.AddHttpClient<ConnectionMonitor>();
+services.AddHttpClient<CsvService>();
 
-// Сервисы
 services.AddSingleton<InternetChecker>();
 services.AddSingleton<BotService>();
 services.AddSingleton<ConnectionMonitor>();
-services.AddSingleton<CsvService>();
 services.AddSingleton<CsvHelper>();
 
-// Сам парсер
 services.AddSingleton<BondParser>();
 services.AddSingleton<IBondProvider<BondModel>, BondParser>();
 
 var sp = services.BuildServiceProvider();
 
-// Получаем и запускаем парсер
 var parser = sp.GetRequiredService<BondParser>();
 await parser.GetBondsAsync();

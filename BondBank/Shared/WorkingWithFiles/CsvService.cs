@@ -12,22 +12,22 @@ public class CsvService(ILogger<CsvService> logger, HttpClient httpClient)
         }
     }
 
-    public async Task FileSendAsync(string csvPath, string urlWebService, string type)
+    public async Task FileSendAsync(string csvFilePath, string urlWebService, string type)
     {
         try
         {
-            if (!File.Exists(csvPath))
+            if (!File.Exists(csvFilePath))
             {
-                logger.LogWarning($"Файл не найден: {csvPath}");
+                logger.LogWarning($"Файл не найден: {csvFilePath}");
                 return;
             }
 
-            var fullUrl = GetUrlByType(urlWebService, type);
-            await SendAsync(csvPath, fullUrl, type);
+            var fullUrlToWebService = GetUrlByType(urlWebService, type);
+            await SendAsync(csvFilePath, fullUrlToWebService);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при отправке файла {csvPath} на {urlWebService}" + Environment.NewLine +
+            logger.LogError($"Ошибка при отправке файла {csvFilePath} на {urlWebService}" + Environment.NewLine +
                             $"Ошибка: {ex.Message}");
         }
     }
@@ -41,26 +41,24 @@ public class CsvService(ILogger<CsvService> logger, HttpClient httpClient)
     {
         return type switch
         {
-            "wb" => $"{baseUrl}/WienerBoerse",
-            "lse" => $"{baseUrl}/LjubljanaStockExchange",
-            "sg" => $"{baseUrl}/SixGroup",
-            "me" => $"{baseUrl}/MoscowExchange",
-            _ => $"{baseUrl}/NotDefined"
+            "wb" => $"{baseUrl}?typeFile=WienerBoerse",
+            "lse" => $"{baseUrl}?typeFile=LjubljanaStockExchange",
+            "sg" => $"{baseUrl}?typeFile=SixGroup",
+            "me" => $"{baseUrl}?typeFile=MoscowExchange",
+            _ => $"{baseUrl}?typeFile=NotDefined"
         };
     }
 
-    private async Task SendAsync(string csvPath, string urlWebService, string type)
+    private async Task SendAsync(string csvFilePath, string urlWebService)
     {
+        string fileName = Path.GetFileName(csvFilePath);
         using var formDataFile = new MultipartFormDataContent();
-        await using (var fileStream = File.OpenRead(csvPath))
+        await using var fileStream = File.OpenRead(csvFilePath);
+        formDataFile.Add(new StreamContent(fileStream), "file", fileName);
+        logger.LogInformation($"Отправка файла {fileName} по адресу: {urlWebService}");
+
+        try
         {
-            var dateGet = GetDate();
-            var fileName = $"bonds_{type}_{dateGet}.csv";
-
-            formDataFile.Add(new StreamContent(fileStream), "file", fileName);
-            formDataFile.Add(new StringContent(type), "typeFile");
-            logger.LogInformation($"Отправка файла {fileName} по адресу: {urlWebService}");
-
             var responseFile = await httpClient.PostAsync(urlWebService, formDataFile);
             if (responseFile.IsSuccessStatusCode)
             {
@@ -73,6 +71,14 @@ public class CsvService(ILogger<CsvService> logger, HttpClient httpClient)
                                   Environment.NewLine + $"Ошибка: {error}");
                 throw new HttpRequestException($"Ошибка отправки: {responseFile.StatusCode}");
             }
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError($"{ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Неизвестная ошибка: {ex.Message}");
         }
     }
 }

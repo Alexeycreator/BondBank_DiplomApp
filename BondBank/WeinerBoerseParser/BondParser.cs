@@ -40,13 +40,13 @@ public sealed class BondParser(
                 }
 
                 numberPage++;
-            } while (numberPage <= 2);
+            } while (numberPage <= CountPagesWb());
 
             await botService.SendCommandToBotAsync(
                 ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
                 $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
             logger.LogInformation($"Отправка сформированных данных на сервер...");
-            //SendFileOnWebServer();
+            await csvHelper.SendFileOnWebServer(dirPath, FileName);
         }
         catch (ArgumentException ex)
         {
@@ -170,12 +170,4 @@ public sealed class BondParser(
             $"Всего страниц с облигациями: {Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds))}");
         return Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds));
     }
-
-    // private async void SendFileOnWebServer()
-    // {
-    //     //var urlWebService = $"https://{ConfigLoader.Instance.WebService.Host}:{ConfigLoader.Instance.WebService.Port}/";
-    //     var urlWebService =
-    //         @$"C:/Users/Алексей/Desktop/Учеба/github/BondBank_DiplomApp/BondBank/BondBank_WebApi/bin/Debug/net9.0/test";
-    //     await csvServiceDll.FileSendAsync(filePath, urlWebService, "wb");
-    // }
 }
