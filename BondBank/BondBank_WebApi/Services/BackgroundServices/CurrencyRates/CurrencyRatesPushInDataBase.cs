@@ -8,7 +8,6 @@ namespace BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
 
 public sealed class CurrencyRatesPushInDataBase(ILogger<CurrencyRatesPushInDataBase> logger)
 {
-    [SuppressMessage("ReSharper.DPA", "DPA0006: Large number of DB commands", MessageId = "count: 55")]
     public async Task PushingInDataBase(ApplicationContext dbContext, List<CurrencyRatesModel> currencyRates)
     {
         try

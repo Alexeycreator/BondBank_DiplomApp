@@ -35,13 +35,13 @@ public sealed class CurrencyRatesBackgroundService(
 
                 await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
                     ConfigLoader.Instance.Bot.Port,
-                    BotCommand.Error, $"Получение курсов валют за {DateTime.Now.ToShortDateString()}...");
+                    BotCommand.Info, $"Получение курсов валют за {DateTime.Now.ToShortDateString()}...");
                 var currencyRates = await currencyRatesParser.GetCurrencyRatesAsync(connectionMonitor, botService);
                 if (currencyRates != null && currencyRates.Any())
                 {
                     await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
                         ConfigLoader.Instance.Bot.Port,
-                        BotCommand.Error, $"Курсы валют успешно получены");
+                        BotCommand.Info, $"Курсы валют успешно получены");
                     await currencyRatesPushInDataBase.PushingInDataBase(dbContext, currencyRates);
                     csvHelper.WhiteInFileCsv(dirPath, FileName, currencyRates);
                 }
