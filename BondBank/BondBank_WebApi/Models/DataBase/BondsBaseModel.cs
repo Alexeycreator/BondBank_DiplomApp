@@ -12,5 +12,5 @@ public class BondsBaseModel : DataBaseModel
     [MaxLength(50)]
     public string Isin { get; set; } = string.Empty;
 
-    [Required] public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    [Required] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
