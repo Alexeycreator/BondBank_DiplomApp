@@ -43,6 +43,7 @@ public sealed class CurrencyRatesPushInDataBase(ILogger<CurrencyRatesPushInDataB
                         }
                     }
 
+                    await dbContext.SaveChangesAsync();
                     logger.LogInformation(
                         $"Обработано валют: {currencyRates.Count} (добавлено: {countAddedCurrency}, обновлено: {countUpdatedCurrency})" +
                         Environment.NewLine + $"Все данные успешно сохранены в БД");
