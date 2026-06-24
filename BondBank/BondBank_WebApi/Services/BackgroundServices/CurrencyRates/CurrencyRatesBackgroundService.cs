@@ -26,28 +26,47 @@ public sealed class CurrencyRatesBackgroundService(
         {
             try
             {
-                using var scope = serviceScopeFactory.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-
-                var currencyRatesParser = scope.ServiceProvider.GetRequiredService<CurrencyRatesParser>();
-                var currencyRatesPushInDataBase =
-                    scope.ServiceProvider.GetRequiredService<CurrencyRatesPushInDataBase>();
-
-                await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
-                    ConfigLoader.Instance.Bot.Port,
-                    BotCommand.Info, $"Получение курсов валют за {DateTime.Now.ToShortDateString()}...");
-                var currencyRates = await currencyRatesParser.GetCurrencyRatesAsync(connectionMonitor, botService);
-                if (currencyRates != null && currencyRates.Any())
+                var currentTime = DateTime.Now;
+                if (currentTime.Hour is >= 8 and <= 17)
                 {
+                    using var scope = serviceScopeFactory.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+
+                    var currencyRatesParser = scope.ServiceProvider.GetRequiredService<CurrencyRatesParser>();
+                    var currencyRatesPushInDataBase =
+                        scope.ServiceProvider.GetRequiredService<CurrencyRatesPushInDataBase>();
+
                     await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
                         ConfigLoader.Instance.Bot.Port,
-                        BotCommand.Info, $"Курсы валют успешно получены");
-                    await currencyRatesPushInDataBase.PushingInDataBase(dbContext, currencyRates);
-                    csvHelper.WhiteInFileCsv(dirPath, FileName, currencyRates);
+                        BotCommand.Info, $"Получение курсов валют за {DateTime.Now.ToShortDateString()}...");
+                    var currencyRates = await currencyRatesParser.GetCurrencyRatesAsync(connectionMonitor, botService);
+                    if (currencyRates != null && currencyRates.Any())
+                    {
+                        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
+                            ConfigLoader.Instance.Bot.Port,
+                            BotCommand.Info, $"Курсы валют успешно получены");
+                        await currencyRatesPushInDataBase.PushingInDataBase(dbContext, currencyRates);
+                        csvHelper.WhiteInFileCsv(dirPath, FileName, currencyRates);
+                    }
+                    else
+                    {
+                        logger.LogWarning($"Не удалось получить курсы валют");
+                    }
+
+                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
                 }
                 else
                 {
-                    logger.LogWarning($"Не удалось получить курсы валют");
+                    var nextStart = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, 8, 0, 0);
+                    if (currentTime.Hour >= 17)
+                    {
+                        nextStart = nextStart.AddDays(1);
+                    }
+
+                    var waitTime = nextStart - currentTime;
+                    logger.LogInformation($"Ожидание рабочего времени, сейчас: {currentTime:HH:mm:ss}" +
+                                          Environment.NewLine + $"Следующая попытка через {waitTime}");
+                    await Task.Delay(waitTime, stoppingToken);
                 }
             }
             catch (Exception ex)
@@ -55,7 +74,7 @@ public sealed class CurrencyRatesBackgroundService(
                 logger.LogError($"Неизвестная ошибка в фоновом процессе получения курсов валют: {ex.Message}");
             }
 
-            await Task.Delay(TimeSpan.FromHours(4), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
         }
     }
 
