@@ -9,10 +9,17 @@ public sealed class ParserDataBackgroundService(
     IServiceScopeFactory serviceScopeFactory) : BackgroundService
 {
     private readonly string mainDirectoryBonds = Path.Combine(Directory.GetCurrentDirectory(), $"ImportBondsFiles");
+    private DateOnly GetDate => DateOnly.FromDateTime(DateTime.UtcNow);
+    private readonly string directoryCurrencyRates = Path.Combine(Directory.GetCurrentDirectory(), $"CurrencyRates");
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+        if (!await CheckingCompletedParsingCurrencyRates(stoppingToken))
+        {
+            logger.LogWarning("Не удалось получить курсы валют. Фоновый процесс не запущен.");
+            return;
+        }
+
         logger.LogInformation($"Сервис фоновой обработки данных парсера запущен");
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -64,7 +71,9 @@ public sealed class ParserDataBackgroundService(
                 logger.LogError($"Неизвестная ошибка фонового процесса обработки данных парсера: {ex.Message}");
             }
 
-            await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);
+            var nextIteration = TimeSpan.FromMinutes(30);
+            logger.LogInformation($"Следующая итерация через {nextIteration.Minutes} минут");
+            await Task.Delay(nextIteration, stoppingToken);
         }
     }
 
@@ -91,6 +100,7 @@ public sealed class ParserDataBackgroundService(
                     bondsLse.AddRange(resultLse);
                     logger.LogInformation($"Данные успешно преобразованы");
                 }
+
                 logger.LogInformation($"Отправка данных в базу данных...");
                 await pushingInDataBase.Push(dbContext, bondsLse);
 
@@ -103,6 +113,7 @@ public sealed class ParserDataBackgroundService(
                     bondsMe.AddRange(resultMe);
                     logger.LogInformation($"Данные успешно преобразованы");
                 }
+
                 logger.LogInformation($"Отправка данных в базу данных...");
                 await pushingInDataBase.Push(dbContext, bondsMe);
 
@@ -115,6 +126,7 @@ public sealed class ParserDataBackgroundService(
                     bondsSg.AddRange(resultSg);
                     logger.LogInformation($"Данные успешно преобразованы");
                 }
+
                 logger.LogInformation($"Отправка данных в базу данных...");
                 await pushingInDataBase.Push(dbContext, bondsSg);
 
@@ -127,6 +139,7 @@ public sealed class ParserDataBackgroundService(
                     bondsWb.AddRange(resultWb);
                     logger.LogInformation($"Данные успешно преобразованы");
                 }
+
                 logger.LogInformation($"Отправка данных в базу данных...");
                 await pushingInDataBase.Push(dbContext, bondsWb);
 
@@ -135,5 +148,79 @@ public sealed class ParserDataBackgroundService(
                 logger.LogWarning($"Данный тип облигаций не предусмотрен системой");
                 break;
         }
+    }
+
+    private async Task<bool> CheckingCompletedParsingCurrencyRates(CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+        const int maxAttempts = 6;
+        var nextTry = TimeSpan.FromMinutes(30);
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            try
+            {
+                if (!Directory.Exists(directoryCurrencyRates))
+                {
+                    logger.LogWarning(
+                        $"Каталог {directoryCurrencyRates} не существует. Попытка {attempt + 1}/{maxAttempts}");
+                    await Task.Delay(nextTry, cancellationToken);
+                    continue;
+                }
+
+                var files = Directory.GetFiles(directoryCurrencyRates);
+                if (files.Length == 0)
+                {
+                    logger.LogWarning(
+                        $"В каталоге {directoryCurrencyRates} нет файлов. Попытка {attempt + 1}/{maxAttempts}");
+                    await Task.Delay(nextTry, cancellationToken);
+                    continue;
+                }
+
+                string filePath = files.Last();
+                if (!File.Exists(filePath))
+                {
+                    logger.LogWarning($"Файл {filePath} не найден. Попытка {attempt + 1}/{maxAttempts}");
+                    await Task.Delay(nextTry, cancellationToken);
+                    continue;
+                }
+
+                string fileName = Path.GetFileName(filePath);
+                if (IsFileToday(fileName))
+                {
+                    if (new FileInfo(fileName).Length > 0)
+                    {
+                        logger.LogInformation($"Курсы валют за сегодняшнюю дату ({fileName}). Продолжаем процесс.");
+                        return true;
+                    }
+
+                    logger.LogWarning($"Файл за сегодняшнюю дату есть ({fileName}), но в нем нет данных");
+                    return false;
+                }
+
+                logger.LogWarning($"Файл {fileName} не за сегодняшнюю дату. Попытка {attempt + 1}/{maxAttempts}");
+                await Task.Delay(nextTry, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Ошибка при проверке файла курсов валют. Попытка {attempt + 1}/{maxAttempts}");
+                await Task.Delay(nextTry, cancellationToken);
+            }
+        }
+
+        logger.LogError($"Не удалось дождаться файла с курсами валют за сегодня после {maxAttempts} попыток");
+        return false;
+    }
+
+    private bool IsFileToday(string fileName)
+    {
+        var datePart = fileName.Split('_')[1];
+        if (!DateOnly.TryParse(datePart, out var fileDate))
+        {
+            logger.LogWarning($"Не получилось считать дату из названия файла {fileName}");
+            return false;
+        }
+
+        return fileDate == GetDate;
     }
 }
