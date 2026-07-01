@@ -1,9 +1,7 @@
-using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Shared.Config;
-using Shared.Config.Bot;
 
 namespace Shared.BotHelpers;
 
