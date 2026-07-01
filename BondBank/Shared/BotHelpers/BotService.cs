@@ -5,8 +5,19 @@ using Shared.Config;
 
 namespace Shared.BotHelpers;
 
+/// <summary>
+/// Отвечает за 'общение' с ботом в Telegram
+/// </summary>
+/// <param name="logger">Зависимость в классе, для использования логирования</param>
 public sealed class BotService(ILogger<BotService> logger)
 {
+    /// <summary>
+    /// Уведомляет бота о статусе работы
+    /// </summary>
+    /// <param name="botAddress">Ip-адрес бота</param>
+    /// <param name="botPort">Port бота</param>
+    /// <param name="command">Команда, которая отправляется боту (например: Info, Error и т.д.) Эти команды описаны в 'enum' классе BotCommand.cs</param>
+    /// <param name="message">Сообщение от приложения о состоянии работы, которое бот отправит пользователю</param>
     public async Task SendCommandToBotAsync(string? botAddress, int botPort, Enum command, string message = "")
     {
         string fullCommand = $"{command}|{message}";
@@ -59,6 +70,10 @@ public sealed class BotService(ILogger<BotService> logger)
         }
     }
 
+    /// <summary>
+    /// Отвечает за уведомление о начале работы парсера
+    /// </summary>
+    /// <param name="processName">Название парсера, который был запущен</param>
     public async Task UsageTaskBotAsync(string processName)
     {
         await SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,

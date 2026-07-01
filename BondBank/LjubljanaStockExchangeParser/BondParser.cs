@@ -12,6 +12,14 @@ using Shared.WorkingWithFiles;
 
 namespace LjubljanaStockExchangeParser;
 
+/// <summary>
+/// Предназначен для получения бондов
+/// </summary>
+/// <param name="logger">Зависимость для логирования</param>
+/// <param name="connectionMonitor">Зависимость для проверки подключения к веб-ресурсу биржи</param>
+/// <param name="botService">Зависимость для взаимодействия с ботом</param>
+/// <param name="csvServiceDll">Зависимость для отправки сформированного файла на сервер</param>
+/// <param name="csvHelper">Зависимость для сохранения бондов в csv файл и отправки на сервер</param>
 public sealed class BondParser(
     ILogger<BondParser> logger,
     ConnectionMonitor connectionMonitor,
@@ -25,6 +33,10 @@ public sealed class BondParser(
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
     private string FileName => $"Lse_Bonds_{csvServiceDll.GetDate()}.csv";
 
+    /// <summary>
+    /// Получение бондов
+    /// </summary>
+    /// <returns>Возвращает бонды (сформированные или null)</returns>
     public async Task<List<BondModel>> GetBondsAsync()
     {
         try
@@ -47,6 +59,10 @@ public sealed class BondParser(
         return bonds;
     }
 
+    /// <summary>
+    /// Заполнение бондов
+    /// </summary>
+    /// <returns>Возвращает бонды</returns>
     public async Task<List<BondModel>> FillingBondsAsync()
     {
         document.LoadHtml(connectionMonitor.ResponseContent());

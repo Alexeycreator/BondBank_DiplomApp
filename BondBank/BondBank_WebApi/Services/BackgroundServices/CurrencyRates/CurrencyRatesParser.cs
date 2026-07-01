@@ -7,13 +7,23 @@ using Shared.Services;
 
 namespace BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
 
+/// <summary>
+/// Предназначен для парсинга курсов валют
+/// </summary>
+/// <param name="logger">Зависимость для логирования</param>
 public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
 {
     private static DateOnly GetTodayDate() => DateOnly.FromDateTime(DateTime.Now);
 
     private readonly string urlWebService =
         $"https://www.cbr.ru/currency_base/daily/?UniDbQuery.Posted=True&UniDbQuery.To={GetTodayDate()}";
-
+    
+    /// <summary>
+    /// Получение курсов валют
+    /// </summary>
+    /// <param name="connectionMonitor">Проверка подключения к веб-ресурсу</param>
+    /// <param name="botService">Возможность взаимодействия с ботом</param>
+    /// <returns>Возвращаем либо null, либо сформированные данные</returns>
     public async Task<List<CurrencyRatesModel>?> GetCurrencyRatesAsync(ConnectionMonitor connectionMonitor,
         BotService botService)
     {
@@ -32,6 +42,12 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
         }
     }
 
+    /// <summary>
+    /// Процесс парсинга курсов валют
+    /// </summary>
+    /// <param name="connectionMonitor">Проверка подключения к веб-ресурсу</param>
+    /// <param name="currencyRates">Объект коллекции модели курсов валют</param>
+    /// <returns>Возвращаем null, либо сформированные данные</returns>
     private async Task<List<CurrencyRatesModel>?> ParsingCurrencyRatesAsync(ConnectionMonitor connectionMonitor,
         List<CurrencyRatesModel> currencyRates)
     {

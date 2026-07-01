@@ -4,6 +4,11 @@ using BondBank_WebApi.Services.DataBaseContext;
 
 namespace BondBank_WebApi.Services.BackgroundServices.ParsersData;
 
+/// <summary>
+/// Для анализирования данных парсеров
+/// </summary>
+/// <param name="logger">Зависимость для логирования</param>
+/// <param name="serviceScopeFactory">Зависимость для создания scope объектов</param>
 public sealed class ParserDataBackgroundService(
     ILogger<ParserDataBackgroundService> logger,
     IServiceScopeFactory serviceScopeFactory) : BackgroundService
@@ -14,12 +19,14 @@ public sealed class ParserDataBackgroundService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // проверяем есть ли файл за сегодня с курсами валют и заполнен ли он
         if (!await CheckingCompletedParsingCurrencyRates(stoppingToken))
         {
             logger.LogWarning("Не удалось получить курсы валют. Фоновый процесс не запущен.");
             return;
         }
 
+        // если такой файл существует - начинаем анализирование данных
         logger.LogInformation($"Сервис фоновой обработки данных парсера запущен");
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -27,14 +34,19 @@ public sealed class ParserDataBackgroundService(
             {
                 logger.LogInformation($"Проверка рабочего времени");
                 var currentTime = DateTime.Now;
+                
+                // проверяем рабочие часы
                 if (currentTime.Hour is >= 8 and <= 17)
                 {
                     logger.LogInformation($"Разрешено анализировать данные");
+                    
+                    // создаем scope объекты, чтобы не нагружать систему
                     using var scope = serviceScopeFactory.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
                     var processingData = scope.ServiceProvider.GetRequiredService<ProcessingData>();
                     var pushingInDataBase = scope.ServiceProvider.GetRequiredService<PushingInDataBase>();
 
+                    // создаем свою коллекцию бондов
                     var bondsLse = new List<LjubljanaStockExchangeBondsModel>();
                     var bondsMe = new List<MoscowExchangeBondsModel>();
                     var bondsSg = new List<SixGroupBondsModel>();
@@ -43,9 +55,12 @@ public sealed class ParserDataBackgroundService(
                     string[] nameDirectory = Directory.GetDirectories(mainDirectoryBonds);
                     foreach (var dir in nameDirectory)
                     {
+                        // получаем путь к файлу
                         var filePath = processingData.ProcessingFile(dir);
                         logger.LogInformation($"Путь до файла получен" + Environment.NewLine +
                                               $"Анализирование данных...");
+                        
+                        // проверяем какой парсер вернул данные
                         await UsingMethodProcessingBonds(filePath, processingData, pushingInDataBase, dbContext,
                             bondsLse, bondsMe, bondsSg, bondsWb);
                     }
@@ -54,6 +69,7 @@ public sealed class ParserDataBackgroundService(
                 }
                 else
                 {
+                    // вне рабочего времени ждем рабочие часы
                     var nextStart = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, 8, 0, 0);
                     if (currentTime.Hour >= 17)
                     {
@@ -152,6 +168,7 @@ public sealed class ParserDataBackgroundService(
 
     private async Task<bool> CheckingCompletedParsingCurrencyRates(CancellationToken cancellationToken = default)
     {
+        // делаем задержку в 10 секунд для корректного запуска процесса
         await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
         const int maxAttempts = 6;
         var nextTry = TimeSpan.FromMinutes(30);

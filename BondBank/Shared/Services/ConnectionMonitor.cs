@@ -3,11 +3,17 @@ using System.Net;
 using Microsoft.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Config;
-using Shared.Config.Bot;
 using Shared.Connection;
 
 namespace Shared.Services;
 
+/// <summary>
+/// Предназначен для проверки соединения с ресурсом
+/// </summary>
+/// <param name="httpClient">Зависимость для создания своего объекта 'HttpClient'</param>
+/// <param name="logger">Зависимость для логирования</param>
+/// <param name="botService">Зависимость для объекта бота</param>
+/// <param name="internetChecker">Зависимость для проверки интернет соединения</param>
 public class ConnectionMonitor(
     HttpClient httpClient,
     ILogger<ConnectionMonitor> logger,
@@ -19,11 +25,22 @@ public class ConnectionMonitor(
     private readonly TimeSpan delayMonitoring = TimeSpan.FromMinutes(10);
     private readonly TimeSpan delayMonitoringTry = TimeSpan.FromSeconds(30);
 
+    /// <summary>
+    /// Возвращает html контент
+    /// </summary>
+    /// <returns>Возвращает html контент (если он не заполнен, то вернется пустая строка)</returns>
     public string ResponseContent()
     {
         return responseHtml;
     }
 
+    /// <summary>
+    /// Предназначен для подключения к веб-ресурсу для парсинга данных
+    /// </summary>
+    /// <param name="urlWebService">'url' веб-ресурса биржи</param>
+    /// <returns>'true' - если контент заполнен, 'false' - если не получилось сформировать контент или вылезло исключение</returns>
+    /// <exception cref="ArgumentException">Исключение, если контент пустой</exception>
+    /// <exception cref="HttpRequestException">Исключение, если не удалось подключиться к ресурсу</exception>
     public async Task<bool> ConnectionToDataAsync(string urlWebService)
     {
         bool hasInternet = internetChecker.CheckingInternetConnection();
@@ -85,6 +102,11 @@ public class ConnectionMonitor(
         }
     }
 
+    /// <summary>
+    /// Начало мониторинга повторных подключений к ресурсу
+    /// </summary>
+    /// <param name="connect">Состояние подключения, удалось ли вообще подключиться к ресурсу</param>
+    /// <param name="urlWebService">'url' веб-ресурса</param>
     private async Task StartMonitoringAsync(bool connect, string urlWebService)
     {
         const int MaxChecks = 10;
@@ -115,6 +137,13 @@ public class ConnectionMonitor(
         }
     }
 
+    /// <summary>
+    /// Проверяет количество итераций
+    /// </summary>
+    /// <param name="isConnected">Подключение есть или нет</param>
+    /// <param name="checkCount">Номер попытки</param>
+    /// <param name="maxChecks">Максимальное количество попыток</param>
+    /// <returns>Возвращает состояние подключения</returns>
     private bool ShouldContinue(bool isConnected, int checkCount, int maxChecks)
     {
         return isConnected
@@ -122,6 +151,11 @@ public class ConnectionMonitor(
             : !isConnected && checkCount < maxChecks;
     }
 
+    /// <summary>
+    /// Проверяет возможность подключения к веб-ресурсу
+    /// </summary>
+    /// <param name="url">'url' веб-ресурса</param>
+    /// <returns>Возвращает true или false при попытке подключения</returns>
     private async Task<bool> CheckUrlConnectionAsync(string url)
     {
         try

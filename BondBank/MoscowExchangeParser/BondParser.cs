@@ -11,6 +11,15 @@ using Shared.WorkingWithFiles;
 
 namespace MoscowExchangeParser;
 
+/// <summary>
+/// Предназначен для получения бондов
+/// </summary>
+/// <param name="logger">Зависимость для логирования</param>
+/// <param name="httpClient">Зависимость для нового объекта HttpClient</param>
+/// <param name="connectionMonitor">Зависимость для проверки подключения к веб-ресурсу биржи</param>
+/// <param name="botService">Зависимость для взаимодействия с ботом</param>
+/// <param name="csvServiceDll">Зависимость для отправки сформированного файла на сервер</param>
+/// <param name="csvHelper">Зависимость для сохранения бондов в csv файл и отправки на сервер</param>
 public sealed class BondParser(
     ILogger<BondParser> logger,
     HttpClient httpClient,
@@ -22,7 +31,8 @@ public sealed class BondParser(
     private readonly string urlMoscowExchange = $"https://www.moex.com/";
     private List<Bond> bonds = new List<Bond>();
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
-
+    
+    // массив всех json файлов с бондами
     private readonly string[] urlGettingBonds =
     [
         $@"https://iss.moex.com/iss/emitters/484/securities.jsonp?iss.meta=off&iss.json=extended&callback=JSON_CALLBACK&lang=ru",
@@ -53,6 +63,10 @@ public sealed class BondParser(
 
     private string FileName => $"Me_Bonds_{csvServiceDll.GetDate()}.csv";
 
+    /// <summary>
+    /// Получение бондов
+    /// </summary>
+    /// <returns>Возвращает бонды (сформированные или null)</returns>
     public async Task<List<Bond>> GetBondsAsync()
     {
         try
@@ -75,6 +89,11 @@ public sealed class BondParser(
         return bonds;
     }
 
+    /// <summary>
+    /// Заполнение бондов
+    /// </summary>
+    /// <returns>Возвращает бонды</returns>
+    /// <exception cref="HttpRequestException">Исключение, если не удалось получить json файл по указанному адресу</exception>
     public async Task<List<Bond>> FillingBondsAsync()
     {
         try

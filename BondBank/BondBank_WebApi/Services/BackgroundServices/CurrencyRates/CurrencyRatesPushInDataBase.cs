@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
 
+/// <summary>
+/// Предназначен для отправки сформированных курсов валют в БД
+/// </summary>
+/// <param name="logger">Зависимость для логирования</param>
 public sealed class CurrencyRatesPushInDataBase(ILogger<CurrencyRatesPushInDataBase> logger)
 {
     public async Task PushingInDataBase(ApplicationContext dbContext, List<CurrencyRatesModel> currencyRates)

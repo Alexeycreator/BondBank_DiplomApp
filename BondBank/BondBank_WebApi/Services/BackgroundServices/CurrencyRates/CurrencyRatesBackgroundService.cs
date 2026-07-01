@@ -7,6 +7,15 @@ using Shared.WorkingWithFiles;
 
 namespace BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
 
+/// <summary>
+/// Для получения курсов валют
+/// </summary>
+/// <param name="logger">Зависимость для логирования</param>
+/// <param name="connectionMonitor">Зависимость для проверки подключения к веб-ресурсу</param>
+/// <param name="botService">Зависимость для взаимодействия с ботом</param>
+/// <param name="serviceScopeFactory">Зависимость для создания scope объектов</param>
+/// <param name="csvHelper">Зависимость для записи данных в файл</param>
+/// <param name="csvServiceDll">Зависимость для возможности работы с файлами из библиотеки Shared.dll</param>
 public sealed class CurrencyRatesBackgroundService(
     ILogger<CurrencyRatesBackgroundService> logger,
     ConnectionMonitor connectionMonitor,
@@ -20,6 +29,7 @@ public sealed class CurrencyRatesBackgroundService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // ждем 5 секунд с начала запуска сервера (чтобы дать время запуститься самому проекту и потом запускаем фоновый процесс)
         await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         logger.LogInformation($"Сервис фоновой работы с курсами валют запущен");
         while (!stoppingToken.IsCancellationRequested)
@@ -27,8 +37,11 @@ public sealed class CurrencyRatesBackgroundService(
             try
             {
                 var currentTime = DateTime.Now;
+                
+                // проверяем рабочие часы
                 if (currentTime.Hour is >= 8 and <= 17)
                 {
+                    // создаем scope объекты, чтобы не нагружать систему
                     using var scope = serviceScopeFactory.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
@@ -57,6 +70,7 @@ public sealed class CurrencyRatesBackgroundService(
                 }
                 else
                 {
+                    // вне рабочего времени ждем рабочие часы
                     var nextStart = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, 8, 0, 0);
                     if (currentTime.Hour >= 17)
                     {

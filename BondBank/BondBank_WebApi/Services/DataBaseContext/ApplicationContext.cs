@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BondBank_WebApi.Services.DataBaseContext;
 
+/// <summary>
+/// Для создания контекста данных в БД
+/// </summary>
+/// <param name="options">Параметры DbContext, например строка подключения к БД</param>
 public sealed class ApplicationContext(DbContextOptions<ApplicationContext> options) : DbContext(options)
 {
     public DbSet<UsersModel> Users { get; set; }
