@@ -7,6 +7,11 @@ using Npgsql;
 
 namespace BondBank_WebApi.Controllers.Bonds;
 
+/// <summary>
+/// Описание бизнес-логики контракта
+/// </summary>
+/// <param name="logger">Зависимость для логирования</param>
+/// <param name="dbContext">Зависимость для контекста БД</param>
 public class BondControllerService(
     ILogger<BondControllerService> logger,
     ApplicationContext dbContext) : IBondControllerService
@@ -32,6 +37,10 @@ public class BondControllerService(
         return bonds;
     }
 
+    /// <summary>
+    /// Объединяем бонды в общий список, для отправки
+    /// </summary>
+    /// <returns>Возвращаем коллекцию бондов всех типов</returns>
     private async Task<List<BondDto>?> ConsolidationBondsAsync()
     {
         try
