@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace BondBank_WebApi.Models.DataBase;
 
 [Table("MoscowExchangeBonds")]
-public class MoscowExchangeBondsModel : BondsBaseModel
+public sealed class MoscowExchangeBondsModel : BondsBaseModel
 {
     [Required(AllowEmptyStrings = true)]
     [MaxLength(100)]
@@ -50,9 +49,4 @@ public class MoscowExchangeBondsModel : BondsBaseModel
     [Required(AllowEmptyStrings = true)]
     [MaxLength(10)]
     public string FaceUnit { get; set; } = string.Empty;
-    
-    public int? PortfoliosId { get; set; }
-    public int CurrencyRatesId { get; set; }
-    [JsonIgnore] public virtual PortfoliosModel? Portfolios { get; set; }
-    [JsonIgnore] public virtual CurrencyRatesModel? CurrencyRates { get; set; }
 }

@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace BondBank_WebApi.Models.DataBase;
 
 [Table("LjubljanaStockExchangeBonds")]
-public class LjubljanaStockExchangeBondsModel : BondsBaseModel
+public sealed class LjubljanaStockExchangeBondsModel : BondsBaseModel
 {
     [Required(AllowEmptyStrings = true)]
     [MaxLength(10)]
@@ -24,9 +23,4 @@ public class LjubljanaStockExchangeBondsModel : BondsBaseModel
 
     [Required] public DateOnly ListingDate { get; set; }
     public DateOnly? DelistingDate { get; set; }
-
-    public int? PortfoliosId { get; set; }
-    public int CurrencyRatesId { get; set; }
-    [JsonIgnore] public virtual PortfoliosModel? Portfolios { get; set; }
-    [JsonIgnore] public virtual CurrencyRatesModel? CurrencyRates { get; set; }
 }

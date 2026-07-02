@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace BondBank_WebApi.Models.DataBase;
 
 [Table("WienerBoerseBonds")]
-public class WienerBoerseBondsModel : BondsBaseModel
+public sealed class WienerBoerseBondsModel : BondsBaseModel
 {
     [Required]
     [Column(TypeName = "decimal(18,4)")]
@@ -31,9 +30,4 @@ public class WienerBoerseBondsModel : BondsBaseModel
     [Required(AllowEmptyStrings = true)]
     [MaxLength(10)]
     public string Currency { get; set; } = string.Empty;
-
-    public int? PortfoliosId { get; set; }
-    public int CurrencyRatesId { get; set; }
-    [JsonIgnore] public virtual PortfoliosModel? Portfolios { get; set; }
-    [JsonIgnore] public virtual CurrencyRatesModel? CurrencyRates { get; set; }
 }

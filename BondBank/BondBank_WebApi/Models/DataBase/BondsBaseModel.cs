@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace BondBank_WebApi.Models.DataBase;
 
@@ -13,4 +14,8 @@ public class BondsBaseModel : DataBaseModel
     public string Isin { get; set; } = string.Empty;
 
     [Required] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public int? PortfoliosId { get; set; }
+    public int CurrencyRatesId { get; set; }
+    [JsonIgnore] public PortfoliosModel? Portfolios { get; set; }
+    [JsonIgnore] public CurrencyRatesModel? CurrencyRates { get; set; }
 }

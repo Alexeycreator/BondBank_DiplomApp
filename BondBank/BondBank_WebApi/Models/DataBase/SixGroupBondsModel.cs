@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace BondBank_WebApi.Models.DataBase;
 
 [Table("SixGroupBonds")]
-public class SixGroupBondsModel : BondsBaseModel
+public sealed class SixGroupBondsModel : BondsBaseModel
 {
     [Required(AllowEmptyStrings = true)]
     [MaxLength(100)]
@@ -59,9 +58,4 @@ public class SixGroupBondsModel : BondsBaseModel
     [Required]
     [Column(TypeName = "decimal(18,4)")]
     public decimal YieldToWorst { get; set; }
-
-    public int? PortfoliosId { get; set; }
-    public int CurrencyRatesId { get; set; }
-    [JsonIgnore] public virtual PortfoliosModel? Portfolios { get; set; }
-    [JsonIgnore] public virtual CurrencyRatesModel? CurrencyRates { get; set; }
 }
