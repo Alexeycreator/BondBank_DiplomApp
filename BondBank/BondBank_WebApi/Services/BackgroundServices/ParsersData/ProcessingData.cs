@@ -24,7 +24,7 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
                 var bond = CreateLjubljanaStockExchangeBonds(columns);
                 bonds?.Add(bond);
             }
-            
+
             return bonds;
         }
         catch (Exception ex)
@@ -129,7 +129,9 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
             Currency = content[6],
             ListingDate = DateOnly.TryParse(content[7], out var listing) ? listing : DateOnly.MinValue,
             DelistingDate = CheckingCorrectDelistingDate(content[8]),
-            UpdatedAt = DateTime.TryParse(content[10], out var updated) ? updated : DateTime.UtcNow
+            UpdatedAt = DateTime.TryParse(content[10], out var updated)
+                ? DateTime.SpecifyKind(updated, DateTimeKind.Utc)
+                : DateTime.UtcNow
         };
     }
 
@@ -151,7 +153,9 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
             FaceValue = decimal.TryParse(content[11], out var value) ? value : 0,
             FaceUnit = content[12],
             Isin = content[13],
-            UpdatedAt = DateTime.TryParse(content[14], out var updated) ? updated : DateTime.UtcNow
+            UpdatedAt = DateTime.TryParse(content[14], out var updated)
+                ? DateTime.SpecifyKind(updated, DateTimeKind.Utc)
+                : DateTime.UtcNow
         };
     }
 
@@ -177,7 +181,9 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
             Isin = content[15],
             AmountInIssue = long.TryParse(content[16], out var amount) ? amount : 0,
             YieldToWorst = decimal.TryParse(content[17], out var yieldToWorst) ? yieldToWorst : 0,
-            UpdatedAt = DateTime.TryParse(content[18], out var updated) ? updated : DateTime.UtcNow
+            UpdatedAt = DateTime.TryParse(content[18], out var updated)
+                ? DateTime.SpecifyKind(updated, DateTimeKind.Utc)
+                : DateTime.UtcNow
         };
     }
 
@@ -188,14 +194,16 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
             Name = content[0],
             Last = decimal.TryParse(content[1], out var last) ? last : 0,
             Chg = content[2],
-            Date = DateTime.TryParse(content[3], out var date) ? date : DateTime.Now,
+            Date = DateTime.TryParse(content[3], out var date) ? date : DateTime.UtcNow,
             Isin = content[4],
             Bid = decimal.TryParse(content[5], out var bid) ? bid : 0,
             Ask = decimal.TryParse(content[6], out var ask) ? ask : 0,
             Maturity = DateOnly.TryParse(content[7], out var maturity) ? maturity : DateOnly.MaxValue,
             Status = content[8][0],
             Currency = content[9],
-            UpdatedAt = DateTime.TryParse(content[10], out var updated) ? updated : DateTime.UtcNow
+            UpdatedAt = DateTime.TryParse(content[10], out var updated)
+                ? DateTime.SpecifyKind(updated, DateTimeKind.Utc)
+                : DateTime.UtcNow
         };
     }
 }
