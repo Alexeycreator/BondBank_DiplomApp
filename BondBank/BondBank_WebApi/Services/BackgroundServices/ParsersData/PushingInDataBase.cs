@@ -107,6 +107,14 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
                     }
                 }
             }
+
+            int savedCount = await dbContext.SaveChangesAsync();
+            logger.LogInformation(
+                $"MoscowExchange: Добавлено: {countAdded}, Обновлено: {countUpdated}, Сохранено: {savedCount}");
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -156,6 +164,14 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
                     }
                 }
             }
+
+            int savedCount = await dbContext.SaveChangesAsync();
+            logger.LogInformation(
+                $"SixGroup: Добавлено: {countAdded}, Обновлено: {countUpdated}, Сохранено: {savedCount}");
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -205,6 +221,14 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
                     }
                 }
             }
+
+            int savedCount = await dbContext.SaveChangesAsync();
+            logger.LogInformation(
+                $"WienerBoerse: Добавлено: {countAdded}, Обновлено: {countUpdated}, Сохранено: {savedCount}");
+        }
+        catch (DbUpdateException ex)
+        {
+            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -446,46 +470,55 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
             existingBonds.AskPrice = updatedBonds.AskPrice;
             hasChanges = true;
         }
+
         if (existingBonds.MarketTime != updatedBonds.MarketTime)
         {
             existingBonds.MarketTime = updatedBonds.MarketTime;
             hasChanges = true;
         }
+
         if (existingBonds.MarketDate != updatedBonds.MarketDate)
         {
             existingBonds.MarketDate = updatedBonds.MarketDate;
             hasChanges = true;
         }
+
         if (existingBonds.IssuerNameFull != updatedBonds.IssuerNameFull)
         {
             existingBonds.IssuerNameFull = updatedBonds.IssuerNameFull;
             hasChanges = true;
         }
+
         if (existingBonds.ProductLine != updatedBonds.ProductLine)
         {
             existingBonds.ProductLine = updatedBonds.ProductLine;
             hasChanges = true;
         }
+
         if (existingBonds.IndustrySectorCode != updatedBonds.IndustrySectorCode)
         {
             existingBonds.IndustrySectorCode = updatedBonds.IndustrySectorCode;
             hasChanges = true;
         }
+
         if (existingBonds.SecTypeCode != updatedBonds.SecTypeCode)
         {
             existingBonds.SecTypeCode = updatedBonds.SecTypeCode;
             hasChanges = true;
         }
+
         if (existingBonds.Isin != updatedBonds.Isin)
         {
             existingBonds.Isin = updatedBonds.Isin;
             hasChanges = true;
         }
+
         if (existingBonds.AmountInIssue != updatedBonds.AmountInIssue)
         {
             existingBonds.AmountInIssue = updatedBonds.AmountInIssue;
             hasChanges = true;
         }
+
         if (existingBonds.YieldToWorst != updatedBonds.YieldToWorst)
         {
             existingBonds.YieldToWorst = updatedBonds.YieldToWorst;
@@ -558,7 +591,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
             existingBonds.Status = updatedBonds.Status;
             hasChanges = true;
         }
-        
+
         if (existingBonds.Currency != updatedBonds.Currency)
         {
             existingBonds.Currency = updatedBonds.Currency;
