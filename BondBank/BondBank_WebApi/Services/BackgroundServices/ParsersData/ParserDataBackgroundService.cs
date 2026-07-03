@@ -28,18 +28,19 @@ public sealed class ParserDataBackgroundService(
 
         // если такой файл существует - начинаем анализирование данных
         logger.LogInformation($"Сервис фоновой обработки данных парсера запущен");
+        HashSet<string> processedFiles = new HashSet<string>();
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 logger.LogInformation($"Проверка рабочего времени");
                 var currentTime = DateTime.Now;
-                
+
                 // проверяем рабочие часы
                 if (currentTime.Hour is >= 8 and <= 17)
                 {
                     logger.LogInformation($"Разрешено анализировать данные");
-                    
+
                     // создаем scope объекты, чтобы не нагружать систему
                     using var scope = serviceScopeFactory.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
@@ -57,12 +58,20 @@ public sealed class ParserDataBackgroundService(
                     {
                         // получаем путь к файлу
                         var filePath = processingData.ProcessingFile(dir);
-                        logger.LogInformation($"Путь до файла получен" + Environment.NewLine +
+                        logger.LogInformation($"Путь до файла {filePath} получен" + Environment.NewLine +
                                               $"Анализирование данных...");
                         
-                        // проверяем какой парсер вернул данные
-                        await UsingMethodProcessingBonds(filePath, processingData, pushingInDataBase, dbContext,
-                            bondsLse, bondsMe, bondsSg, bondsWb);
+                        // проверяем обрабатывался ли файл раньше
+                        if (processedFiles.Add(filePath))
+                        {
+                            // проверяем какой парсер вернул данные
+                            await UsingMethodProcessingBonds(filePath, processingData, pushingInDataBase, dbContext,
+                                bondsLse, bondsMe, bondsSg, bondsWb);
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
 
                     await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
@@ -87,7 +96,7 @@ public sealed class ParserDataBackgroundService(
                 logger.LogError($"Неизвестная ошибка фонового процесса обработки данных парсера: {ex.Message}");
             }
 
-            var nextIteration = TimeSpan.FromMinutes(30);
+            var nextIteration = TimeSpan.FromMinutes(10);
             logger.LogInformation($"Следующая итерация через {nextIteration.Minutes} минут");
             await Task.Delay(nextIteration, stoppingToken);
         }
@@ -205,7 +214,9 @@ public sealed class ParserDataBackgroundService(
                 string fileName = Path.GetFileName(filePath);
                 if (IsFileToday(fileName))
                 {
-                    if (new FileInfo(fileName).Length > 0)
+                    // создаем объект FileStream, чтобы считать данные и если у нас записан хотя бы 1 байт, то true, иначе false
+                    await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    if (stream.ReadByte() != -1)
                     {
                         logger.LogInformation($"Курсы валют за сегодняшнюю дату ({fileName}). Продолжаем процесс.");
                         return true;
@@ -231,7 +242,7 @@ public sealed class ParserDataBackgroundService(
 
     private bool IsFileToday(string fileName)
     {
-        var datePart = fileName.Split('_')[1];
+        var datePart = fileName.Split('_')[1].Split('.')[0];
         if (!DateOnly.TryParse(datePart, out var fileDate))
         {
             logger.LogWarning($"Не получилось считать дату из названия файла {fileName}");
