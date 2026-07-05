@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using BondBank_WebApi.Models.DataBase;
+using BondBank_WebApi.Services.BackgroundServices.SavingBondHistories;
 using BondBank_WebApi.Services.DataBaseContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace BondBank_WebApi.Services.BackgroundServices.ParsersData;
 
@@ -46,6 +48,7 @@ public sealed class ParserDataBackgroundService(
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
                     var processingData = scope.ServiceProvider.GetRequiredService<ProcessingData>();
                     var pushingInDataBase = scope.ServiceProvider.GetRequiredService<PushingInDataBase>();
+                    var bondHistoriesService = scope.ServiceProvider.GetRequiredService<BondHistoriesService>();
 
                     // создаем свою коллекцию бондов
                     var bondsLse = new List<LjubljanaStockExchangeBondsModel>();
@@ -73,11 +76,29 @@ public sealed class ParserDataBackgroundService(
                             continue;
                         }
                     }
+                    
+                    await bondHistoriesService.SaveBondsHistoriesAsync(
+                        dbContext, bondsLse, bondsMe, bondsSg, bondsWb, stoppingToken);
 
                     await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
                 }
                 else
                 {
+                    logger.LogInformation("Рабочее время закончилось. Сохраняем историю бондов...");
+    
+                    using var scope = serviceScopeFactory.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+                    var bondHistoryService = scope.ServiceProvider.GetRequiredService<BondHistoriesService>();
+    
+                    // получаем последние данные из БД
+                    var bondsLse = await dbContext.LjubljanaStockExchangeBonds.ToListAsync(stoppingToken);
+                    var bondsMe = await dbContext.MoscowExchangeBonds.ToListAsync(stoppingToken);
+                    var bondsSg = await dbContext.SixGroupBonds.ToListAsync(stoppingToken);
+                    var bondsWb = await dbContext.WienerBoerseBonds.ToListAsync(stoppingToken);
+    
+                    await bondHistoryService.SaveBondsHistoriesAsync(
+                        dbContext, bondsLse, bondsMe, bondsSg, bondsWb, stoppingToken);
+                    
                     // вне рабочего времени ждем рабочие часы
                     var nextStart = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, 8, 0, 0);
                     if (currentTime.Hour >= 17)
