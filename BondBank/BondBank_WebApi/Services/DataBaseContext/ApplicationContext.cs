@@ -19,6 +19,7 @@ public sealed class ApplicationContext(DbContextOptions<ApplicationContext> opti
     public DbSet<SixGroupBondsModel> SixGroupBonds { get; set; }
     public DbSet<WienerBoerseBondsModel> WienerBoerseBonds { get; set; }
     public DbSet<PortfoliosModel> Portfolios { get; set; }
+    public DbSet<BondHistoryModel> BondHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
