@@ -1,10 +1,18 @@
+using BondBank_WebApi.HelperMethods;
 using BondBank_WebApi.Models.DataBase;
 using BondBank_WebApi.Services.DataBaseContext;
+using Shared.WorkingWithFiles;
 
 namespace BondBank_WebApi.Services.BackgroundServices.SavingBondHistories;
 
-public sealed class BondHistoriesService(ILogger<BondHistoriesService> logger)
+public sealed class BondHistoriesService(
+    ILogger<BondHistoriesService> logger,
+    CsvHelper csvHelper,
+    CsvService csvServiceDll)
 {
+    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "BondHistories");
+    private string FileName => $"BondHistories_{csvServiceDll.GetDate()}.csv";
+
     public async Task SaveBondsHistoriesAsync(
         ApplicationContext dbContext,
         List<LjubljanaStockExchangeBondsModel>? bondsLse,
@@ -71,11 +79,26 @@ public sealed class BondHistoriesService(ILogger<BondHistoriesService> logger)
                 await dbContext.BondHistories.AddRangeAsync(historyEntries, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
                 logger.LogInformation($"Сохранено {historyEntries.Count} записей в историю бондов");
+                WriteToCsv(historyEntries);
             }
         }
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
+        }
+    }
+
+    private void WriteToCsv(List<BondHistoryModel> bonds)
+    {
+        try
+        {
+            logger.LogInformation($"Начало записи в файл");
+            csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
+            logger.LogInformation($"Запись в файл прошла успешно");
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
         }
     }
 }

@@ -20,4 +20,20 @@ public sealed class CsvHelper(ILogger<CsvHelper> logger, CsvService csvServiceDl
             logger.LogError($"Ошибка при записи в файл: {ex.Message}");
         }
     }
+
+    public void WhiteInFileCsv(string directoryPath, string fileName, List<BondHistoryModel> bondsHistory)
+    {
+        try
+        {
+            csvServiceDll.EnsureDirectoryExists(directoryPath);
+            string filePath = Path.Combine(directoryPath, fileName);
+            logger.LogInformation($"Начало записи данных в файл");
+            Write(filePath, bondsHistory);
+            logger.LogInformation($"Запись в файл прошла успешно");
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+        }
+    }
 }

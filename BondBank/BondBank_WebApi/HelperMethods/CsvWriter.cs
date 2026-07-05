@@ -17,4 +17,17 @@ public class CsvWriter
 
         File.WriteAllText(filePath, csvBuilder.ToString());
     }
+
+    protected void Write(string filePath, List<BondHistoryModel> bondHistory)
+    {
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.AppendLine($"Isin;BondPrice;BondType;CurrencyRate;RecordedDate;");
+        foreach (var bond in bondHistory)
+        {
+            csvBuilder.AppendLine(
+                $"{bond.Isin};{bond.BondPrice};{bond.BondType};{bond.CurrencyRate};{bond.RecordedDate};");
+        }
+
+        File.WriteAllText(filePath, csvBuilder.ToString());
+    }
 }
