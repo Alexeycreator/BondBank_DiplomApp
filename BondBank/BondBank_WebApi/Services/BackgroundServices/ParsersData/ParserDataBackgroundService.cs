@@ -1,8 +1,6 @@
 using System.Text.RegularExpressions;
 using BondBank_WebApi.Models.DataBase;
-using BondBank_WebApi.Services.BackgroundServices.SavingBondHistories;
 using BondBank_WebApi.Services.DataBaseContext;
-using Microsoft.EntityFrameworkCore;
 
 namespace BondBank_WebApi.Services.BackgroundServices.ParsersData;
 
