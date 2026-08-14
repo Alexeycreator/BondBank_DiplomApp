@@ -22,6 +22,8 @@ public sealed class SavedBondHistoriesBackgroundService(
                 var bondData = scope.ServiceProvider.GetRequiredService<BondDataVerification>();
 
                 await bondData.CheckingBondsData(dbContext, bondHistories, stoppingToken);
+                logger.LogInformation($"Пауза между итерациями 10 минут");
+                await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
             }
             catch (Exception ex)
             {
