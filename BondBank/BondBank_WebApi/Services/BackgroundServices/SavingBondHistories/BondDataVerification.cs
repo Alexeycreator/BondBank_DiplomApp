@@ -12,10 +12,18 @@ public sealed class BondDataVerification(ILogger<BondDataVerification> logger)
     {
         try
         {
-            var bondsLse = await dbContext.LjubljanaStockExchangeBonds.ToListAsync(cancellationToken);
-            var bondsMe = await dbContext.MoscowExchangeBonds.ToListAsync(cancellationToken);
-            var bondsSg = await dbContext.SixGroupBonds.ToListAsync(cancellationToken);
-            var bondsWb = await dbContext.WienerBoerseBonds.ToListAsync(cancellationToken);
+            var bondsLse = await dbContext.LjubljanaStockExchangeBonds
+                .Include(b => b.CurrencyRates)
+                .ToListAsync(cancellationToken);
+            var bondsMe = await dbContext.MoscowExchangeBonds
+                .Include(b => b.CurrencyRates)
+                .ToListAsync(cancellationToken);
+            var bondsSg = await dbContext.SixGroupBonds
+                .Include(b => b.CurrencyRates)
+                .ToListAsync(cancellationToken);
+            var bondsWb = await dbContext.WienerBoerseBonds
+                .Include(b => b.CurrencyRates)
+                .ToListAsync(cancellationToken);
 
             if (bondsLse.Any() || bondsMe.Any() || bondsSg.Any() || bondsWb.Any())
             {
