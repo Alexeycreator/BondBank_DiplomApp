@@ -621,6 +621,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
         bond.CurrencyRatesId = currencyRates.Id;
         await dbContext.LjubljanaStockExchangeBonds.AddAsync(bond);
+        await dbContext.SaveChangesAsync();
         return true;
     }
 
@@ -638,6 +639,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
         bond.CurrencyRatesId = currencyRates.Id;
         await dbContext.MoscowExchangeBonds.AddAsync(bond);
+        await dbContext.SaveChangesAsync();
         return true;
     }
 
@@ -655,6 +657,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
         bond.CurrencyRatesId = currencyRates.Id;
         await dbContext.SixGroupBonds.AddAsync(bond);
+        await dbContext.SaveChangesAsync();
         return true;
     }
 
@@ -672,6 +675,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
         bond.CurrencyRatesId = currencyRates.Id;
         await dbContext.WienerBoerseBonds.AddAsync(bond);
+        await dbContext.SaveChangesAsync();
         return true;
     }
 }
