@@ -212,7 +212,8 @@ public sealed class ApplicationContext(DbContextOptions<ApplicationContext> opti
         modelBuilder.Entity<WienerBoerseBondsModel>()
             .HasIndex(b => b.Isin)
             .IsUnique()
-            .HasDatabaseName("IX_WienerBoerseBonds_Isin");
+            .HasDatabaseName("IX_WienerBoerseBonds_Isin")
+            .UseCollation("C");
 
         #endregion
 
