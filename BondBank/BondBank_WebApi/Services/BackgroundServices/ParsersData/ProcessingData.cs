@@ -1,3 +1,4 @@
+using System.Globalization;
 using BondBank_WebApi.Models.DataBase;
 
 namespace BondBank_WebApi.Services.BackgroundServices.ParsersData;
@@ -192,7 +193,9 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
         return new WienerBoerseBondsModel()
         {
             Name = content[0],
-            Last = decimal.TryParse(content[1], out var last) ? last : 0,
+            Last = decimal.TryParse(content[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var last)
+                ? last
+                : 0,
             Chg = content[2],
             Date = DateTime.TryParse(content[3], out var date) ? date : DateTime.UtcNow,
             Isin = content[4],
