@@ -57,8 +57,8 @@ public sealed class ConfigLoader
             return localPath;
         }
 
-        var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "TelegramBot", "Config",
-            "bot_config.json");
+        var configPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
+            "..", "..", "..", "Config", "bot_config.json"));
         return File.Exists(configPath) ? Path.GetFullPath(configPath) : "bot_config.json";
     }
 }
