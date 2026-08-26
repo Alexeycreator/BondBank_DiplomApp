@@ -53,7 +53,6 @@ public sealed class ConnectionSettings(
 
     private void SetConstructorMethodsBot(long adminId, ulong groupId)
     {
-        methodsBot.SetAdminId(adminId);
         methodsBot.SetGroupId(groupId);
     }
 }
