@@ -49,7 +49,7 @@ public sealed class BotMainMethods(ILogger<BotMainMethods> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"Нези{ex.Message}");
+            logger.LogError($"Неизвестная ошибка: {ex.Message}");
         }
     }
 
