@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Shared.Config;
-using Shared.Config.Bot;
 using TelegramBot.Methods;
 
 namespace TelegramBot.Connection;
