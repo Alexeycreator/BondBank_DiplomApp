@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LjubljanaStockExchangeParse
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoscowExchangeParser", "MoscowExchangeParser\MoscowExchangeParser.csproj", "{F2179A14-A9CC-456E-8D84-AFC17F395389}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VKBot", "VKBot\VKBot.csproj", "{0E2D439E-6D34-4CE7-ACD6-97BA5AB98BC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,5 +55,9 @@ Global
 		{F2179A14-A9CC-456E-8D84-AFC17F395389}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2179A14-A9CC-456E-8D84-AFC17F395389}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2179A14-A9CC-456E-8D84-AFC17F395389}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E2D439E-6D34-4CE7-ACD6-97BA5AB98BC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E2D439E-6D34-4CE7-ACD6-97BA5AB98BC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E2D439E-6D34-4CE7-ACD6-97BA5AB98BC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E2D439E-6D34-4CE7-ACD6-97BA5AB98BC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
