@@ -1,5 +1,7 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using VKBot.Config;
 using VkNet;
 using VkNet.Enums.StringEnums;
 using VkNet.Exception;
@@ -13,13 +15,19 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
     private string nameCommunity;
     private Dictionary<long, bool> welcomeFromUser = new Dictionary<long, bool>();
     private Dictionary<long, bool> isAwaitingParserChoice = new Dictionary<long, bool>();
+    private HashSet<long> usersIdListHashSet = new HashSet<long>();
 
-    public ulong SetGroupId(ulong groupId) => this.groupId = groupId;
+    private readonly string ConfigFilePath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+        "..", "..", "..", "Config", "bot_config.json"));
+
+    private readonly string ConfigFileBaseDirectoryPath = $"Config/bot_config.json";
+
+    public void SetGroupId(ulong groupId) => this.groupId = groupId;
 
     /// <summary>
     /// Метод запуска бота
     /// </summary>
-    public async Task Run()
+    public async Task RunAsync()
     {
         try
         {
@@ -79,12 +87,12 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         }
         catch (AccessTokenInvalidException ex)
         {
-            logger.LogError($"Неверный токен api: {ex.Message}");
+            logger.LogError($"Неверный токен api: {ex.Message}. Code: {ex.ErrorCode}");
             throw;
         }
         catch (VkApiException ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError($"Неизвестная ошибка: {ex.Message}. Code: {ex.ErrorCode}");
             throw;
         }
     }
@@ -104,7 +112,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
     }
 
     /// <summary>
-    /// Получение какое-то обновление, проверяем группу обновления и работаем с ней
+    /// Получаем какое-то обновление (сообщение), проверяем группу обновления и работаем с ней
     /// </summary>
     /// <param name="update">Группа обновления</param>
     private void ProcessUpdate(GroupUpdate update)
@@ -124,9 +132,10 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
             {
                 if (message.Message.FromId != null)
                 {
-                    // Заполняем словарь с пользователями
+                    // Заполняем словарь с пользователями и после успеха заполняем коллекцию
                     var userId = message.Message.FromId.Value;
                     FillDictionary(userId);
+                    FillingInfoForUserId(userId);
 
                     // Проверяем тип сообщения, пришел текст или цифра
                     if (welcomeFromUser.TryGetValue(userId, out _))
@@ -157,11 +166,11 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                 welcomeFromUser[userId] = true;
                 logger.LogInformation($"Приветственное сообщение доставлено.");
             }
-            catch
+            catch (Exception ex)
             {
                 welcomeFromUser.Remove(userId);
                 logger.LogWarning(
-                    $"Не получилось добавить пользователя в словарь. Его id: '{userId}' удален. Пробуем снова...");
+                    $"Не получилось добавить пользователя в словарь. Его id: '{userId}' удален. Пробуем снова... Информация об ошибке: {ex.Message}");
             }
         }
     }
@@ -181,6 +190,78 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                       Environment.NewLine + $"- Нет",
             RandomId = new Random().Next(0, int.MaxValue)
         });
+    }
+
+    private void FillingInfoForUserId(long userId)
+    {
+        try
+        {
+            if (!usersIdListHashSet.Add(userId))
+            {
+                logger.LogInformation($"Пользователь '{userId}' уже существует в коллекции");
+                return;
+            }
+
+            logger.LogInformation($"Пользователь '{userId}' добавлен в коллекцию. Добавление в конфигурацию...");
+            SaveUsersToConfig();
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogError($"Во время перебора коллекции, что-то пошло не так: {ex.Message}");
+        }
+        catch (NullReferenceException ex)
+        {
+            logger.LogError($"Ошибка с инициализацией коллекции: {ex.Message}. Создаю новую...");
+            usersIdListHashSet = new HashSet<long>();
+            usersIdListHashSet.Add(userId);
+            logger.LogInformation($"Пользователь '{userId}' добавлен после восстановления");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+        }
+    }
+
+    private void SaveUsersToConfig()
+    {
+        try
+        {
+            if (!File.Exists(ConfigFilePath))
+            {
+                logger.LogWarning($"Файл не найден: {ConfigFilePath}");
+                return;
+            }
+
+            var json = File.ReadAllText(ConfigFilePath);
+
+            logger.LogInformation($"Json файл конфигурации успешно считан. Десериализация данных...");
+            var config = JsonSerializer.Deserialize<ServiceConfig>(json);
+            if (config != null)
+            {
+                logger.LogInformation($"Данные успешно десериализованы.");
+                config.Bot.UsersId = usersIdListHashSet;
+                var updatedJson = JsonSerializer.Serialize(config, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+                File.WriteAllText(ConfigFilePath, updatedJson);
+                File.WriteAllText(ConfigFileBaseDirectoryPath, updatedJson);
+                logger.LogInformation($"Конфиг обновлен. Всего пользователей: {config.Bot.UsersId.Count}");
+            }
+            else
+            {
+                logger.LogWarning($"Не удалось десериализовать файл конфигурации");
+            }
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при работе с файлом: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError($"Ошибка парсинга JSON: {ex.Message}");
+        }
     }
 
     private void CheckTypeMessage(long userId, MessageNew message)
@@ -337,5 +418,28 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
             Message = message,
             RandomId = new Random().Next(0, int.MaxValue)
         });
+    }
+
+    public void SendMessageToUser(string message)
+    {
+        foreach (var user in usersIdListHashSet)
+        {
+            try
+            {
+                SendMessageToUser(user, message);
+            }
+            catch (AccessTokenInvalidException ex)
+            {
+                logger.LogError($"Неверный токен api: {ex.Message}. Code: {ex.ErrorCode}");
+            }
+            catch (VkApiException ex)
+            {
+                logger.LogError($"Ошибка библиотеки VkApi: {ex.Message}. Code: {ex.ErrorCode}");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            }
+        }
     }
 }
