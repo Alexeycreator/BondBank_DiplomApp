@@ -18,6 +18,10 @@ services.AddLogging(logging =>
 
 services.AddSingleton<MethodsBot>();
 services.AddSingleton<BotHealthChecker>();
+services.AddSingleton<ConnectionSettings>();
+services.AddSingleton<TcpServer>();
+services.AddSingleton<CommandHandler>();
+
 services.AddSingleton<VkApi>(provider =>
 {
     var logger = provider.GetRequiredService<ILogger<VkApi>>();
@@ -51,7 +55,6 @@ services.AddSingleton<VkApi>(provider =>
         throw;
     }
 });
-services.AddSingleton<ConnectionSettings>();
 
 var sp = services.BuildServiceProvider();
 
