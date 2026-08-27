@@ -17,7 +17,7 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
 
     private readonly string urlWebService =
         $"https://www.cbr.ru/currency_base/daily/?UniDbQuery.Posted=True&UniDbQuery.To={GetTodayDate()}";
-    
+
     /// <summary>
     /// Получение курсов валют
     /// </summary>
@@ -36,8 +36,8 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка получения курсов валют: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
-                BotCommand.Error, $"Неизвестная ошибка получения курсов валют: {ex.Message}");
+            await botService.SendCommandToAllBotsAsync(BotCommand.Error,
+                $"Неизвестная ошибка получения курсов валют: {ex.Message}");
             return null;
         }
     }
@@ -72,7 +72,8 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
         }
     }
 
-    private List<CurrencyRatesModel>? ProcessingResponseWebService(string content, List<CurrencyRatesModel> currencyRates)
+    private List<CurrencyRatesModel>? ProcessingResponseWebService(string content,
+        List<CurrencyRatesModel> currencyRates)
     {
         HtmlDocument document = new HtmlDocument();
         document.LoadHtml(content);

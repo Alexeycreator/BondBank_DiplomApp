@@ -37,7 +37,7 @@ public sealed class CurrencyRatesBackgroundService(
             try
             {
                 var currentTime = DateTime.Now;
-                
+
                 // проверяем рабочие часы
                 if (currentTime.Hour is >= 8 and <= 17)
                 {
@@ -49,15 +49,14 @@ public sealed class CurrencyRatesBackgroundService(
                     var currencyRatesPushInDataBase =
                         scope.ServiceProvider.GetRequiredService<CurrencyRatesPushInDataBase>();
 
-                    await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                        ConfigLoader.Instance.BotTelegram.Port,
-                        BotCommand.Info, $"Получение курсов валют за {DateTime.Now.ToShortDateString()}...");
+                    await botService.SendCommandToAllBotsAsync(BotCommand.Info,
+                        $"Получение курсов валют за {DateTime.Now.ToShortDateString()}...");
+
                     var currencyRates = await currencyRatesParser.GetCurrencyRatesAsync(connectionMonitor, botService);
                     if (currencyRates != null && currencyRates.Any())
                     {
-                        await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                            ConfigLoader.Instance.BotTelegram.Port,
-                            BotCommand.Info, $"Курсы валют успешно получены");
+                        await botService.SendCommandToAllBotsAsync(BotCommand.Info, $"Курсы валют успешно получены");
+
                         await currencyRatesPushInDataBase.PushingInDataBase(dbContext, currencyRates);
                         csvHelper.WhiteInFileCsv(dirPath, FileName, currencyRates);
                     }
