@@ -49,14 +49,19 @@ public sealed class BondParser(
             }
 
             await botService.SendCommandToBotAsync(
-                ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
+                ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
+                BotCommand.ExecuteTask,
+                $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotVk.IpAddress,
+                ConfigLoader.Instance.BotVk.Port, BotCommand.ExecuteTask,
                 $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
             await csvHelper.SendFileOnWebServer(dirPath, FileName);
         }
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
+                ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
@@ -132,8 +137,8 @@ public sealed class BondParser(
             if (bonds.Count > 0)
             {
                 logger.LogInformation($"Данные извлечены. Всего {bonds.Count} из {totalBonds} облигаций");
-                await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
-                    ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
+                await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
+                    ConfigLoader.Instance.BotTelegram.Port, BotCommand.ExecuteTask,
                     $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
                 logger.LogInformation($"Запись данных в файл");
                 csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
@@ -142,13 +147,15 @@ public sealed class BondParser(
         catch (InvalidOperationException ex)
         {
             logger.LogError($"Ошибка операции преобразования бондов: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
+                ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error, $"Ошибка операции преобразования бондов: {ex.Message}");
         }
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
+                ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 

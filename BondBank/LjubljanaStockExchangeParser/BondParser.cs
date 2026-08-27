@@ -52,7 +52,7 @@ public sealed class BondParser(
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
@@ -104,8 +104,8 @@ public sealed class BondParser(
                 if (bonds.Count > 0)
                 {
                     logger.LogInformation($"Данные извлечены. Количество: {bonds.Count}");
-                    await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress,
-                        ConfigLoader.Instance.Bot.Port, BotCommand.ExecuteTask,
+                    await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
+                        ConfigLoader.Instance.BotTelegram.Port, BotCommand.ExecuteTask,
                         $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
                     logger.LogInformation($"Запись данных в файл");
                     csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
