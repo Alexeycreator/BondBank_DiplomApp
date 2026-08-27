@@ -9,7 +9,7 @@ public sealed class ConfigLoader
 {
     private static ServiceConfig? instance;
     private static readonly object _lock = new();
-    
+
     public static ServiceConfig Instance
     {
         get
@@ -73,7 +73,8 @@ public sealed class ConfigLoader
         - если он существует - возвращаем его полный путь
         - если не существует - возвращаем файл 'config'
         */
-        var sharedPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Shared", "config.json");
+        var sharedPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+            "..", "..", "..", "config.json"));
         return File.Exists(sharedPath) ? Path.GetFullPath(sharedPath) : "config.json";
     }
 }
