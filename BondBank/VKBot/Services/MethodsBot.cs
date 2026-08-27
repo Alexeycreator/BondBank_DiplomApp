@@ -188,11 +188,11 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         var text = message.Message.Text.Trim();
         if (int.TryParse(text, out int number) && number >= 1 && number <= 4)
         {
-            ResponseMessageForUserIsNumber(userId, number);
+            ResponseMessageToUserIsNumber(userId, number);
         }
         else
         {
-            ResponseMessageForUserIsText(userId, text);
+            ResponseMessageToUserIsText(userId, text);
         }
     }
 
@@ -201,29 +201,29 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
     /// </summary>
     /// <param name="userId">id пользователя</param>
     /// <param name="number">Номер, введенный пользователем</param>
-    private void ResponseMessageForUserIsNumber(long userId, int number)
+    private void ResponseMessageToUserIsNumber(long userId, int number)
     {
         isAwaitingParserChoice[userId] = false;
 
         switch (number)
         {
             case 1:
-                SendMessageForUserItsPattern(userId,
+                SendMessageToUser(userId,
                     "Данный парсер еще в разработке" + Environment.NewLine + $"Могу ли еще чем-нибудь вам помочь?" +
                     Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет");
                 return;
             case 2:
-                SendMessageForUserItsPattern(userId,
+                SendMessageToUser(userId,
                     "Данный парсер еще в разработке" + Environment.NewLine + $"Могу ли еще чем-нибудь вам помочь?" +
                     Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет");
                 return;
             case 3:
-                SendMessageForUserItsPattern(userId,
+                SendMessageToUser(userId,
                     "Данный парсер еще в разработке" + Environment.NewLine + $"Могу ли еще чем-нибудь вам помочь?" +
                     Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет");
                 return;
             case 4:
-                SendMessageForUserItsPattern(userId,
+                SendMessageToUser(userId,
                     "Данный парсер еще в разработке" + Environment.NewLine + $"Могу ли еще чем-нибудь вам помочь?" +
                     Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет");
                 return;
@@ -235,7 +235,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
     /// </summary>
     /// <param name="userId">id пользователя</param>
     /// <param name="text">сообщение</param>
-    private void ResponseMessageForUserIsText(long userId, string? text)
+    private void ResponseMessageToUserIsText(long userId, string? text)
     {
         bool isAwaiting = isAwaitingParserChoice.TryGetValue(userId, out bool value) && value;
 
@@ -263,7 +263,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                                                    $"2) LjubljanaStockExchangeParser" + Environment.NewLine +
                                                    $"3) MoscowExchangeParser" + Environment.NewLine +
                                                    $"4) SixGroupParser";
-                        SendMessageForUserItsPattern(userId, messageParserCase);
+                        SendMessageToUser(userId, messageParserCase);
                         break;
                     case "wienerboerse":
                     case "wienerboerseparser":
@@ -272,7 +272,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                             "Данный парсер еще в разработке" + Environment.NewLine +
                             $"Могу ли еще чем-нибудь вам помочь?" +
                             Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет";
-                        SendMessageForUserItsPattern(userId, messageWienerBoerseParser);
+                        SendMessageToUser(userId, messageWienerBoerseParser);
                         break;
                     case "ljubljanastockexchange":
                     case "ljubljanastockexchangeparser":
@@ -281,7 +281,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                             "Данный парсер еще в разработке" + Environment.NewLine +
                             $"Могу ли еще чем-нибудь вам помочь?" +
                             Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет";
-                        SendMessageForUserItsPattern(userId, messageLjubljanaStockExchangeParser);
+                        SendMessageToUser(userId, messageLjubljanaStockExchangeParser);
                         break;
                     case "moscowexchange":
                     case "moscowexchangeparser":
@@ -290,7 +290,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                             "Данный парсер еще в разработке" + Environment.NewLine +
                             $"Могу ли еще чем-нибудь вам помочь?" +
                             Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет";
-                        SendMessageForUserItsPattern(userId, messageMoscowExchangeParser);
+                        SendMessageToUser(userId, messageMoscowExchangeParser);
                         break;
                     case "sixgroup":
                     case "sixgroupparser":
@@ -299,18 +299,18 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                             "Данный парсер еще в разработке" + Environment.NewLine +
                             $"Могу ли еще чем-нибудь вам помочь?" +
                             Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет";
-                        SendMessageForUserItsPattern(userId, messageSixGroupParser);
+                        SendMessageToUser(userId, messageSixGroupParser);
                         break;
                     case "команды":
                     case "команду":
                     case "команда":
                         isAwaitingParserChoice[userId] = true;
-                        SendMessageForUserItsPattern(userId, messageCommand);
+                        SendMessageToUser(userId, messageCommand);
                         break;
                     case "нет":
                         isAwaitingParserChoice[userId] = false;
                         string messageNo = $"Хорошо. Обращайтесь, если будет нужно!";
-                        SendMessageForUserItsPattern(userId, messageNo);
+                        SendMessageToUser(userId, messageNo);
                         break;
                 }
             }
@@ -319,7 +319,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                 string messageDefault = $"Не могу распознать ваше сообщение: '{text}'" +
                                         Environment.NewLine + $"К сожалению у меня нет указаний на ваш вопрос." +
                                         Environment.NewLine + Environment.NewLine + $"{messageCommand}";
-                SendMessageForUserItsPattern(userId, messageDefault);
+                SendMessageToUser(userId, messageDefault);
             }
         }
     }
@@ -329,7 +329,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
     /// </summary>
     /// <param name="userId">id пользователя</param>
     /// <param name="message">сообщение</param>
-    private void SendMessageForUserItsPattern(long userId, string message)
+    private void SendMessageToUser(long userId, string message)
     {
         vkApi.Messages.Send(new MessagesSendParams()
         {
