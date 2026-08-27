@@ -5,11 +5,12 @@ using VkNet.Model;
 
 namespace VKBot.Connection;
 
-public class BotHealthChecker(ILogger<BotHealthChecker> logger)
+public sealed class BotHealthChecker(ILogger<BotHealthChecker> logger)
 {
-    private string? accessToken;
-    private long? adminId;
+    private string accessToken;
+    private long adminId;
     private ulong groupId;
+    private bool isActiveBot;
 
     public void SetAccessToken(string accessToken) => this.accessToken = accessToken;
     public void SetAdminId(long adminId) => this.adminId = adminId;
@@ -127,6 +128,7 @@ public class BotHealthChecker(ILogger<BotHealthChecker> logger)
             RandomId = new Random().Next(0, int.MaxValue)
         });
         logger.LogInformation($"Бот активен. Сообщение отправлено! Id: {result}");
+        isActiveBot = true;
         return true;
     }
 
@@ -137,6 +139,12 @@ public class BotHealthChecker(ILogger<BotHealthChecker> logger)
         var server = vkApi.Groups.GetLongPollServer(groupId);
         logger.LogInformation($"Long Poll сервер запущен!" + Environment.NewLine + $"Server: {server.Server}" +
                               Environment.NewLine + $"Key: {server.Key}" + Environment.NewLine + $"Ts: {server.Ts}");
+        isActiveBot = true;
         return true;
+    }
+
+    public async Task<string> GetStatusAsync()
+    {
+        return isActiveBot ? $"Да-да. Я вас слушаю." : $"Статус бота: {isActiveBot}";
     }
 }
