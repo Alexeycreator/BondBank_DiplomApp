@@ -5,7 +5,6 @@ using LjubljanaStockExchangeParser.HelperMethods;
 using LjubljanaStockExchangeParser.Models;
 using Microsoft.Extensions.Logging;
 using Shared.BotHelpers;
-using Shared.Config;
 using Shared.Services;
 using Shared.Services.Interfaces;
 using Shared.WorkingWithFiles;
@@ -52,8 +51,7 @@ public sealed class BondParser(
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
-                BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
+            await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
         return bonds;
@@ -104,9 +102,11 @@ public sealed class BondParser(
                 if (bonds.Count > 0)
                 {
                     logger.LogInformation($"Данные извлечены. Количество: {bonds.Count}");
-                    await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                        ConfigLoader.Instance.BotTelegram.Port, BotCommand.ExecuteTask,
-                        $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
+
+                    await botService.SendCommandToAllBotsAsync(BotCommand.ExecuteTask,
+                        $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}" +
+                        Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
+
                     logger.LogInformation($"Запись данных в файл");
                     csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
                 }

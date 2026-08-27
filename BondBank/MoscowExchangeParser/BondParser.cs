@@ -4,7 +4,6 @@ using MoscowExchangeParser.HelperMethods;
 using MoscowExchangeParser.Models;
 using Newtonsoft.Json;
 using Shared.BotHelpers;
-using Shared.Config;
 using Shared.Services;
 using Shared.Services.Interfaces;
 using Shared.WorkingWithFiles;
@@ -31,7 +30,7 @@ public sealed class BondParser(
     private readonly string urlMoscowExchange = $"https://www.moex.com/";
     private List<Bond> bonds = new List<Bond>();
     private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
-    
+
     // массив всех json файлов с бондами
     private readonly string[] urlGettingBonds =
     [
@@ -82,8 +81,7 @@ public sealed class BondParser(
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
-                BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
+            await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
         return bonds;
@@ -160,41 +158,37 @@ public sealed class BondParser(
                         else
                         {
                             logger.LogError($"Данные {securitiesBonds} не удалось десериализовать");
-                            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                                ConfigLoader.Instance.BotTelegram.Port, BotCommand.Error,
+                            await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                                 $"Данные {securitiesBonds} не удалось десериализовать");
                         }
                     }
                     else
                     {
                         logger.LogError($"Выбраны неверные данные json-файла. {securitiesDataBonds}");
-                        await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                            ConfigLoader.Instance.BotTelegram.Port, BotCommand.Error,
+                        await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                             $"Выбраны неверные данные json-файла. {securitiesDataBonds}");
                     }
                 }
                 else
                 {
                     logger.LogError($"Данные пустые: {jsonArrayBonds}");
-                    await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                        ConfigLoader.Instance.BotTelegram.Port, BotCommand.Error,
+                    await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                         $"Данные пустые: {jsonArrayBonds}");
                 }
             }
 
             logger.LogInformation(
                 $"Все данные успешно считаны. {countDataBonds} биржевых облигаций из {totalBonds} разных типов облигаций");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                ConfigLoader.Instance.BotTelegram.Port, BotCommand.ExecuteTask,
-                $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество биржевых облигаций: {bonds.Count}");
+            await botService.SendCommandToAllBotsAsync(BotCommand.ExecuteTask,
+                $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество биржевых облигаций: {bonds.Count}" +
+                Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
             logger.LogInformation($"Запись данных в файл");
             csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
         }
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                ConfigLoader.Instance.BotTelegram.Port, BotCommand.Error,
+            await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                 $"Неизвестная ошибка: {ex.Message}");
         }
 

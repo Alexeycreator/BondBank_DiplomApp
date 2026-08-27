@@ -7,7 +7,6 @@ using Shared.Services;
 using Shared.Services.Interfaces;
 using Shared.WorkingWithFiles;
 using WeinerBoerseParser.Models;
-using Shared.Config;
 using WeinerBoerseParser.HelperMethods;
 
 namespace WeinerBoerseParser;
@@ -54,23 +53,21 @@ public sealed class BondParser(
                 numberPage++;
             } while (numberPage <= CountPagesWb());
 
-            await botService.SendCommandToBotAsync(
-                ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port, BotCommand.ExecuteTask,
-                $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}");
+            await botService.SendCommandToAllBotsAsync(BotCommand.ExecuteTask,
+                $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}" +
+                Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
             logger.LogInformation($"Отправка сформированных данных на сервер...");
             await csvHelper.SendFileOnWebServer(dirPath, FileName);
         }
         catch (ArgumentException ex)
         {
             logger.LogError($"{ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
-                BotCommand.Error, $"{ex.Message}");
+            await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"{ex.Message}");
         }
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
-                BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
+            await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
         return bonds;
@@ -134,8 +131,7 @@ public sealed class BondParser(
                     else
                     {
                         logger.LogError($"Данные со страницы №{numberPage} не удалось извлечь");
-                        await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                            ConfigLoader.Instance.BotTelegram.Port, BotCommand.Info,
+                        await botService.SendCommandToAllBotsAsync(BotCommand.Info,
                             $"Данные со страницы №{numberPage} не удалось извлечь");
                     }
                 }
@@ -143,16 +139,14 @@ public sealed class BondParser(
                 {
                     logger.LogError(
                         $"Количество столбцов на странице {numberPage} изменилось. Данные не удается получить.");
-                    await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                        ConfigLoader.Instance.BotTelegram.Port, BotCommand.Info,
+                    await botService.SendCommandToAllBotsAsync(BotCommand.Info,
                         $"Количество столбцов на странице {numberPage} изменилось. Данные не удается получить.");
                 }
             }
             catch (Exception ex)
             {
                 logger.LogError($"{ex.Message}");
-                await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress,
-                    ConfigLoader.Instance.BotTelegram.Port, BotCommand.Info,
+                await botService.SendCommandToAllBotsAsync(BotCommand.Info,
                     $"Неизвестная ошибка: {ex.Message}");
             }
         }
