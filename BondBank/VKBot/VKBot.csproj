@@ -8,6 +8,10 @@
     </PropertyGroup>
 	
 	<ItemGroup>
+      <ProjectReference Include="..\Shared\Shared.csproj" />
+    </ItemGroup>
+	
+	<ItemGroup>
 	  <None Update="NLog.config">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <CopyToPublishDirectory>PreserveNewewst</CopyToPublishDirectory>
