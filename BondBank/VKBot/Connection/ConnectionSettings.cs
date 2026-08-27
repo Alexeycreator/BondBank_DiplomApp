@@ -30,7 +30,7 @@ public sealed class ConnectionSettings(
 
                 if (isActiveBot)
                 {
-                    SetConstructorMethodsBot(AccessToken, AdminId, GroupId);
+                    SetConstructorMethodsBot(GroupId);
                     _ = Task.Run(methodsBot.RunAsync, cancellationToken);
                     await tcpServer.StartAsync(PortBot, cancellationToken);
                 }
@@ -55,10 +55,8 @@ public sealed class ConnectionSettings(
         healthChecker.SetGroupId(groupId);
     }
 
-    private void SetConstructorMethodsBot(string accessToken, long adminId, ulong groupId)
+    private void SetConstructorMethodsBot(ulong groupId)
     {
-        methodsBot.SetAccessToken(accessToken);
-        methodsBot.SetAdminId(adminId);
         methodsBot.SetGroupId(groupId);
     }
 }
