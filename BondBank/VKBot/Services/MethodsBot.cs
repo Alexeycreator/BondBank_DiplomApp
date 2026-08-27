@@ -32,6 +32,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         try
         {
             ObtainingCommunityData();
+            FillingUsersIdListHashSet();
             logger.LogInformation(
                 $"Информация успешно получена." + Environment.NewLine + $"Создание Long Poll сервера.");
             var longPollServer = vkApi.Groups.GetLongPollServer(groupId);
@@ -109,6 +110,56 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         }
 
         nameCommunity = groupInfo.Name;
+    }
+
+    private void FillingUsersIdListHashSet()
+    {
+        var json = CheckExistingFileConfig();
+
+        if (string.IsNullOrEmpty(json))
+        {
+            logger.LogWarning("Не удалось прочитать файл конфигурации");
+        }
+
+        logger.LogInformation($"Файл конфигурации успешно прочитан. Десериализация данных...");
+        var config = JsonSerializer.Deserialize<ServiceConfig>(json);
+        if (config != null)
+        {
+            logger.LogInformation($"Данные успешно десериализованы.");
+            if (config.Bot.UsersId.Count > 0)
+            {
+                usersIdListHashSet.UnionWith(config.Bot.UsersId);
+                logger.LogInformation($"Загружено {config.Bot.UsersId.Count} пользователей в коллекцию");
+            }
+
+            logger.LogWarning($"Информации о пользователях еще нет в системе. Ожидаю...");
+        }
+
+        logger.LogWarning($"Файл конфигурации не удалось десериализовать");
+    }
+
+    private string CheckExistingFileConfig()
+    {
+        try
+        {
+            if (File.Exists(ConfigFilePath))
+            {
+                return File.ReadAllText(ConfigFilePath);
+            }
+
+            logger.LogWarning($"Файл не найден: {ConfigFilePath}");
+            return "";
+        }
+        catch (FileNotFoundException ex)
+        {
+            logger.LogError($"Файл не найден: {ex.Message}");
+            return "";
+        }
+        catch (IOException ex)
+        {
+            logger.LogError($"Ошибка при работе с файлом: {ex.Message}");
+            return "";
+        }
     }
 
     /// <summary>
@@ -203,7 +254,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
             }
 
             logger.LogInformation($"Пользователь '{userId}' добавлен в коллекцию. Добавление в конфигурацию...");
-            SaveUsersToConfig();
+            SaveUsersToConfig(userId);
         }
         catch (InvalidOperationException ex)
         {
@@ -222,41 +273,41 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         }
     }
 
-    private void SaveUsersToConfig()
+    private void SaveUsersToConfig(long userId)
     {
         try
         {
-            if (!File.Exists(ConfigFilePath))
+            var json = CheckExistingFileConfig();
+            if (string.IsNullOrEmpty(json))
             {
-                logger.LogWarning($"Файл не найден: {ConfigFilePath}");
+                logger.LogWarning("Не удалось прочитать файл конфигурации");
                 return;
             }
-
-            var json = File.ReadAllText(ConfigFilePath);
 
             logger.LogInformation($"Json файл конфигурации успешно считан. Десериализация данных...");
             var config = JsonSerializer.Deserialize<ServiceConfig>(json);
             if (config != null)
             {
                 logger.LogInformation($"Данные успешно десериализованы.");
-                config.Bot.UsersId = usersIdListHashSet;
-                var updatedJson = JsonSerializer.Serialize(config, new JsonSerializerOptions
+                if (!(config.Bot.UsersId.Count > 0 && config.Bot.UsersId.Contains(userId)))
                 {
-                    WriteIndented = true
-                });
+                    config.Bot.UsersId = usersIdListHashSet;
+                    var updatedJson = JsonSerializer.Serialize(config, new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    });
 
-                File.WriteAllText(ConfigFilePath, updatedJson);
-                File.WriteAllText(ConfigFileBaseDirectoryPath, updatedJson);
-                logger.LogInformation($"Конфиг обновлен. Всего пользователей: {config.Bot.UsersId.Count}");
+                    File.WriteAllText(ConfigFilePath, updatedJson);
+                    File.WriteAllText(ConfigFileBaseDirectoryPath, updatedJson);
+                    logger.LogInformation($"Конфиг обновлен. Всего пользователей: {config.Bot.UsersId.Count}");
+                }
+
+                logger.LogInformation($"Конфигурацию обновлять не нужно, данные не обновились.");
             }
             else
             {
                 logger.LogWarning($"Не удалось десериализовать файл конфигурации");
             }
-        }
-        catch (IOException ex)
-        {
-            logger.LogError($"Ошибка при работе с файлом: {ex.Message}");
         }
         catch (JsonException ex)
         {
@@ -289,6 +340,8 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         switch (number)
         {
             case 1:
+                SendMessageToUser(userId,
+                    "Уточняю информацию... Подождите минутку");
                 SendMessageToUser(userId,
                     "Данный парсер еще в разработке" + Environment.NewLine + $"Могу ли еще чем-нибудь вам помочь?" +
                     Environment.NewLine + $"- Да" + Environment.NewLine + $"- Нет");
@@ -422,11 +475,11 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
 
     public void SendMessageToUser(string message)
     {
-        foreach (var user in usersIdListHashSet)
+        foreach (var userId in usersIdListHashSet)
         {
             try
             {
-                SendMessageToUser(user, message);
+                SendMessageToUser(userId, message);
             }
             catch (AccessTokenInvalidException ex)
             {
