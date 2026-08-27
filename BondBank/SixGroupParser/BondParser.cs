@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using NLog.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Config;
 using Shared.Services;
