@@ -1,7 +1,11 @@
 {
-  "Bot": {
+  "BotTelegram": {
     "IpAddress": "localhost",
     "Port": 8888
+  },
+  "BotVk": {
+    "IpAddress": "localhost",
+    "Port": 7777
   },
   "WebService":{
     "Host": "localhost",
