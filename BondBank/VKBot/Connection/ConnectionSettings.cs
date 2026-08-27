@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using VKBot.Services;
 using VkNet;
+using Shared.Config;
 
 namespace VKBot.Connection;
 
@@ -8,11 +9,13 @@ public sealed class ConnectionSettings(
     ILogger<ConnectionSettings> logger,
     BotHealthChecker healthChecker,
     VkApi vkApi,
-    MethodsBot methodsBot)
+    MethodsBot methodsBot,
+    TcpServer tcpServer)
 {
     private string AccessToken => Config.ConfigLoader.Instance.Bot.AccessToken;
     private long AdminId => Config.ConfigLoader.Instance.Bot.AdminId;
     private ulong GroupId => Config.ConfigLoader.Instance.Bot.GroupId;
+    private int PortBot => ConfigLoader.Instance.BotVk.Port;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -24,11 +27,12 @@ public sealed class ConnectionSettings(
             {
                 logger.LogInformation($"Проверка статуса активности бота...");
                 bool isActiveBot = await healthChecker.IsBotActiveAsync(vkApi, cancellationToken);
-                
+
                 if (isActiveBot)
                 {
-                    SetConstructorMethodsBot(AdminId, GroupId);
-                    await Task.Run(methodsBot.Run, cancellationToken);
+                    SetConstructorMethodsBot(AccessToken, AdminId, GroupId);
+                    _ = Task.Run(methodsBot.RunAsync, cancellationToken);
+                    await tcpServer.StartAsync(PortBot, cancellationToken);
                 }
                 else
                 {
@@ -51,8 +55,10 @@ public sealed class ConnectionSettings(
         healthChecker.SetGroupId(groupId);
     }
 
-    private void SetConstructorMethodsBot(long adminId, ulong groupId)
+    private void SetConstructorMethodsBot(string accessToken, long adminId, ulong groupId)
     {
+        methodsBot.SetAccessToken(accessToken);
+        methodsBot.SetAdminId(adminId);
         methodsBot.SetGroupId(groupId);
     }
 }
