@@ -5,6 +5,7 @@ namespace Shared.Config;
 
 public class ServiceConfig
 {
-    public BotConfig Bot { get; set; } = new();
+    public BotConfig BotTelegram { get; set; } = new();
+    public BotConfig BotVk { get; set; } = new();
     public WebServiceConfig WebService { get; set; } = new();
 }

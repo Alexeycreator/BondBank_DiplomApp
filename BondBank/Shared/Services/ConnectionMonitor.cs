@@ -80,7 +80,7 @@ public class ConnectionMonitor(
         catch (HttpRequestException ex)
         {
             logger.LogWarning($"{ex.Message} - запуск мониторинга подключения");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error, $"{ex.Message}");
             await StartMonitoringAsync(true, urlWebService);
             return false;
@@ -88,14 +88,14 @@ public class ConnectionMonitor(
         catch (ArgumentException ex)
         {
             logger.LogError(ex.Message);
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error, $"{ex.Message}");
             return false;
         }
         catch (Exception ex)
         {
             logger.LogError(ex.Message);
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error,
                 $"Неизвестная ошибка: {ex.Message}");
             return false;
@@ -174,7 +174,7 @@ public class ConnectionMonitor(
     private async Task OnConnectionRestoredAsync(string urlWebService)
     {
         logger.LogInformation("Подключение восстановлено!");
-        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
             BotCommand.Info, $"Подключение восстановлено!");
         await ConnectionToDataAsync(urlWebService);
     }
@@ -183,10 +183,10 @@ public class ConnectionMonitor(
     {
         var processName = Process.GetCurrentProcess().ProcessName;
         logger.LogError($"Количество попыток равно максимуму. Парсер {processName} будет перезапущен");
-        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
             BotCommand.Info,
             $"Количество попыток равно максимуму. " + Environment.NewLine + $"Парсер {processName} будет перезапущен.");
-        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
             BotCommand.Restart, $"{processName}");
         Environment.Exit(0);
     }
@@ -198,7 +198,7 @@ public class ConnectionMonitor(
             $"Нет подключения, следующая проверка через {delay.TotalSeconds} секунд... (попытка {checkCount + 1})";
 
         logger.LogWarning(nextAttemptMsg);
-        await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+        await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
             BotCommand.Info, $"{nextAttemptMsg}");
         await Task.Delay(delay);
     }

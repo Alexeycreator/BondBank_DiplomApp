@@ -11,7 +11,7 @@ public sealed class ConnectionSettings(
     BotMainMethods bot)
 {
     private string TokenBot => Config.ConfigLoader.Instance.Bot.Token;
-    private int PortBot => ConfigLoader.Instance.Bot.Port;
+    private int PortBot => ConfigLoader.Instance.BotTelegram.Port;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {

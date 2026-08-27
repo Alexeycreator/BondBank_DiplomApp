@@ -76,7 +76,7 @@ public sealed class BotService(ILogger<BotService> logger)
     /// <param name="processName">Название парсера, который был запущен</param>
     public async Task UsageTaskBotAsync(string processName)
     {
-        await SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+        await SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
             BotCommand.ExecuteProgram, $"{processName}");
     }
 }

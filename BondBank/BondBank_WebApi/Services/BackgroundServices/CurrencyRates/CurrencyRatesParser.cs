@@ -36,7 +36,7 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка получения курсов валют: {ex.Message}");
-            await botService.SendCommandToBotAsync(ConfigLoader.Instance.Bot.IpAddress, ConfigLoader.Instance.Bot.Port,
+            await botService.SendCommandToBotAsync(ConfigLoader.Instance.BotTelegram.IpAddress, ConfigLoader.Instance.BotTelegram.Port,
                 BotCommand.Error, $"Неизвестная ошибка получения курсов валют: {ex.Message}");
             return null;
         }
