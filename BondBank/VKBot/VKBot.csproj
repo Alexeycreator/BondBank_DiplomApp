@@ -17,8 +17,15 @@
 		  <CopyToPublishDirectory>PreserveNewewst</CopyToPublishDirectory>
 	  </None>
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Update="Config\bot_config.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+	</ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0-preview.7.26381.103" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0-preview.7.26381.103" />
       <PackageReference Include="NLog" Version="6.2.0" />
       <PackageReference Include="NLog.Config" Version="4.7.15" />
