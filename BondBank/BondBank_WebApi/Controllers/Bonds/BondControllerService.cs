@@ -1,5 +1,6 @@
 using BondBank_WebApi.Models.DataBase;
 using BondBank_WebApi.Models.DTOs;
+using BondBank_WebApi.Services.Analysis;
 using BondBank_WebApi.Services.DataBaseContext;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,8 @@ namespace BondBank_WebApi.Controllers.Bonds;
 /// <param name="dbContext">Зависимость для контекста БД</param>
 public class BondControllerService(
     ILogger<BondControllerService> logger,
-    ApplicationContext dbContext) : IBondControllerService
+    ApplicationContext dbContext,
+    AnalysisData analysisData) : IBondControllerService
 {
     public async Task<IEnumerable<BondDto>?> GetAllBondsAsync()
     {
@@ -35,6 +37,12 @@ public class BondControllerService(
         logger.LogInformation($"Процесс получения всех облигаций одного типа");
         var bonds = await FindBondsByTypeAsync(typeBond);
         return bonds;
+    }
+
+    public async Task<Dictionary<string, double[]>> GetForecastBondsAsync()
+    {
+         var result = await analysisData.DataForecastingAsync();
+         return result;
     }
 
     /// <summary>
