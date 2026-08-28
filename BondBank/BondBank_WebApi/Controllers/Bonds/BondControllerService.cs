@@ -13,7 +13,7 @@ namespace BondBank_WebApi.Controllers.Bonds;
 /// </summary>
 /// <param name="logger">Зависимость для логирования</param>
 /// <param name="dbContext">Зависимость для контекста БД</param>
-public class BondControllerService(
+public sealed class BondControllerService(
     ILogger<BondControllerService> logger,
     ApplicationContext dbContext,
     AnalysisData analysisData) : IBondControllerService
