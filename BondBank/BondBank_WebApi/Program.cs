@@ -1,4 +1,5 @@
 using BondBank_WebApi.Controllers.Bonds;
+using BondBank_WebApi.Controllers.CurrencyRates;
 using BondBank_WebApi.HelperMethods;
 using BondBank_WebApi.Services.Analysis;
 using BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
@@ -60,6 +61,8 @@ builder.Services.AddHostedService<SavedBondHistoriesBackgroundService>();
 
 builder.Services.AddSingleton<BondsHistoryDictionary>();
 builder.Services.AddScoped<AnalysisData>();
+
+builder.Services.AddScoped<ICurrencyRatesControllerService, CurrencyRatesControllerService>();
 
 var app = builder.Build();
 
