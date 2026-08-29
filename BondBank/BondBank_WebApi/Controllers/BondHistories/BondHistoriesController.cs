@@ -13,7 +13,11 @@ public sealed class BondHistoriesController(
     IOptions<AppSettings> appSettings) : ControllerBase
 {
     private readonly AppSettings valueAppSettings = appSettings.Value;
-    
+
+    /// <summary>
+    /// Метод получения всех данных из истории облигаций
+    /// </summary>
+    /// <returns>Возвращает список со всеми данными в таблице</returns>
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAllBondHistoriesAsync()
     {
@@ -34,7 +38,11 @@ public sealed class BondHistoriesController(
         }
     }
 
-
+    /// <summary>
+    /// Метод для получения всех данных истории облигаций по isin
+    /// </summary>
+    /// <param name="isin">ISIN облигации</param>
+    /// <returns>Возвращает список данных облигации указанного ISIN</returns>
     [HttpGet("get-by-isin")]
     public async Task<IActionResult> GetBondHistoriesByIsinAsync(string isin)
     {
@@ -66,6 +74,11 @@ public sealed class BondHistoriesController(
         }
     }
 
+    /// <summary>
+    /// Метод получения истории облигаций по типу, тип проверяется в файле конфигурации приложения и приводится к нижнему регистру
+    /// </summary>
+    /// <param name="type">Тип облигации</param>
+    /// <returns>Возвращает список облигаций указанного типа</returns>
     [HttpGet("get-by-type")]
     public async Task<IActionResult> GetBondHistoriesByTypeAsync(string type)
     {
@@ -98,6 +111,11 @@ public sealed class BondHistoriesController(
         }
     }
 
+    /// <summary>
+    /// Получение истории облигаций за дату
+    /// </summary>
+    /// <param name="date">Интересующая дата истории</param>
+    /// <returns>Возвращает список истории облигации за дату</returns>
     [HttpGet("get-by-date")]
     public async Task<IActionResult> GetBondHistoriesByRecordedDateAsync(DateOnly date)
     {
@@ -125,6 +143,10 @@ public sealed class BondHistoriesController(
         }
     }
 
+    /// <summary>
+    /// Получение всех типов облигаций
+    /// </summary>
+    /// <returns>Возвращает список типов облигаций</returns>
     [HttpGet("get-names-type")]
     public async Task<IActionResult> GetNamesTypeAsync()
     {
