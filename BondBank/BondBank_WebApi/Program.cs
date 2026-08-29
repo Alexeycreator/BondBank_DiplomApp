@@ -1,6 +1,7 @@
 using BondBank_WebApi.Controllers.BondHistories;
 using BondBank_WebApi.Controllers.Bonds;
 using BondBank_WebApi.Controllers.CurrencyRates;
+using BondBank_WebApi.Controllers.Passports;
 using BondBank_WebApi.HelperMethods;
 using BondBank_WebApi.Services.Analysis;
 using BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
@@ -66,6 +67,7 @@ builder.Services.AddScoped<AnalysisData>();
 
 builder.Services.AddScoped<ICurrencyRatesControllerService, CurrencyRatesControllerService>();
 builder.Services.AddScoped<IBondHistoriesControllerService, BondHistoriesControllerService>();
+builder.Services.AddScoped<IPassportsControllerService, PassportsControllerService>();
 
 var app = builder.Build();
 
