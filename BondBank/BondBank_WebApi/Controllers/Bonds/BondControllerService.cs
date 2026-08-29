@@ -18,7 +18,7 @@ public sealed class BondControllerService(
     ApplicationContext dbContext,
     AnalysisData analysisData) : IBondControllerService
 {
-    public async Task<IEnumerable<BondDto>?> GetAllBondsAsync()
+    public async Task<IEnumerable<BondDto>> GetAllBondsAsync()
     {
         logger.LogInformation($"Процесс получения всех облигаций");
         var bonds = await ConsolidationBondsAsync();
@@ -32,7 +32,7 @@ public sealed class BondControllerService(
         return bond;
     }
 
-    public async Task<IEnumerable<BondDto>?> GetBondsByTypeAsync(string typeBond)
+    public async Task<IEnumerable<BondDto>> GetBondsByTypeAsync(string typeBond)
     {
         logger.LogInformation($"Процесс получения всех облигаций одного типа");
         var bonds = await FindBondsByTypeAsync(typeBond);
@@ -49,7 +49,7 @@ public sealed class BondControllerService(
     /// Объединяем бонды в общий список, для отправки
     /// </summary>
     /// <returns>Возвращаем коллекцию бондов всех типов</returns>
-    private async Task<List<BondDto>?> ConsolidationBondsAsync()
+    private async Task<List<BondDto>> ConsolidationBondsAsync()
     {
         try
         {
@@ -99,12 +99,12 @@ public sealed class BondControllerService(
         catch (NpgsqlException ex)
         {
             logger.LogError($"Ошибка при работе с БД при получении всех облигаций: {ex.Message}");
-            return null;
+            return new List<BondDto>();
         }
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка при получении всех облигаций: {ex.Message}");
-            return null;
+            return new List<BondDto>();
         }
     }
 
@@ -151,7 +151,7 @@ public sealed class BondControllerService(
         }
     }
 
-    private async Task<List<BondDto>?> FindBondsByTypeAsync(string typeBond)
+    private async Task<List<BondDto>> FindBondsByTypeAsync(string typeBond)
     {
         try
         {
@@ -218,12 +218,12 @@ public sealed class BondControllerService(
         catch (NpgsqlException ex)
         {
             logger.LogError($"Ошибка при работе с БД при получении всех облигаций одного типа: {ex.Message}");
-            return null;
+            return new List<BondDto>();
         }
         catch (Exception ex)
         {
             logger.LogError($"Неизвестная ошибка при поиске облигаций одного типа: {ex.Message}");
-            return null;
+            return new List<BondDto>();
         }
     }
 }

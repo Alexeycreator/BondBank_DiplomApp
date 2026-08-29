@@ -15,7 +15,7 @@ public sealed class BondsController(
         try
         {
             var bonds = await bondService.GetAllBondsAsync();
-            if (bonds != null && bonds.Any())
+            if (bonds.Any())
             {
                 return Ok(bonds);
             }
@@ -36,7 +36,7 @@ public sealed class BondsController(
         try
         {
             var bonds = await bondService.GetBondsByTypeAsync(typeBond);
-            if (bonds != null && bonds.Any())
+            if (bonds.Any())
             {
                 return Ok(bonds);
             }
