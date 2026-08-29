@@ -1,6 +1,6 @@
 using System.Data.Common;
 using BondBank_WebApi.Models.DataBase;
-using BondBank_WebApi.Services.DataBaseContext;
+using BondBank_WebApi.Services.DataContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace BondBank_WebApi.Services.BackgroundServices.ParsersData;

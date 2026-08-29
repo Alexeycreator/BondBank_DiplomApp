@@ -1,7 +1,7 @@
 using BondBank_WebApi.Models.DataBase;
 using BondBank_WebApi.Models.DTOs;
 using BondBank_WebApi.Services.Analysis;
-using BondBank_WebApi.Services.DataBaseContext;
+using BondBank_WebApi.Services.DataContext;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;

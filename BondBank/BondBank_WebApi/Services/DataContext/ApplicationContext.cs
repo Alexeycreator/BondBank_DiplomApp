@@ -1,7 +1,7 @@
 using BondBank_WebApi.Models.DataBase;
 using Microsoft.EntityFrameworkCore;
 
-namespace BondBank_WebApi.Services.DataBaseContext;
+namespace BondBank_WebApi.Services.DataContext;
 
 /// <summary>
 /// Для создания контекста данных в БД
