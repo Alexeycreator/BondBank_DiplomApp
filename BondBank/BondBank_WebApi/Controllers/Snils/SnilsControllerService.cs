@@ -12,10 +12,10 @@ public sealed class SnilsControllerService(
     public async Task<SnilsModel?> GetAllInfoByIdAsync(int snilsId)
     {
         logger.LogInformation($"Процесс получения данных снилс");
-        return await LoadSnilsById(snilsId);
+        return await LoadSnilsByIdAsync(snilsId);
     }
 
-    private async Task<SnilsModel?> LoadSnilsById(int snilsId)
+    private async Task<SnilsModel?> LoadSnilsByIdAsync(int snilsId)
     {
         try
         {
