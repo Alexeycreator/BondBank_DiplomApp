@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace BondBank_WebApi.Controllers.CurrencyRates;
 
 [ApiController]
-[Route("api/[controller]/get-currency-rates")]
+[Route("api/[controller]/currency-rates")]
 public sealed class CurrencyRatesController(
     ILogger<CurrencyRatesController> logger,
     ICurrencyRatesControllerService currencyRatesService) : ControllerBase
 {
-    [HttpGet("all")]
+    [HttpGet("get-all")]
     public async Task<IActionResult> GetAllCurrencyRatesAsync()
     {
         try
@@ -29,7 +29,7 @@ public sealed class CurrencyRatesController(
         }
     }
 
-    [HttpGet("by-date-receipt-all")]
+    [HttpGet("get-by-date-receipt-all")]
     public async Task<IActionResult> GetAllCurrencyRatesByDateReceiptAsync(DateOnly date)
     {
         try
@@ -56,7 +56,7 @@ public sealed class CurrencyRatesController(
         }
     }
 
-    [HttpGet("by-date-receipt")]
+    [HttpGet("get-by-date-receipt")]
     public async Task<IActionResult> GetCurrencyRateByDateReceiptAsync(DateOnly date, string currency)
     {
         try
@@ -84,7 +84,7 @@ public sealed class CurrencyRatesController(
         }
     }
 
-    [HttpGet("by-currency")]
+    [HttpGet("get-by-currency")]
     public async Task<IActionResult> GetCurrencyRatesByCurrencyAsync(string currency)
     {
         try
@@ -110,7 +110,7 @@ public sealed class CurrencyRatesController(
         }
     }
 
-    [HttpGet("name-currency")]
+    [HttpGet("get-name-currency")]
     public async Task<IActionResult> GetCurrencyNamesAsync()
     {
         try
