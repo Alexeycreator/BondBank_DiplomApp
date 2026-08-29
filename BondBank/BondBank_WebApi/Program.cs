@@ -1,3 +1,4 @@
+using BondBank_WebApi.Controllers.BondHistories;
 using BondBank_WebApi.Controllers.Bonds;
 using BondBank_WebApi.Controllers.CurrencyRates;
 using BondBank_WebApi.HelperMethods;
@@ -5,7 +6,7 @@ using BondBank_WebApi.Services.Analysis;
 using BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
 using BondBank_WebApi.Services.BackgroundServices.ParsersData;
 using BondBank_WebApi.Services.BackgroundServices.SavingBondHistories;
-using BondBank_WebApi.Services.DataBaseContext;
+using BondBank_WebApi.Services.DataContext;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -38,6 +39,7 @@ builder.Services.AddHttpClient<CsvHelper>();
 
 builder.Services.AddDbContext<ApplicationContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnectionString")));
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 builder.Services.AddSingleton<ConnectionMonitor>();
 builder.Services.AddSingleton<BotService>();
@@ -63,6 +65,7 @@ builder.Services.AddSingleton<BondsHistoryDictionary>();
 builder.Services.AddScoped<AnalysisData>();
 
 builder.Services.AddScoped<ICurrencyRatesControllerService, CurrencyRatesControllerService>();
+builder.Services.AddScoped<IBondHistoriesControllerService, BondHistoriesControllerService>();
 
 var app = builder.Build();
 
