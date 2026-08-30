@@ -1,0 +1,6 @@
+﻿services:
+  bondbank_webapi:
+    image: bondbank_webapi
+    build:
+      context: .
+      dockerfile: BondBank_WebApi/Dockerfile
