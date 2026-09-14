@@ -5,10 +5,10 @@ import Footer from './components/footer/Footer';
 
 import "./index.module.css";
 import MainPage from './components/pages/main/MainPage';
-import BondsPage from './components/pages/BondsPage/BondsPage';
-import AboutUsPage from './components/pages/AboutUsPage/AboutUsPage';
-import PortfoliosPage from './components/pages/PortfoliosPage/PortfoliosPage';
-import ForecastsPage from './components/pages/ForecastsPage/ForecastsPage';
+import BondsPage from './components/pages/bondsPage/BondsPage';
+import AboutUsPage from './components/pages/aboutUsPage/AboutUsPage';
+import PortfoliosPage from './components/pages/portfoliosPage/PortfoliosPage';
+import ForecastsPage from './components/pages/forecastsPage/ForecastsPage';
 
 function App() {
   return (
