@@ -1,11 +1,45 @@
+# ==================== СЕКРЕТЫ ====================
+# Переменные окружения
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Конфигурации с секретами
+appsettings.Production.json
+appsettings.*.local.json
+secrets.json
+
+# ==================== BUILD ====================
 bin/
 obj/
+[Dd]ebug/
+[Rr]elease/
+node_modules/
+build/
+dist/
 
-# Основная папка .idea игнорируется
+# ==================== IDE ====================
 .idea/
-
-# Основная папка .vs игнорируется
 .vs/
+.vscode/
+*.user
+*.suo
+
+# ==================== LOGS ====================
+logs/
+*.log
+nlog-internal.log
+
+# ==================== OS ====================
+.DS_Store
+Thumbs.db
+
+# ==================== RIDER ====================
+.idea/
+*.sln.DotSettings.user
 
 # ! (восклицательный знак) означает, что нужно сделать исключение
 # Сохраняем общие настройки проекта, но игнорируем персональные
