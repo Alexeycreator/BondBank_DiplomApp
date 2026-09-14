@@ -19,8 +19,12 @@ using Shared.BotHelpers;
 using Shared.Connection;
 using Shared.Services;
 using Shared.WorkingWithFiles;
+using DotNetEnv;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

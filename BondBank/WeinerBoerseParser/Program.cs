@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DotNetEnv;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using Shared.BotHelpers;
@@ -10,7 +12,14 @@ using WeinerBoerseParser;
 using WeinerBoerseParser.HelperMethods;
 using WeinerBoerseParser.Models;
 
+Env.Load();
+var configuration = new ConfigurationBuilder()
+    .AddEnvironmentVariables()
+    .Build();
+
 var services = new ServiceCollection();
+
+services.AddSingleton<IConfiguration>(configuration);
 
 services.AddLogging(logging =>
 {

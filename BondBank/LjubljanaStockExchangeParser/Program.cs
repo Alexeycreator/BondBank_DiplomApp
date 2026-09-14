@@ -1,6 +1,8 @@
-﻿using LjubljanaStockExchangeParser;
+﻿using DotNetEnv;
+using LjubljanaStockExchangeParser;
 using LjubljanaStockExchangeParser.HelperMethods;
 using LjubljanaStockExchangeParser.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
@@ -10,7 +12,15 @@ using Shared.Services;
 using Shared.Services.Interfaces;
 using Shared.WorkingWithFiles;
 
+Env.Load();
+
+var configuration = new ConfigurationBuilder()
+    .AddEnvironmentVariables()
+    .Build();
+
 var services = new ServiceCollection();
+
+services.AddSingleton<IConfiguration>(configuration);
 
 services.AddLogging(logging =>
 {
