@@ -1,0 +1,119 @@
+/* ==================== ОСНОВНОЙ КОНТЕЙНЕР ==================== */
+.errorPage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px 20px;
+}
+
+/* ==================== КАРТОЧКА ОШИБКИ ==================== */
+.errorCard {
+    background-color: #ffffff;
+    padding: 48px 40px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    max-width: 520px;
+    width: 100%;
+}
+
+/* ==================== ИКОНКА ==================== */
+.errorIcon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+/* ==================== ЗАГОЛОВОК ==================== */
+.errorTitle {
+    font-size: 28px;
+    color: #1a1a2e;
+    margin-bottom: 16px;
+}
+
+/* ==================== СООБЩЕНИЕ ==================== */
+.errorMessage {
+    font-size: 16px;
+    color: #444;
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.errorMessage strong {
+    color: #4fc3f7;
+    font-family: monospace;
+}
+
+/* ==================== ПОДСКАЗКА ==================== */
+.errorHint {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 28px;
+    line-height: 1.5;
+}
+
+/* ==================== КНОПКИ ==================== */
+.errorActions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.errorButton {
+    background-color: #4fc3f7;
+    color: #1a1a2e;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.errorButton:hover {
+    background-color: #38b0e8;
+    transform: translateY(-2px);
+}
+
+.errorButtonSecondary {
+    background-color: transparent;
+    color: #4fc3f7;
+    border: 1px solid #4fc3f7;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.errorButtonSecondary:hover {
+    background-color: #4fc3f7;
+    color: #1a1a2e;
+}
+
+/* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-width: 480px) {
+    .errorCard {
+        padding: 32px 20px;
+    }
+
+    .errorIcon {
+        font-size: 48px;
+    }
+
+    .errorTitle {
+        font-size: 22px;
+    }
+
+    .errorActions {
+        flex-direction: column;
+    }
+
+    .errorButton,
+    .errorButtonSecondary {
+        width: 100%;
+    }
+}
