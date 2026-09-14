@@ -3,7 +3,16 @@
     padding: 20px 0;
 }
 
-/* ==================== ЗАГОЛОВОК СТРАНИЦЫ ==================== */
+/* ==================== ЗАГОЛОВОК ==================== */
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
 .pageTitle {
     font-size: 32px;
     color: #1a1a2e;
@@ -13,21 +22,172 @@
 .pageDescription {
     font-size: 16px;
     color: #666;
-    margin-bottom: 32px;
+    margin: 0;
 }
 
-/* ==================== ГРАФИК ==================== */
+/* ==================== ВЫБОР ВАЛЮТЫ ==================== */
+.currencySelector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.currencySelector label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.currencySelect {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+}
+
+.currencySelect:focus {
+    border-color: #4fc3f7;
+}
+
+/* ==================== ПОИСК ==================== */
+.searchSection {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    flex-wrap: wrap;
+}
+
+.searchField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 180px;
+}
+
+.searchField label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.searchSelect,
+.searchInput {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.searchSelect:focus,
+.searchInput:focus {
+    border-color: #4fc3f7;
+}
+
+.resetButton {
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+    height: fit-content;
+}
+
+.resetButton:hover {
+    background-color: #e0e0e0;
+}
+
+/* ==================== ГРАФИК + ИНФОРМАЦИЯ ==================== */
+.chartAndInfoSection {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
 .chartSection {
     background-color: #ffffff;
     padding: 24px;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    margin-bottom: 40px;
 }
 
 .chartContainer {
     max-width: 100%;
-    height: 300px;
+    height: 350px;
+}
+
+/* ==================== ИНФОРМАЦИЯ ОБ ОБЛИГАЦИИ ==================== */
+.infoSection {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    min-height: 350px;
+}
+
+.infoTitle {
+    font-size: 18px;
+    color: #1a1a2e;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #4fc3f7;
+}
+
+.infoList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.infoLabel {
+    font-size: 13px;
+    color: #888;
+}
+
+.infoValue {
+    font-size: 14px;
+    color: #1a1a2e;
+    font-weight: 500;
+}
+
+.infoValueHighlight {
+    font-size: 16px;
+    color: #4fc3f7;
+    font-weight: 700;
+}
+
+.noSelection {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    color: #aaa;
+    text-align: center;
+    font-size: 14px;
 }
 
 /* ==================== ТАБЛИЦА ==================== */
@@ -68,15 +228,35 @@
     border-bottom: 1px solid #f0f0f0;
 }
 
+.table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
 .table tbody tr:hover {
     background-color: #f8f8f8;
 }
 
-/* ==================== СТИЛИ ДЛЯ ЯЧЕЕК ==================== */
+.selectedRow {
+    background-color: #e8f6fe !important;
+    border-left: 3px solid #4fc3f7;
+}
+
+/* ==================== СТИЛИ ЯЧЕЕК ==================== */
 .isin {
     font-family: monospace;
     font-size: 12px;
     color: #555;
+}
+
+.typeBadge {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: #e8f6fe;
+    color: #0288d1;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .yieldHigh {
@@ -89,10 +269,31 @@
     font-weight: 600;
 }
 
+.noData {
+    text-align: center;
+    color: #aaa;
+    padding: 40px !important;
+}
+
 /* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-width: 992px) {
+    .chartAndInfoSection {
+        grid-template-columns: 1fr;
+    }
+
+    .chartContainer {
+        height: 250px;
+    }
+}
+
 @media (max-width: 768px) {
     .pageTitle {
         font-size: 24px;
+    }
+
+    .searchSection {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .table th,
@@ -118,5 +319,9 @@
 
     .pageTitle {
         font-size: 20px;
+    }
+
+    .infoTitle {
+        font-size: 16px;
     }
 }
