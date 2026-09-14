@@ -9,6 +9,9 @@ import BondsPage from './components/pages/bondsPage/BondsPage';
 import AboutUsPage from './components/pages/aboutUsPage/AboutUsPage';
 import PortfoliosPage from './components/pages/portfoliosPage/PortfoliosPage';
 import ForecastsPage from './components/pages/forecastsPage/ForecastsPage';
+import BadRequestPage from './components/pages/errorPages/BadRequestPage';
+import ServerErrorPage from './components/pages/errorPages/ServerErrorPage';
+import NotFoundPage from './components/pages/errorPages/NotFoundPage';
 
 function App() {
   return (
@@ -22,6 +25,11 @@ function App() {
             <Route path='/about-us' element={<AboutUsPage />} />
             <Route path='/portfolios' element={<PortfoliosPage />} />
             <Route path='/forecasts' element={<ForecastsPage />} />
+
+            {/* Страницы ошибок */}
+            <Route path="/400" element={<BadRequestPage />} />
+            <Route path="/500" element={<ServerErrorPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         <Footer />
