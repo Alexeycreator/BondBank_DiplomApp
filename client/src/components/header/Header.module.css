@@ -1,48 +1,30 @@
-/* ======================================================================
-   1. ОСНОВНОЙ КОНТЕЙНЕР ХЕДЕРА
-   ====================================================================== */
-/*
- * Шапка сайта — фиксированная сверху, темный фон, тень для глубины.
- * z-index: 1000 — чтобы перекрывать другие элементы на странице.
- */
+/* ==================== ОСНОВНОЙ КОНТЕЙНЕР ХЕДЕРА ==================== */
 .header {
-    background-color: #1a1a2e;          /* Темно-синий фон, как в подвале */
-    padding: 15px 20px;                 /* Внутренние отступы */
-    position: sticky;                   /* Прилипает к верху при скролле */
-    top: 0;                             /* Позиция прилипания */
-    z-index: 1000;                      /* Выше других элементов */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Тень под хедером */
+    background-color: #1a1a2e;
+    padding: 15px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* ======================================================================
-   2. КОНТЕЙНЕР ДЛЯ ВЫРАВНИВАНИЯ ЭЛЕМЕНТОВ
-   ====================================================================== */
-/*
- * Flex-контейнер для размещения логотипа, навигации и действий в одну строку.
- * max-width ограничивает ширину, margin: 0 auto центрирует.
- */
+/* ==================== КОНТЕЙНЕР ==================== */
 .container {
     display: flex;
-    justify-content: space-between;     /* Логотип слева, навигация по центру, действия справа */
-    align-items: center;                /* Вертикальное выравнивание по центру */
-    max-width: 1200px;                  /* Максимальная ширина контента */
-    margin: 0 auto;                     /* Центрирование по горизонтали */
-    flex-wrap: wrap;                    /* Перенос на новую строку при нехватке места */
-    gap: 15px;                          /* Расстояние между элементами при переносе */
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-/* ======================================================================
-   3. ЛОГОТИП
-   ====================================================================== */
-/*
- * Блок с логотипом и названием компании. Ссылка ведет на главную страницу.
- */
+/* ==================== ЛОГОТИП ==================== */
 .logo {
     display: flex;
     align-items: center;
 }
 
-/* Ссылка логотипа — убираем стандартное подчеркивание */
 .logoLink {
     display: flex;
     align-items: center;
@@ -50,376 +32,211 @@
     color: #ffffff;
 }
 
-/* Иконка-эмодзи перед названием */
 .logoIcon {
     font-size: 28px;
     margin-right: 10px;
 }
 
-/* Текст названия компании с акцентным цветом */
 .logoText {
     font-size: 24px;
     font-weight: bold;
-    color: #4fc3f7;                     /* Голубой акцент, как в подвале */
+    color: #4fc3f7;
 }
 
-/* ======================================================================
-   4. НАВИГАЦИЯ
-   ====================================================================== */
-/*
- * Горизонтальное меню для перехода по страницам приложения.
- * Использует Flexbox для выравнивания элементов в строку.
- */
+/* ==================== НАВИГАЦИЯ ==================== */
 .nav {
     display: flex;
     align-items: center;
 }
 
-/* Список навигации — без маркеров, с отступами между пунктами */
 .navList {
     display: flex;
-    list-style: none;                   /* Убираем маркеры списка */
-    gap: 25px;                          /* Расстояние между пунктами */
+    list-style: none;
+    gap: 25px;
     margin: 0;
     padding: 0;
 }
 
 .navItem {
-    /* Элемент списка — без дополнительных стилей */
+    /* Элемент списка */
 }
 
-/* Ссылки навигации */
 .navLink {
     color: #ffffff;
     text-decoration: none;
     font-size: 16px;
-    transition: color 0.3s ease;       /* Плавное изменение цвета при наведении */
-    padding: 5px 0;                     /* Вертикальные отступы для области клика */
-    position: relative;                 /* Для позиционирования псевдоэлемента */
+    transition: color 0.3s ease;
+    padding: 5px 0;
+    position: relative;
 }
 
-/* ======================================================================
-   4.1. АНИМАЦИЯ ПОДЧЕРКИВАНИЯ НАВИГАЦИИ
-   ====================================================================== */
-/*
- * Псевдоэлемент ::after создает полосу под ссылкой.
- * При наведении полоса расширяется от 0 до 100% ширины.
- */
 .navLink::after {
     content: "";
     position: absolute;
-    bottom: 0;                          /* Прижимаем к нижнему краю ссылки */
+    bottom: 0;
     left: 0;
-    width: 0;                           /* Изначально ширина 0 — полоса скрыта */
-    height: 2px;                        /* Толщина полосы */
-    background-color: #4fc3f7;          /* Голубой цвет, как у акцентов */
-    transition: width 0.3s ease;        /* Плавное расширение */
+    width: 0;
+    height: 2px;
+    background-color: #4fc3f7;
+    transition: width 0.3s ease;
 }
 
 .navLink:hover {
-    color: #4fc3f7;                     /* При наведении ссылка становится голубой */
+    color: #4fc3f7;
 }
 
 .navLink:hover::after {
-    width: 100%;                        /* Полоса расширяется на всю ширину ссылки */
+    width: 100%;
 }
 
-/* ======================================================================
-   5. ПРАВАЯ ЧАСТЬ (ВАЛЮТА + АВТОРИЗАЦИЯ)
-   ====================================================================== */
-/*
- * Блок с выбором валюты и кнопками входа/регистрации.
- * Flexbox для выравнивания элементов в строку.
- */
+/* ==================== ПРАВАЯ ЧАСТЬ ==================== */
 .actions {
     display: flex;
     align-items: center;
-    gap: 20px;                          /* Расстояние между выбором валюты и кнопками */
+    gap: 20px;
 }
 
-/* ======================================================================
-   6. ВЫБОР ВАЛЮТЫ
-   ====================================================================== */
-/*
- * Селектор для выбора валюты отображения (RUB, USD, EUR, CNY).
- * При изменении — данные на странице пересчитываются динамически.
- */
+/* ==================== ВЫБОР ВАЛЮТЫ ==================== */
 .currencySelector {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-/* Иконка валюты */
 .currencyLabel {
     font-size: 20px;
     color: #ffffff;
 }
 
-/* Выпадающий список выбора валюты */
 .currencySelect {
-    background-color: #2a2a4e;          /* Темный фон, чуть светлее хедера */
+    background-color: #2a2a4e;
     color: #ffffff;
-    border: 1px solid #4a4a6e;          /* Рамка для видимости */
-    border-radius: 6px;                 /* Скругленные углы */
+    border: 1px solid #4a4a6e;
+    border-radius: 6px;
     padding: 6px 12px;
     font-size: 14px;
-    cursor: pointer;                    /* Курсор-указатель при наведении */
-    outline: none;                      /* Убираем стандартный outline */
+    cursor: pointer;
+    outline: none;
     transition: border-color 0.3s ease;
 }
 
 .currencySelect:hover {
-    border-color: #4fc3f7;              /* Подсветка рамки при наведении */
+    border-color: #4fc3f7;
 }
 
 .currencySelect:focus {
     border-color: #4fc3f7;
-    box-shadow: 0 0 5px rgba(79, 195, 247, 0.3); /* Свечение при фокусе */
 }
 
-/* ======================================================================
-   7. КНОПКИ АВТОРИЗАЦИИ
-   ====================================================================== */
-/*
- * Кнопки "Войти" и "Регистрация" для открытия модальных окон.
- */
+/* ==================== КНОПКИ АВТОРИЗАЦИИ ==================== */
 .authButtons {
     display: flex;
     gap: 10px;
 }
 
-/* Кнопка "Войти" — прозрачная, с голубой рамкой */
 .loginButton {
-    background-color: transparent;
-    color: #4fc3f7;
-    border: 1px solid #4fc3f7;
+    background-color: #4fc3f7;
+    color: #1a1a2e;
+    border: none;
     border-radius: 6px;
-    padding: 8px 20px;
+    padding: 10px 24px;
     font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;          /* Плавное изменение всех свойств */
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .loginButton:hover {
-    background-color: #4fc3f7;          /* При наведении заливается голубым */
-    color: #1a1a2e;                     /* Текст становится темным */
+    background-color: #38b0e8;
+    transform: translateY(-1px);
 }
 
-/* Кнопка "Регистрация" — сплошная акцентная, привлекает внимание */
-.registerButton {
-    background-color: #4fc3f7;
+/* ==================== МЕНЮ ПОЛЬЗОВАТЕЛЯ ==================== */
+.userMenu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profileLink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.profileLink:hover {
+    background-color: rgba(79, 195, 247, 0.1);
+}
+
+.userAvatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4fc3f7, #38b0e8);
     color: #1a1a2e;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.userName {
     font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.adminBadge {
+    font-size: 14px;
+    margin-left: 2px;
+}
+
+.logoutButton {
+    background-color: transparent;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    border-radius: 6px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-weight: 500;                   /* Полужирный текст */
 }
 
-.registerButton:hover {
-    background-color: #38b0e8;          /* Темнее при наведении */
-    transform: scale(1.02);             /* Легкое увеличение */
-}
-
-/* ======================================================================
-   8. МОДАЛЬНЫЕ ОКНА
-   ====================================================================== */
-/*
- * Затемненный фон (оверлей) — затемняет страницу при открытии модального окна.
- * Используется как для входа, так и для регистрации.
- */
-.modalOverlay {
-    position: fixed;                    /* Фиксированное позиционирование поверх страницы */
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Полупрозрачный черный фон */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;                      /* Выше хедера (1000) и остального контента */
-    animation: fadeIn 0.3s ease;        /* Анимация появления */
-}
-
-/*
- * Контейнер модального окна — белый/темный блок с формой.
- * Анимация slideIn — плавное появление сверху вниз.
- */
-.modal {
-    background-color: #1a1a2e;          /* Темный фон, как у хедера и футера */
-    border-radius: 12px;                /* Скругленные углы */
-    padding: 40px;                      /* Внутренние отступы */
-    max-width: 420px;                   /* Максимальная ширина */
-    width: 100%;
-    position: relative;                 /* Для позиционирования кнопки закрытия */
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    animation: slideIn 0.3s ease;       /* Плавное появление */
-}
-
-/* Кнопка закрытия модального окна (крестик в правом верхнем углу) */
-.modalClose {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    background: none;
-    border: none;
+.logoutButton:hover {
+    background-color: #e74c3c;
     color: #ffffff;
-    font-size: 24px;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
 }
 
-.modalClose:hover {
-    opacity: 1;                         /* Полная непрозрачность при наведении */
-}
-
-/* Заголовок модального окна */
-.modalTitle {
-    color: #ffffff;
-    font-size: 24px;
-    margin-bottom: 25px;
-    text-align: center;
-}
-
-/* Форма внутри модального окна */
-.modalForm {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;                          /* Вертикальные отступы между полями */
-}
-
-/* Группа полей: подпись + поле ввода */
-.formGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-/* Подпись к полю ввода */
-.formLabel {
-    color: #cccccc;
-    font-size: 14px;
-}
-
-/* Поле ввода — темное, с рамкой */
-.formInput {
-    background-color: #2a2a4e;
-    color: #ffffff;
-    border: 1px solid #4a4a6e;
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-.formInput:focus {
-    border-color: #4fc3f7;              /* Подсветка рамки при фокусе */
-}
-
-.formInput::placeholder {
-    color: #8888aa;                     /* Цвет текста-подсказки */
-}
-
-/* Кнопка отправки формы (Войти / Зарегистрироваться) */
-.modalSubmit {
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 6px;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 5px;
-}
-
-.modalSubmit:hover {
-    background-color: #38b0e8;
-}
-
-/* Ссылка-переключатель между формами (Вход ↔ Регистрация) */
-.modalSwitch {
-    text-align: center;
-    color: #aaaaaa;
-    font-size: 14px;
-    margin-top: 10px;
-}
-
-.modalSwitchLink {
-    color: #4fc3f7;
-    cursor: pointer;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.modalSwitchLink:hover {
-    color: #38b0e8;
-    text-decoration: underline;
-}
-
-/* ======================================================================
-   9. АНИМАЦИИ
-   ====================================================================== */
-/*
- * fadeIn — плавное появление затемненного фона.
- * slideIn — плавное появление модального окна сверху вниз.
- */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-30px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* ======================================================================
-   10. АДАПТИВНОСТЬ
-   ====================================================================== */
-
-/* ===== Планшеты (до 992px) ===== */
+/* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 992px) {
     .navList {
-        gap: 15px;                      /* Уменьшаем расстояние между пунктами */
+        gap: 15px;
     }
-    
+
     .navLink {
-        font-size: 14px;                /* Уменьшаем размер шрифта */
+        font-size: 14px;
     }
 }
 
-/* ===== Мобильные устройства (до 768px) ===== */
-/*
- * На мобильных устройствах хедер перестраивается в колонку.
- * Все элементы центрируются, навигация переносится.
- */
 @media (max-width: 768px) {
     .container {
-        flex-direction: column;         /* Вертикальное расположение */
-        align-items: stretch;           /* Растягиваем на всю ширину */
+        flex-direction: column;
+        align-items: stretch;
         gap: 10px;
     }
 
     .logo {
-        justify-content: center;        /* Логотип по центру */
+        justify-content: center;
     }
 
     .nav {
@@ -428,7 +245,7 @@
 
     .navList {
         gap: 12px;
-        flex-wrap: wrap;                /* Перенос пунктов на новую строку */
+        flex-wrap: wrap;
         justify-content: center;
     }
 
@@ -441,50 +258,35 @@
         flex-wrap: wrap;
     }
 
-    .authButtons {
+    .userMenu {
         flex-wrap: wrap;
         justify-content: center;
     }
 
-    /* Кнопки меньше на мобильных */
-    .loginButton,
-    .registerButton {
-        padding: 6px 14px;
-        font-size: 12px;
-    }
-
-    /* Модальное окно занимает почти всю ширину экрана */
-    .modal {
-        padding: 30px 20px;
-        max-width: 95%;
-        margin: 0 10px;
-    }
-
-    .modalTitle {
-        font-size: 20px;
+    .userName {
+        display: none;
     }
 }
 
-/* ===== Очень маленькие экраны (до 480px) ===== */
 @media (max-width: 480px) {
     .header {
-        padding: 10px 12px;             /* Уменьшаем отступы хедера */
+        padding: 10px 12px;
     }
 
     .logoText {
-        font-size: 18px;                /* Меньше название */
+        font-size: 18px;
     }
 
     .logoIcon {
-        font-size: 22px;                /* Меньше иконка */
+        font-size: 22px;
     }
 
     .navList {
-        gap: 8px;                       /* Минимальное расстояние */
+        gap: 8px;
     }
 
     .navLink {
-        font-size: 12px;                /* Минимальный размер шрифта */
+        font-size: 12px;
     }
 
     .currencySelect {

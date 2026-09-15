@@ -275,6 +275,14 @@
     padding: 40px !important;
 }
 
+/* ==================== ДЕЙСТВИЯ В ШАПКЕ ==================== */
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 /* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 992px) {
     .chartAndInfoSection {
