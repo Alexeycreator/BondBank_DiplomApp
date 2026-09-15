@@ -1,31 +1,58 @@
 import React from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styles from "./ErrorPages.module.css";
+
+/**
+ * Пропсы страницы 400
+ */
+interface BadRequestPageProps {
+    /** Сообщение об ошибке */
+    message?: string;
+    /** Кастомный заголовок */
+    title?: string;
+    /** Подсказка для пользователя */
+    hint?: string;
+    /** Куда вернуться */
+    returnPath?: string;
+    /** Текст кнопки возврата */
+    returnLabel?: string;
+}
 
 /**
  * Страница 400 — Некорректный запрос
  * Отображается, когда пользователь передал неверные параметры
  */
-const BadRequestPage = () => {
+const BadRequestPage = ({
+    message,
+    title,
+    hint,
+    returnPath,
+    returnLabel,
+}: BadRequestPageProps) => {
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const message = searchParams.get("message") || "Некорректный запрос";
+
+    // Если message не передан — используем дефолтное
+    const displayMessage = message || "Некорректный запрос";
+    const displayTitle = title || "400 — Некорректный запрос";
+    const displayHint = hint || "Проверьте введённые данные и попробуйте снова.";
+
+    // Куда вернуться
+    const finalReturnPath = returnPath || "/";
+    const finalReturnLabel = returnLabel || "🏠 На главную";
 
     return (
         <div className={styles.errorPage}>
             <div className={styles.errorCard}>
                 <div className={styles.errorIcon}>⚠️</div>
-                <h1 className={styles.errorTitle}>400 — Некорректный запрос</h1>
-                <p className={styles.errorMessage}>{message}</p>
-                <p className={styles.errorHint}>
-                    Проверьте введённые данные и попробуйте снова.
-                </p>
+                <h1 className={styles.errorTitle}>{displayTitle}</h1>
+                <p className={styles.errorMessage}>{displayMessage}</p>
+                <p className={styles.errorHint}>{displayHint}</p>
                 <div className={styles.errorActions}>
                     <button
                         className={styles.errorButton}
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate(finalReturnPath)}
                     >
-                        🏠 На главную
+                        {finalReturnLabel}
                     </button>
                     <button
                         className={styles.errorButtonSecondary}
