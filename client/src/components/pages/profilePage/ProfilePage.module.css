@@ -1,0 +1,275 @@
+.profilePage {
+    padding: 20px 0;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ==================== ШАПКА ПРОФИЛЯ ==================== */
+.profileHeader {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4fc3f7, #38b0e8);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.userName {
+    font-size: 22px;
+    color: #1a1a2e;
+    margin: 0 0 6px 0;
+}
+
+.roleBadge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background-color: #e8f6fe;
+    color: #0288d1;
+}
+
+.adminBadge {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.logoutButton {
+    margin-left: auto;
+    padding: 8px 20px;
+    background-color: transparent;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.logoutButton:hover {
+    background-color: #e74c3c;
+    color: #ffffff;
+}
+
+/* ==================== СООБЩЕНИЯ ==================== */
+.message {
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.successMsg {
+    background-color: #e8f8f0;
+    color: #2ecc71;
+    border-left: 4px solid #2ecc71;
+}
+
+.errorMsg {
+    background-color: #fdeaea;
+    color: #e74c3c;
+    border-left: 4px solid #e74c3c;
+}
+
+/* ==================== СТАТУС ПРОФИЛЯ ==================== */
+.profileStatus {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.complete {
+    background-color: #e8f8f0;
+    color: #2ecc71;
+    border-left: 4px solid #2ecc71;
+}
+
+.incomplete {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ff9800;
+}
+
+/* ==================== ТАБЫ ==================== */
+.tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.tab {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    color: #888;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    margin-bottom: -2px;
+}
+
+.tab:hover {
+    color: #4fc3f7;
+}
+
+.activeTab {
+    color: #1a1a2e;
+    border-bottom-color: #4fc3f7;
+}
+
+/* ==================== КОНТЕНТ ТАБА ==================== */
+.tabContent {
+    background-color: #ffffff;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.sectionTitle {
+    font-size: 18px;
+    color: #1a1a2e;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.sectionTitle:not(:first-child) {
+    margin-top: 32px;
+}
+
+/* ==================== ФОРМА ==================== */
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formGroup label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.formGroup input {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.formGroup input:focus {
+    border-color: #4fc3f7;
+}
+
+/* ==================== КНОПКИ ==================== */
+.saveButton {
+    background-color: #4fc3f7;
+    color: #1a1a2e;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.saveButton:hover {
+    background-color: #38b0e8;
+}
+
+/* ==================== ОПАСНАЯ ЗОНА ==================== */
+.dangerZone {
+    margin-top: 40px;
+    padding: 24px;
+    border: 2px solid #fdeaea;
+    border-radius: 12px;
+    background-color: #fffafa;
+}
+
+.dangerTitle {
+    font-size: 18px;
+    color: #e74c3c;
+    margin-bottom: 12px;
+}
+
+.dangerText {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.deleteButton {
+    background-color: #e74c3c;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.deleteButton:hover {
+    background-color: #c0392b;
+}
+
+/* ==================== АДАПТИВНОСТЬ ==================== */
+@media (max-width: 768px) {
+    .profileHeader {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .logoutButton {
+        margin-left: 0;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+}

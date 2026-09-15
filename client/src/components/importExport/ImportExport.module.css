@@ -1,0 +1,79 @@
+/* ==================== ОБЩИЙ БЛОК ==================== */
+.importBlock,
+.exportBlock {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hiddenInput {
+    display: none;
+}
+
+/* ==================== КНОПКА ИМПОРТА ==================== */
+.importButton {
+    padding: 10px 20px;
+    background-color: #4fc3f7;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.importButton:hover:not(:disabled) {
+    background-color: #38b0e8;
+    transform: translateY(-1px);
+}
+
+.importButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ==================== КНОПКА ЭКСПОРТА ==================== */
+.exportButton {
+    padding: 10px 20px;
+    background-color: #2ecc71;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.exportButton:hover {
+    background-color: #27ae60;
+    transform: translateY(-1px);
+}
+
+/* ==================== СООБЩЕНИЯ ==================== */
+.message {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}
+
+.successMsg {
+    background-color: #e8f8f0;
+    color: #2ecc71;
+    border-left: 3px solid #2ecc71;
+}
+
+.errorMsg {
+    background-color: #fdeaea;
+    color: #e74c3c;
+    border-left: 3px solid #e74c3c;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
