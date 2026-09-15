@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Doughnut, Line } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -10,6 +10,9 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { Portfolio, PortfolioType } from "../../types";
 import styles from "./PortfoliosPage.module.css";
 
 ChartJS.register(
@@ -21,22 +24,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
-/**
- * Тип портфеля
- */
-type PortfolioType = "conservative" | "aggressive" | "balanced";
-
-/**
- * Модель портфеля
- */
-interface Portfolio {
-    id: number;
-    name: string;
-    type: PortfolioType;
-    currentValue: number;
-    currentYield: number;
-}
 
 /**
  * Модель облигации в портфеле
@@ -55,7 +42,7 @@ interface PortfolioBond {
  * Историческая запись стоимости портфеля
  */
 interface PortfolioHistory {
-    date: string;       // YYYY-MM-DD
+    date: string;
     totalValue: number;
     yield: number;
 }
@@ -70,24 +57,91 @@ const PORTFOLIO_LIMITS: Record<PortfolioType, { maxBonds: number; maxYield: numb
 };
 
 /**
- * Страница портфелей с возможностью просмотра исторических данных
- * и переключения состава портфеля по датам
+ * Страница портфелей с возможностью создания нового портфеля
+ * Поддерживает userId и portfolioId в URL
  */
 const PortfoliosPage = () => {
+    const { hasCompleteProfile, user, isAdmin } = useAuth();
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // ==================== URL ПАРАМЕТРЫ ====================
+    const urlParams = useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        const userIdParam = params.get("userId");
+        const portfolioIdParam = params.get("portfolioId");
+        return {
+            userId: userIdParam ? Number(userIdParam) : null,
+            portfolioId: portfolioIdParam ? Number(portfolioIdParam) : null,
+        };
+    }, [location.search]);
+
     // ==================== СОСТОЯНИЕ ====================
     const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null);
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
+    const [searchIsin, setSearchIsin] = useState<string>("");
+    const [filterBondType, setFilterBondType] = useState<string>("");
 
-    // ==================== МОКОВЫЕ ДАННЫЕ ====================
-    const portfolios: Portfolio[] = [
-        { id: 1, name: "Консервативный", type: "conservative", currentValue: 1450000, currentYield: 4.2 },
-        { id: 2, name: "Агрессивный", type: "aggressive", currentValue: 2350000, currentYield: 7.8 },
-        { id: 3, name: "Сбалансированный", type: "balanced", currentValue: 3200000, currentYield: 5.6 },
-    ];
+    const [portfolios, setPortfolios] = useState<Portfolio[]>([
+        { id: 1, userId: 1, name: "Консервативный", description: "Основной портфель для долгосрочных инвестиций", type: "conservative", currentValue: 1450000, currentYield: 4.2, createdAt: "2026-01-15" },
+        { id: 2, userId: 1, name: "Агрессивный", description: "Для высокодоходных облигаций", type: "aggressive", currentValue: 2350000, currentYield: 7.8, createdAt: "2026-03-20" },
+        { id: 3, userId: 1, name: "Сбалансированный", type: "balanced", currentValue: 3200000, currentYield: 5.6, createdAt: "2026-05-10" },
+        { id: 4, userId: 2, name: "Портфель Петрова", description: "Личный портфель", type: "balanced", currentValue: 850000, currentYield: 5.0, createdAt: "2026-06-01" },
+    ]);
 
-    /**
-     * Состав портфеля на текущую дату
-     */
+    // ✅ Состояние модального окна создания
+    const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+    const [newPortfolio, setNewPortfolio] = useState({
+        name: "",
+        description: "",
+        type: "conservative" as PortfolioType,
+    });
+    const [createError, setCreateError] = useState<string>("");
+
+    // ==================== СИНХРОНИЗАЦИЯ userId С URL ====================
+    useEffect(() => {
+        // Если userId не указан — подставляем текущего пользователя
+        if (!urlParams.userId && user) {
+            navigate(`/portfolios?userId=${user.id}`, { replace: true });
+            return;
+        }
+
+        // Если userId указан, но не совпадает с текущим (и это не админ) — редирект на свой
+        if (urlParams.userId && user && urlParams.userId !== user.id && !isAdmin) {
+            navigate(`/portfolios?userId=${user.id}`, { replace: true });
+        }
+    }, [urlParams.userId, user, isAdmin, navigate]);
+
+    // ==================== ПОРТФЕЛИ ПОЛЬЗОВАТЕЛЯ ====================
+    const userPortfolios = useMemo(() => {
+        if (!urlParams.userId) return [];
+        return portfolios.filter((p) => p.userId === urlParams.userId);
+    }, [portfolios, urlParams.userId]);
+
+    // ==================== АВТОВЫБОР ПОРТФЕЛЯ ИЗ URL ====================
+    useEffect(() => {
+        if (!urlParams.portfolioId) {
+            setSelectedPortfolio(null);
+            return;
+        }
+
+        const found = portfolios.find(
+            (p) => p.id === urlParams.portfolioId && p.userId === urlParams.userId
+        );
+
+        if (found) {
+            setSelectedPortfolio(found);
+        } else {
+            // Портфель не найден — сбрасываем URL
+            setSelectedPortfolio(null);
+            navigate(
+                `/portfolios?userId=${urlParams.userId || user?.id}`,
+                { replace: true }
+            );
+        }
+    }, [urlParams.portfolioId, urlParams.userId, portfolios, navigate, user]);
+
+    // ==================== МОКОВЫЕ ДАННЫЕ ОБЛИГАЦИЙ ====================
     const currentPortfolioBonds: Record<number, PortfolioBond[]> = {
         1: [
             { name: "SIJ 4. IZDAJA", isin: "SI0032103580", bondType: "lse", quantity: 50, price: 98.50, total: 4925, yield: 4.2 },
@@ -105,18 +159,15 @@ const PortfoliosPage = () => {
             { name: "TIVOLI 2. IZDAJA", isin: "SI0032104232", bondType: "me", quantity: 35, price: 96.30, total: 3370.5, yield: 4.9 },
             { name: "TELEKOM SLOVENIJE", isin: "SI0032103630", bondType: "sg", quantity: 25, price: 101.50, total: 2537.5, yield: 3.2 },
         ],
+        4: [
+            { name: "SIJ 4. IZDAJA", isin: "SI0032103580", bondType: "lse", quantity: 20, price: 98.50, total: 1970, yield: 4.2 },
+        ],
     };
 
-    /**
-     * Состав портфеля на исторические даты.
-     * Ключ — дата (YYYY-MM-DD), значение — массив облигаций.
-     * Если для даты нет записи, показываем текущий состав.
-     */
     const historicalPortfolioBonds: Record<string, Record<number, PortfolioBond[]>> = useMemo(() => {
         const today = new Date();
         const history: Record<string, Record<number, PortfolioBond[]>> = {};
 
-        // Генерируем исторические составы за последние 30 дней
         for (let i = 1; i <= 30; i++) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
@@ -137,17 +188,17 @@ const PortfoliosPage = () => {
                     { name: "SDH 3. IZDAJA", isin: "SI0002103529", bondType: "wb", quantity: 35 + i, price: 94 + (i % 4), total: 4401, yield: 5.1 },
                     { name: "TIVOLI 2. IZDAJA", isin: "SI0032104232", bondType: "me", quantity: 25 + i, price: 92 + (i % 3), total: 3370.5, yield: 4.9 },
                 ],
+                4: [
+                    { name: "SIJ 4. IZDAJA", isin: "SI0032103580", bondType: "lse", quantity: 10 + i, price: 95 + (i % 5), total: 1970, yield: 4.2 },
+                ],
             };
         }
 
         return history;
     }, []);
 
-    /**
-     * История стоимости портфелей (за последние 30 дней)
-     */
     const portfolioHistory: Record<number, PortfolioHistory[]> = useMemo(() => {
-        const history: Record<number, PortfolioHistory[]> = { 1: [], 2: [], 3: [] };
+        const history: Record<number, PortfolioHistory[]> = { 1: [], 2: [], 3: [], 4: [] };
         const today = new Date();
 
         for (let i = 29; i >= 0; i--) {
@@ -170,6 +221,11 @@ const PortfoliosPage = () => {
                 totalValue: 3200000 + Math.round((Math.random() - 0.5) * 300000),
                 yield: 5.6 + (Math.random() - 0.5) * 0.8,
             });
+            history[4].push({
+                date: dateStr,
+                totalValue: 850000 + Math.round((Math.random() - 0.5) * 50000),
+                yield: 5.0 + (Math.random() - 0.5) * 0.5,
+            });
         }
 
         return history;
@@ -180,7 +236,7 @@ const PortfoliosPage = () => {
     const isHistoricalView = selectedDate !== today;
 
     /**
-     * Получает облигации портфеля на выбранную дату
+     * Получает облигации выбранного портфеля
      */
     const getSelectedBonds = (): PortfolioBond[] => {
         if (!selectedPortfolio) return [];
@@ -196,7 +252,7 @@ const PortfoliosPage = () => {
     };
 
     /**
-     * Считает общее количество штук облигаций
+     * Общее количество штук облигаций
      */
     const getTotalQuantity = (portfolioId: number): number => {
         const bonds = isHistoricalView
@@ -207,7 +263,7 @@ const PortfoliosPage = () => {
     };
 
     /**
-     * Считает количество видов облигаций
+     * Количество видов облигаций
      */
     const getBondsCount = (portfolioId: number): number => {
         const bonds = isHistoricalView
@@ -218,7 +274,7 @@ const PortfoliosPage = () => {
     };
 
     /**
-     * Получает стоимость портфеля на выбранную дату
+     * Стоимость портфеля на выбранную дату
      */
     const getPortfolioValue = (portfolio: Portfolio): { value: number; yield: number; isHistorical: boolean } => {
         if (!isHistoricalView) {
@@ -236,7 +292,7 @@ const PortfoliosPage = () => {
     };
 
     /**
-     * Считает распределение по типам облигаций
+     * Распределение по типам облигаций
      */
     const getTypeDistribution = () => {
         const bonds = getSelectedBonds();
@@ -250,14 +306,14 @@ const PortfoliosPage = () => {
     };
 
     /**
-     * Форматирует цену
+     * Форматирование цены
      */
     const formatPrice = (price: number): string => {
         return `${price.toLocaleString("ru-RU")} ₽`;
     };
 
     /**
-     * Форматирует дату
+     * Форматирование даты
      */
     const formatDate = (dateStr: string): string => {
         const date = new Date(dateStr);
@@ -268,25 +324,104 @@ const PortfoliosPage = () => {
         });
     };
 
-    /**
-     * Обработчик клика по точке на графике
-     * Переключает дату на выбранную точку
-     */
-    const handleChartClick = (_event: any, elements: any[]) => {
-        if (elements.length > 0 && selectedPortfolio) {
-            const index = elements[0].index;
-            const history = portfolioHistory[selectedPortfolio.id] || [];
-            if (history[index]) {
-                setSelectedDate(history[index].date);
-            }
+    // ==================== ФИЛЬТРАЦИЯ ОБЛИГАЦИЙ ====================
+    const filteredBonds = useMemo(() => {
+        const bonds = getSelectedBonds();
+        return bonds.filter((bond) => {
+            const matchIsin = searchIsin === "" || bond.isin.toLowerCase().includes(searchIsin.toLowerCase());
+            const matchType = filterBondType === "" || bond.bondType === filterBondType;
+            return matchIsin && matchType;
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPortfolio, selectedDate, searchIsin, filterBondType]);
+
+    // ==================== СОЗДАНИЕ ПОРТФЕЛЯ ====================
+    const handleOpenCreateModal = () => {
+        setNewPortfolio({
+            name: "",
+            description: "",
+            type: "conservative",
+        });
+        setCreateError("");
+        setShowCreateModal(true);
+    };
+
+    const handleCreatePortfolio = () => {
+        setCreateError("");
+
+        if (!newPortfolio.name.trim()) {
+            setCreateError("Введите название портфеля");
+            return;
         }
+
+        if (newPortfolio.name.trim().length < 3) {
+            setCreateError("Название должно содержать минимум 3 символа");
+            return;
+        }
+
+        if (newPortfolio.name.trim().length > 50) {
+            setCreateError("Название не должно превышать 50 символов");
+            return;
+        }
+
+        const exists = userPortfolios.find(
+            (p) => p.name.toLowerCase() === newPortfolio.name.trim().toLowerCase()
+        );
+        if (exists) {
+            setCreateError("Портфель с таким названием уже существует");
+            return;
+        }
+
+        const newId = Math.max(...portfolios.map((p) => p.id), 0) + 1;
+        const portfolioToAdd: Portfolio = {
+            id: newId,
+            userId: user?.id || 0,
+            name: newPortfolio.name.trim(),
+            description: newPortfolio.description.trim() || undefined,
+            type: newPortfolio.type,
+            currentValue: 0,
+            currentYield: 0,
+            createdAt: new Date().toISOString().split("T")[0],
+        };
+
+        setPortfolios([...portfolios, portfolioToAdd]);
+        setShowCreateModal(false);
+
+        // ✅ Открываем созданный портфель с URL
+        navigate(
+            `/portfolios?userId=${portfolioToAdd.userId}&portfolioId=${portfolioToAdd.id}`,
+            { replace: true }
+        );
+    };
+
+    // ==================== ОБРАБОТЧИКИ ====================
+    /**
+     * Открыть портфель (обновляет URL)
+     */
+    const handleOpenPortfolio = (portfolio: Portfolio) => {
+        setSelectedPortfolio(portfolio);
+        navigate(
+            `/portfolios?userId=${portfolio.userId}&portfolioId=${portfolio.id}`,
+            { replace: true }
+        );
     };
 
     /**
-     * Сбрасывает дату на сегодня
+     * Закрыть портфель (убирает portfolioId из URL)
      */
-    const handleResetToToday = () => {
-        setSelectedDate(today);
+    const handleClosePortfolio = () => {
+        setSelectedPortfolio(null);
+        navigate(
+            `/portfolios?userId=${urlParams.userId || user?.id}`,
+            { replace: true }
+        );
+    };
+
+    /**
+     * Переход на страницу облигации по ISIN
+     */
+    const handleBondClick = (isin: string) => {
+        navigate(`/bonds?isin=${isin}`);
     };
 
     // ==================== ГРАФИКИ ====================
@@ -325,9 +460,6 @@ const PortfoliosPage = () => {
         },
     };
 
-    /**
-     * График стоимости портфеля с возможностью клика по точке
-     */
     const valueChartData = useMemo(() => {
         if (!selectedPortfolio) return { labels: [], datasets: [] };
 
@@ -361,7 +493,15 @@ const PortfoliosPage = () => {
 
     const valueChartOptions = {
         responsive: true,
-        onClick: handleChartClick,
+        onClick: (_event: any, elements: any[]) => {
+            if (elements.length > 0 && selectedPortfolio) {
+                const index = elements[0].index;
+                const history = portfolioHistory[selectedPortfolio.id] || [];
+                if (history[index]) {
+                    setSelectedDate(history[index].date);
+                }
+            }
+        },
         plugins: {
             legend: { display: true, position: "top" as const },
             tooltip: {
@@ -369,9 +509,7 @@ const PortfoliosPage = () => {
                     label: (context: any) => {
                         return `Стоимость: ${Number(context.raw).toLocaleString("ru-RU")} ₽`;
                     },
-                    afterLabel: () => {
-                        return "Нажмите, чтобы переключиться на эту дату";
-                    },
+                    afterLabel: () => "Нажмите, чтобы переключиться на эту дату",
                 },
             },
         },
@@ -386,9 +524,6 @@ const PortfoliosPage = () => {
         },
     };
 
-    /**
-     * График доходности
-     */
     const yieldChartData = useMemo(() => {
         if (!selectedPortfolio) return { labels: [], datasets: [] };
 
@@ -428,13 +563,51 @@ const PortfoliosPage = () => {
         },
     };
 
+    // ==================== ПРОВЕРКА ПРОФИЛЯ ====================
+    if (!hasCompleteProfile) {
+        return (
+            <div className={styles.warningPage}>
+                <div className={styles.warningCard}>
+                    <div className={styles.warningIcon}>⚠️</div>
+                    <h1 className={styles.warningTitle}>Профиль не заполнен</h1>
+                    <p className={styles.warningText}>
+                        Чтобы создавать портфели, необходимо заполнить паспортные данные, ИНН и СНИЛС.
+                    </p>
+                    <button
+                        className={styles.warningButton}
+                        onClick={() => navigate("/profile")}
+                    >
+                        Перейти в профиль
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     // ==================== РЕНДЕР ====================
     return (
         <div className={styles.portfoliosPage}>
-            <h1 className={styles.pageTitle}>🏦 Портфели</h1>
-            <p className={styles.pageDescription}>
-                Управляйте своими инвестиционными портфелями
-            </p>
+            {/* ==================== ЗАГОЛОВОК + КНОПКА СОЗДАНИЯ ==================== */}
+            <div className={styles.pageHeader}>
+                <div>
+                    <h1 className={styles.pageTitle}>🏦 Портфели</h1>
+                    <p className={styles.pageDescription}>
+                        Управляйте своими инвестиционными портфелями
+                    </p>
+                    {/* ✅ Показываем, чьи портфели смотрим */}
+                    {isAdmin && urlParams.userId && urlParams.userId !== user?.id && (
+                        <p className={styles.ownerInfo}>
+                            👑 Просмотр портфелей пользователя #{urlParams.userId}
+                        </p>
+                    )}
+                </div>
+                <button
+                    className={styles.createPortfolioButton}
+                    onClick={handleOpenCreateModal}
+                >
+                    + Создать портфель
+                </button>
+            </div>
 
             {/* ==================== ВЫБОР ДАТЫ ==================== */}
             <section className={styles.dateSection}>
@@ -456,7 +629,7 @@ const PortfoliosPage = () => {
                         </span>
                         <button
                             className={styles.resetDateButton}
-                            onClick={handleResetToToday}
+                            onClick={() => setSelectedDate(today)}
                         >
                             🔄 Вернуться на сегодня
                         </button>
@@ -466,85 +639,213 @@ const PortfoliosPage = () => {
 
             {/* ==================== СПИСОК ПОРТФЕЛЕЙ ==================== */}
             <section className={styles.portfoliosSection}>
-                <h2 className={styles.sectionTitle}>Мои портфели</h2>
+                <h2 className={styles.sectionTitle}>
+                    {isAdmin && urlParams.userId !== user?.id
+                        ? `Портфели пользователя #${urlParams.userId}`
+                        : "Мои портфели"}
+                    {" "}({userPortfolios.length})
+                </h2>
                 <div className={styles.portfolioGrid}>
-                    {portfolios.map((portfolio) => {
-                        const limits = PORTFOLIO_LIMITS[portfolio.type];
-                        const totalQuantity = getTotalQuantity(portfolio.id);
-                        const { value, yield: portfolioYield, isHistorical } = getPortfolioValue(portfolio);
+                    {userPortfolios.length > 0 ? (
+                        userPortfolios.map((portfolio) => {
+                            const limits = PORTFOLIO_LIMITS[portfolio.type];
+                            const totalQuantity = getTotalQuantity(portfolio.id);
+                            const { value, yield: portfolioYield, isHistorical } = getPortfolioValue(portfolio);
 
-                        return (
-                            <div key={portfolio.id} className={styles.portfolioCard}>
-                                <h3 className={styles.portfolioName}>{portfolio.name}</h3>
-                                <span className={styles.portfolioType}>
-                                    {limits.description}
-                                </span>
-                                <div className={styles.portfolioStats}>
-                                    <div>
-                                        <span className={styles.statLabel}>
-                                            {isHistorical ? "Стоимость на дату" : "Стоимость"}
-                                        </span>
-                                        <span className={styles.statValue}>{formatPrice(value)}</span>
-                                    </div>
-                                    <div>
-                                        <span className={styles.statLabel}>Облигаций</span>
-                                        <span className={styles.statValue}>
-                                            {totalQuantity}/{limits.maxBonds}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className={styles.statLabel}>
-                                            {isHistorical ? "Доходность на дату" : "Доходность"}
-                                        </span>
-                                        <span className={styles.statValue}>
-                                            {portfolioYield.toFixed(2)}%
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className={styles.progressBar}>
-                                    <div
-                                        className={styles.progressFill}
-                                        style={{
-                                            width: `${Math.min((totalQuantity / limits.maxBonds) * 100, 100)}%`,
-                                        }}
-                                    />
-                                </div>
-                                <button
-                                    className={styles.viewButton}
-                                    onClick={() => setSelectedPortfolio(portfolio)}
+                            return (
+                                <div
+                                    key={portfolio.id}
+                                    className={`${styles.portfolioCard} ${selectedPortfolio?.id === portfolio.id ? styles.portfolioCardActive : ""}`}
                                 >
-                                    Подробнее
-                                </button>
-                            </div>
-                        );
-                    })}
+                                    <h3 className={styles.portfolioName}>{portfolio.name}</h3>
+                                    {portfolio.description && (
+                                        <p className={styles.portfolioDescription}>{portfolio.description}</p>
+                                    )}
+                                    <span className={styles.portfolioType}>
+                                        {limits.description}
+                                    </span>
+                                    <div className={styles.portfolioStats}>
+                                        <div>
+                                            <span className={styles.statLabel}>
+                                                {isHistorical ? "Стоимость на дату" : "Стоимость"}
+                                            </span>
+                                            <span className={styles.statValue}>{formatPrice(value)}</span>
+                                        </div>
+                                        <div>
+                                            <span className={styles.statLabel}>Облигаций</span>
+                                            <span className={styles.statValue}>
+                                                {totalQuantity}/{limits.maxBonds}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className={styles.statLabel}>
+                                                {isHistorical ? "Доходность на дату" : "Доходность"}
+                                            </span>
+                                            <span className={styles.statValue}>
+                                                {portfolioYield.toFixed(2)}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className={styles.progressBar}>
+                                        <div
+                                            className={styles.progressFill}
+                                            style={{
+                                                width: `${Math.min((totalQuantity / limits.maxBonds) * 100, 100)}%`,
+                                            }}
+                                        />
+                                    </div>
+                                    <button
+                                        className={styles.viewButton}
+                                        onClick={() => handleOpenPortfolio(portfolio)}
+                                    >
+                                        Подробнее
+                                    </button>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className={styles.noPortfolios}>
+                            <p>У этого пользователя пока нет портфелей</p>
+                        </div>
+                    )}
                 </div>
             </section>
+
+            {/* ==================== МОДАЛЬНОЕ ОКНО СОЗДАНИЯ ==================== */}
+            {showCreateModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
+                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h2 className={styles.modalTitle}>➕ Создать портфель</h2>
+                            <button
+                                className={styles.modalClose}
+                                onClick={() => setShowCreateModal(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {createError && (
+                            <div className={styles.modalError}>{createError}</div>
+                        )}
+
+                        {/* Название */}
+                        <div className={styles.formGroup}>
+                            <label>
+                                Название портфеля <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={newPortfolio.name}
+                                onChange={(e) => setNewPortfolio({ ...newPortfolio, name: e.target.value })}
+                                placeholder="Например: Мой портфель"
+                                maxLength={50}
+                                autoFocus
+                            />
+                            <span className={styles.charCount}>
+                                {newPortfolio.name.length}/50
+                            </span>
+                        </div>
+
+                        {/* Описание */}
+                        <div className={styles.formGroup}>
+                            <label>
+                                Описание <span className={styles.optional}>(необязательно)</span>
+                            </label>
+                            <textarea
+                                value={newPortfolio.description}
+                                onChange={(e) => setNewPortfolio({ ...newPortfolio, description: e.target.value })}
+                                placeholder="Краткое описание портфеля..."
+                                rows={3}
+                                maxLength={200}
+                            />
+                            <span className={styles.charCount}>
+                                {newPortfolio.description.length}/200
+                            </span>
+                        </div>
+
+                        {/* Тип портфеля */}
+                        <div className={styles.formGroup}>
+                            <label>Тип портфеля</label>
+                            <div className={styles.typeOptions}>
+                                {(["conservative", "balanced", "aggressive"] as PortfolioType[]).map((t) => (
+                                    <label
+                                        key={t}
+                                        className={`${styles.typeOption} ${newPortfolio.type === t ? styles.typeOptionActive : ""}`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="portfolioType"
+                                            value={t}
+                                            checked={newPortfolio.type === t}
+                                            onChange={() => setNewPortfolio({ ...newPortfolio, type: t })}
+                                        />
+                                        <span className={styles.typeOptionTitle}>
+                                            {t === "conservative" && "🛡️ Консервативный"}
+                                            {t === "balanced" && "⚖️ Сбалансированный"}
+                                            {t === "aggressive" && "🚀 Агрессивный"}
+                                        </span>
+                                        <span className={styles.typeOptionDesc}>
+                                            {PORTFOLIO_LIMITS[t].description}
+                                        </span>
+                                        <span className={styles.typeOptionLimits}>
+                                            До {PORTFOLIO_LIMITS[t].maxBonds} шт. • До {PORTFOLIO_LIMITS[t].maxYield}%
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Кнопки */}
+                        <div className={styles.modalActions}>
+                            <button
+                                className={styles.cancelButton}
+                                onClick={() => setShowCreateModal(false)}
+                            >
+                                Отмена
+                            </button>
+                            <button
+                                className={styles.confirmButton}
+                                onClick={handleCreatePortfolio}
+                            >
+                                Создать
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ==================== ДЕТАЛИ ПОРТФЕЛЯ ==================== */}
             {selectedPortfolio && (
                 <section className={styles.detailsSection}>
                     <div className={styles.detailsHeader}>
-                        <h2 className={styles.sectionTitle}>
-                            Портфель: {selectedPortfolio.name}
-                            {isHistoricalView && (
-                                <span className={styles.historicalDate}>
-                                    {" "}— на {formatDate(selectedDate)}
-                                </span>
+                        <div>
+                            <h2 className={styles.sectionTitle}>
+                                Портфель: {selectedPortfolio.name}
+                                {isHistoricalView && (
+                                    <span className={styles.historicalDate}>
+                                        {" "}— на {formatDate(selectedDate)}
+                                    </span>
+                                )}
+                            </h2>
+                            {isAdmin && selectedPortfolio.userId !== user?.id && (
+                                <p className={styles.ownerInfo}>
+                                    👤 Владелец: пользователь #{selectedPortfolio.userId}
+                                </p>
                             )}
-                        </h2>
+                        </div>
                         <div className={styles.detailsActions}>
                             {isHistoricalView && (
                                 <button
                                     className={styles.todayButton}
-                                    onClick={handleResetToToday}
+                                    onClick={() => setSelectedDate(today)}
                                 >
                                     🔄 Вернуться на сегодня
                                 </button>
                             )}
                             <button
                                 className={styles.closeButton}
-                                onClick={() => setSelectedPortfolio(null)}
+                                onClick={handleClosePortfolio}
                             >
                                 ✕
                             </button>
@@ -598,22 +899,74 @@ const PortfoliosPage = () => {
                         </p>
                     </div>
 
-                    {/* График стоимости с кликабельными точками */}
-                    <div className={styles.fullWidthChart}>
-                        <p className={styles.chartHint}>
-                            💡 Нажмите на точку на графике, чтобы посмотреть состав портфеля на ту дату
-                        </p>
-                        <Line data={valueChartData} options={valueChartOptions} />
+                    {/* ✅ Графики: слева 2 линейных, справа круговая */}
+                    <div className={styles.chartsLayout}>
+                        {/* Левая колонка — линейные графики */}
+                        <div className={styles.chartsLeft}>
+                            <div className={styles.chartCard}>
+                                <p className={styles.chartHint}>
+                                    💡 Нажмите на точку, чтобы переключиться на дату
+                                </p>
+                                <Line data={valueChartData} options={valueChartOptions} />
+                            </div>
+
+                            <div className={styles.chartCard}>
+                                <Line data={yieldChartData} options={yieldChartOptions} />
+                            </div>
+                        </div>
+
+                        {/* Правая колонка — круговая диаграмма */}
+                        <div className={styles.chartsRight}>
+                            <div className={styles.chartCard}>
+                                <Doughnut data={doughnutData} options={doughnutOptions} />
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Графики */}
-                    <div className={styles.chartsRow}>
-                        <div className={styles.chartCard}>
-                            <Doughnut data={doughnutData} options={doughnutOptions} />
+                    {/* ==================== ПОИСК И ФИЛЬТРАЦИЯ ==================== */}
+                    <div className={styles.filtersSection}>
+                        <div className={styles.filterField}>
+                            <label htmlFor="searchIsinPortfolio">🔍 Поиск по ISIN:</label>
+                            <input
+                                id="searchIsinPortfolio"
+                                type="text"
+                                value={searchIsin}
+                                onChange={(e) => setSearchIsin(e.target.value)}
+                                placeholder="Введите ISIN..."
+                                className={styles.filterInput}
+                            />
                         </div>
-                        <div className={styles.chartCard}>
-                            <Line data={yieldChartData} options={yieldChartOptions} />
+
+                        <div className={styles.filterField}>
+                            <label htmlFor="filterBondType">Тип облигации:</label>
+                            <select
+                                id="filterBondType"
+                                value={filterBondType}
+                                onChange={(e) => setFilterBondType(e.target.value)}
+                                className={styles.filterSelect}
+                            >
+                                <option value="">Все типы</option>
+                                <option value="lse">LSE (Любляна)</option>
+                                <option value="wb">WB (Вена)</option>
+                                <option value="sg">SG (Швейцария)</option>
+                                <option value="me">ME (Москва)</option>
+                            </select>
                         </div>
+
+                        <button
+                            className={styles.filterResetButton}
+                            onClick={() => {
+                                setSearchIsin("");
+                                setFilterBondType("");
+                            }}
+                        >
+                            Сбросить
+                        </button>
+                    </div>
+
+                    {/* Счётчик найденных */}
+                    <div className={styles.filteredCount}>
+                        Найдено: <strong>{filteredBonds.length}</strong> из {getSelectedBonds().length}
                     </div>
 
                     {/* Таблица облигаций */}
@@ -625,6 +978,12 @@ const PortfoliosPage = () => {
                             </span>
                         )}
                     </h3>
+
+                    {/* ✅ Подсказка о кликабельности */}
+                    <p className={styles.tableHint}>
+                        💡 Нажмите на строку, чтобы перейти к подробной информации об облигации
+                    </p>
+
                     <div className={styles.tableWrapper}>
                         <table className={styles.table}>
                             <thead>
@@ -639,21 +998,36 @@ const PortfoliosPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {getSelectedBonds().map((bond, index) => (
-                                    <tr key={index}>
-                                        <td>{bond.name}</td>
-                                        <td className={styles.isin}>{bond.isin}</td>
-                                        <td>
-                                            <span className={styles.typeBadge}>
-                                                {bond.bondType.toUpperCase()}
-                                            </span>
+                                {filteredBonds.length > 0 ? (
+                                    filteredBonds.map((bond, index) => (
+                                        <tr
+                                            key={index}
+                                            className={styles.clickableRow}
+                                            onClick={() => handleBondClick(bond.isin)}
+                                            title={`Перейти к облигации ${bond.isin}`}
+                                        >
+                                            <td>{bond.name}</td>
+                                            <td className={styles.isin}>{bond.isin}</td>
+                                            <td>
+                                                <span className={styles.typeBadge}>
+                                                    {bond.bondType.toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td>{bond.quantity}</td>
+                                            <td>{bond.price}</td>
+                                            <td className={styles.yieldCell}>{bond.yield}%</td>
+                                            <td>{bond.total.toFixed(2)}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={7} className={styles.noBonds}>
+                                            {getSelectedBonds().length === 0
+                                                ? "В портфеле пока нет облигаций. Добавьте облигации со страницы «Облигации»."
+                                                : "По вашему запросу ничего не найдено"}
                                         </td>
-                                        <td>{bond.quantity}</td>
-                                        <td>{bond.price}</td>
-                                        <td className={styles.yieldCell}>{bond.yield}%</td>
-                                        <td>{bond.total.toFixed(2)}</td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>

@@ -12,6 +12,12 @@ import {
     Legend,
 } from "chart.js";
 import styles from "./BondsPage.module.css";
+import NotFoundPage from "../errorPages/NotFoundPage";
+import BadRequestPage from "../errorPages/BadRequestPage";
+import ImportBonds from "../../importExport/ImportBonds";
+import ExportBonds from "../../importExport/ExportBonds";
+import { useAuth } from "../../context/AuthContext";
+import { Bond } from "../../types/index"; // ✅ Импорт типа из общего файла
 
 ChartJS.register(
     CategoryScale,
@@ -22,22 +28,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
-/**
- * Модель облигации
- */
-interface Bond {
-    id: number;
-    name: string;
-    isin: string;
-    type: "lse" | "wb" | "sg" | "me";
-    price: number;
-    yield: number;
-    maturity: string;
-    currency: string;
-    currencyRate: number;
-    updatedAt: string;
-}
 
 /**
  * Курсы валют (моковые)
@@ -57,6 +47,7 @@ const BondsPage = () => {
     // ==================== URL ПАРАМЕТРЫ ====================
     const location = useLocation();
     const navigate = useNavigate();
+    const { isAdmin, isAuthenticated } = useAuth();
 
     // ✅ Парсим isin из location.search — обновляется при каждом изменении URL
     const isinFromUrl = useMemo(() => {
@@ -64,16 +55,17 @@ const BondsPage = () => {
         return params.get("isin");
     }, [location.search]);
 
-    // ==================== МОКОВЫЕ ДАННЫЕ ====================
-    const bondsData: Bond[] = useMemo(() => [
+    // ==================== СОСТОЯНИЕ ОБЛИГАЦИЙ ====================
+    // ✅ Список облигаций — теперь состояние, а не константа
+    const [bondsData, setBondsData] = useState<Bond[]>([
         { id: 1, name: "SIJ 4. IZDAJA", isin: "SI0032103580", type: "lse", price: 9850, yield: 4.2, maturity: "2028-06-15", currency: "EUR", currencyRate: 98.3, updatedAt: "2026-08-30" },
         { id: 2, name: "SIJ 5. IZDAJA", isin: "SI0032103598", type: "lse", price: 9920, yield: 3.8, maturity: "2029-07-20", currency: "EUR", currencyRate: 98.3, updatedAt: "2026-08-30" },
         { id: 3, name: "SDH 3. IZDAJA", isin: "SI0002103529", type: "wb", price: 9780, yield: 5.1, maturity: "2027-11-01", currency: "EUR", currencyRate: 98.3, updatedAt: "2026-08-30" },
         { id: 4, name: "TELEKOM SLOVENIJE", isin: "SI0032103630", type: "sg", price: 10150, yield: 3.2, maturity: "2030-03-10", currency: "CHF", currencyRate: 102.5, updatedAt: "2026-08-30" },
         { id: 5, name: "TIVOLI 2. IZDAJA", isin: "SI0032104232", type: "me", price: 9630, yield: 4.9, maturity: "2028-09-05", currency: "RUB", currencyRate: 1, updatedAt: "2026-08-30" },
-    ], []);
+    ]);
 
-    // ==================== СОСТОЯНИЕ ====================
+    // ==================== ОСТАЛЬНОЕ СОСТОЯНИЕ ====================
     const [searchType, setSearchType] = useState<string>("");
     const [searchIsin, setSearchIsin] = useState<string>("");
     const [selectedBond, setSelectedBond] = useState<Bond | null>(null);
@@ -83,27 +75,22 @@ const BondsPage = () => {
 
     // ==================== АВТОВЫБОР ОБЛИГАЦИИ ИЗ URL ====================
     useEffect(() => {
-        // ✅ Сбрасываем состояние при каждом изменении URL
         setNotFound(false);
         setBadRequest(null);
         setSelectedBond(null);
 
-        // Если ISIN не указан — ничего не выбираем
         if (!isinFromUrl) return;
 
-        // Проверка на пустой ISIN (пробелы)
         if (isinFromUrl.trim() === "") {
             setBadRequest("ISIN не может быть пустым или состоять из пробелов");
             return;
         }
 
-        // Проверка длины ISIN (стандарт — 12 символов)
         if (isinFromUrl.length !== 12) {
             setBadRequest(`ISIN должен содержать 12 символов, получено: ${isinFromUrl.length}`);
             return;
         }
 
-        // Поиск облигации по ISIN
         const foundBond = bondsData.find(
             (b) => b.isin.toLowerCase() === isinFromUrl.toLowerCase()
         );
@@ -133,6 +120,30 @@ const BondsPage = () => {
     const formatPrice = (priceInRub: number, currency: string): string => {
         const converted = convertPrice(priceInRub, currency);
         return `${converted.toFixed(2)} ${currency}`;
+    };
+
+    // ==================== ИМПОРТ ОБЛИГАЦИЙ (АДМИН) ====================
+    /**
+     * Обработчик импорта облигаций из CSV
+     */
+    const handleImport = (newBonds: Bond[]) => {
+        setBondsData((prev) => {
+            const existingIsins = new Set(prev.map((b) => b.isin.toLowerCase()));
+            const uniqueNew = newBonds.filter(
+                (b) => b.isin && !existingIsins.has(b.isin.toLowerCase())
+            );
+
+            if (uniqueNew.length === 0) {
+                alert("Все облигации из файла уже существуют в системе");
+                return prev;
+            }
+
+            // Присваиваем ID новым облигациям
+            const maxId = prev.reduce((max, b) => Math.max(max, b.id), 0);
+            const withIds = uniqueNew.map((b, i) => ({ ...b, id: maxId + i + 1 }));
+
+            return [...withIds, ...prev];
+        });
     };
 
     // ==================== ДАННЫЕ ДЛЯ ГРАФИКА ====================
@@ -182,7 +193,6 @@ const BondsPage = () => {
         setSelectedBond(bond);
         setNotFound(false);
         setBadRequest(null);
-        // Обновляем URL без перезагрузки
         navigate(`/bonds?isin=${bond.isin}`, { replace: true });
     };
 
@@ -190,49 +200,26 @@ const BondsPage = () => {
         setSelectedCurrency(e.target.value);
     };
 
-    const handleResetError = () => {
-        setBadRequest(null);
-        setNotFound(false);
-        navigate("/bonds", { replace: true });
-    };
-
     // ==================== СТРАНИЦА BAD REQUEST ====================
     if (badRequest) {
         return (
-            <div className={styles.errorPage}>
-                <div className={styles.errorCard}>
-                    <div className={styles.errorIcon}>⚠️</div>
-                    <h1 className={styles.errorTitle}>400 — Некорректный запрос</h1>
-                    <p className={styles.errorMessage}>{badRequest}</p>
-                    <p className={styles.errorHint}>
-                        Проверьте правильность введённого ISIN. Он должен содержать ровно 12 символов.
-                    </p>
-                    <button className={styles.errorButton} onClick={handleResetError}>
-                        Вернуться к списку облигаций
-                    </button>
-                </div>
-            </div>
+            <BadRequestPage
+                message={badRequest}
+                hint="Проверьте правильность введённого ISIN. Он должен содержать ровно 12 символов."
+                returnPath="/bonds"
+                returnLabel="Вернуться к списку облигаций"
+            />
         );
     }
 
     // ==================== СТРАНИЦА NOT FOUND ====================
     if (notFound) {
         return (
-            <div className={styles.errorPage}>
-                <div className={styles.errorCard}>
-                    <div className={styles.errorIcon}>🔍</div>
-                    <h1 className={styles.errorTitle}>404 — Облигация не найдена</h1>
-                    <p className={styles.errorMessage}>
-                        Облигация с ISIN <strong>"{isinFromUrl}"</strong> не найдена в системе.
-                    </p>
-                    <p className={styles.errorHint}>
-                        Возможно, она была удалена или вы ввели неверный ISIN.
-                    </p>
-                    <button className={styles.errorButton} onClick={handleResetError}>
-                        Вернуться к списку облигаций
-                    </button>
-                </div>
-            </div>
+            <NotFoundPage
+                isin={isinFromUrl || ""}
+                returnPath="/bonds"
+                returnLabel="Вернуться к списку облигаций"
+            />
         );
     }
 
@@ -247,18 +234,32 @@ const BondsPage = () => {
                     </p>
                 </div>
 
-                <div className={styles.currencySelector}>
-                    <label htmlFor="currency">Валюта:</label>
-                    <select
-                        id="currency"
-                        value={selectedCurrency}
-                        onChange={handleCurrencyChange}
-                        className={styles.currencySelect}
-                    >
-                        {Object.keys(CURRENCY_RATES).map((curr) => (
-                            <option key={curr} value={curr}>{curr}</option>
-                        ))}
-                    </select>
+                {/* ==================== ДЕЙСТВИЯ ==================== */}
+                <div className={styles.headerActions}>
+                    {/* ✅ Импорт — только для админа */}
+                    {isAdmin && (
+                        <ImportBonds onImport={handleImport} />
+                    )}
+
+                    {/* ✅ Экспорт — для всех авторизованных */}
+                    {isAuthenticated && (
+                        <ExportBonds bonds={filteredBonds} filename="bonds" />
+                    )}
+
+                    {/* Выбор валюты */}
+                    <div className={styles.currencySelector}>
+                        <label htmlFor="currency">Валюта:</label>
+                        <select
+                            id="currency"
+                            value={selectedCurrency}
+                            onChange={handleCurrencyChange}
+                            className={styles.currencySelect}
+                        >
+                            {Object.keys(CURRENCY_RATES).map((curr) => (
+                                <option key={curr} value={curr}>{curr}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
