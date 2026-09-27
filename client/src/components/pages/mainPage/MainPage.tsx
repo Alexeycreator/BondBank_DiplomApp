@@ -47,18 +47,49 @@ const MainPage = () => {
                             Отслеживайте изменения цен облигаций в режиме реального времени
                         </p>
                     </div>
+
                     <div className={styles.infoCard}>
-                        <div className={styles.infoIcon}>🤖</div>
-                        <h3 className={styles.infoTitle}>Интеллектуальные прогнозы</h3>
+                        <div className={styles.infoIcon}>🔮</div>
+                        <h3 className={styles.infoTitle}>Прогноз цен на 2 дня</h3>
                         <p className={styles.infoText}>
-                            Используйте алгоритмы машинного обучения для прогнозирования
+                            Система прогнозирует цену облигации на следующие два дня
+                            с указанием уровня уверенности на основе ML-модели
                         </p>
                     </div>
+
                     <div className={styles.infoCard}>
-                        <div className={styles.infoIcon}>🔒</div>
-                        <h3 className={styles.infoTitle}>Безопасность данных</h3>
+                        <div className={styles.infoIcon}>📥</div>
+                        <h3 className={styles.infoTitle}>Импорт файлов</h3>
                         <p className={styles.infoText}>
-                            Ваши данные защищены современными методами шифрования
+                            Загружайте облигации из CSV-файлов с автоматической
+                            проверкой дубликатов и валидацией данных
+                        </p>
+                    </div>
+
+                    <div className={styles.infoCard}>
+                        <div className={styles.infoIcon}>📤</div>
+                        <h3 className={styles.infoTitle}>Экспорт файлов</h3>
+                        <p className={styles.infoText}>
+                            Выгружайте данные об облигациях в CSV для работы
+                            в Excel или других аналитических программах
+                        </p>
+                    </div>
+
+                    <div className={styles.infoCard}>
+                        <div className={styles.infoIcon}>💼</div>
+                        <h3 className={styles.infoTitle}>Разные виды портфелей</h3>
+                        <p className={styles.infoText}>
+                            Создавайте портфели под разные стратегии: консервативные,
+                            сбалансированные, агрессивные — и управляйте ими
+                        </p>
+                    </div>
+
+                    <div className={styles.infoCard}>
+                        <div className={styles.infoIcon}>🛟</div>
+                        <h3 className={styles.infoTitle}>Поддержка 24/7</h3>
+                        <p className={styles.infoText}>
+                            Наша команда поддержки доступна круглосуточно
+                            и готова помочь с любым вопросом по платформе
                         </p>
                     </div>
                 </div>
