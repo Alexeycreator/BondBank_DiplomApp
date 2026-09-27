@@ -1,95 +1,61 @@
 import React, { useRef, useState } from "react";
-import { Bond } from "../types/index";
-import { importBondsFromCsv } from "../../service/fileService";
+import axios from "axios";
 import styles from "./ImportExport.module.css";
 
-/**
- * Пропсы компонента импорта
- */
-interface ImportBondsProps {
-    /** Callback при успешном импорте */
-    onImport: (bonds: Bond[]) => void;
+export interface ImportBondsProps {
+    /** Колбэк, вызывается после успешной загрузки файла на сервер */
+    onImport: () => void | Promise<void>;
+    /** Опциональный колбэк при ошибке */
+    onError?: (message: string) => void;
 }
 
-/**
- * Компонент импорта облигаций из CSV-файла
- * Доступен только администратору
- */
-const ImportBonds = ({ onImport }: ImportBondsProps) => {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isImporting, setIsImporting] = useState(false);
-    const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+const ImportBonds: React.FC<ImportBondsProps> = ({ onImport, onError }) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
-    /**
-     * Обработчик выбора файла
-     */
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Проверка расширения
-        if (!file.name.toLowerCase().endsWith(".csv")) {
-            setMessage({ type: "error", text: "Поддерживаются только CSV-файлы" });
-            return;
-        }
-
-        setIsImporting(true);
-        setMessage(null);
-
         try {
-            const bonds = await importBondsFromCsv(file);
+            setIsUploading(true);
 
-            if (bonds.length === 0) {
-                setMessage({ type: "error", text: "Файл не содержит облигаций" });
-                return;
-            }
+            const formData = new FormData();
+            formData.append("file", file);
 
-            onImport(bonds);
-            setMessage({
-                type: "success",
-                text: `✅ Импортировано ${bonds.length} облигаций`,
-            });
+            await axios.post(
+                `${process.env.REACT_APP_API_URL_HTTPS}/Bonds/import-bonds`,
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
 
-            // Сброс input
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-        } catch (error: any) {
-            setMessage({ type: "error", text: error.message || "Ошибка импорта" });
+            await onImport();
+        } catch (err: any) {
+            const msg =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Не удалось импортировать файл";
+            console.error("Ошибка импорта:", err);
+            onError?.(msg);
         } finally {
-            setIsImporting(false);
+            setIsUploading(false);
+            if (inputRef.current) inputRef.current.value = "";
         }
-    };
-
-    /**
-     * Открыть диалог выбора файла
-     */
-    const handleClick = () => {
-        fileInputRef.current?.click();
     };
 
     return (
-        <div className={styles.importBlock}>
+        <div className={styles.importBonds}>
             <input
-                ref={fileInputRef}
+                ref={inputRef}
                 type="file"
                 accept=".csv"
-                onChange={handleFileSelect}
-                className={styles.hiddenInput}
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+                id="import-bonds-input"
             />
-            <button
-                className={styles.importButton}
-                onClick={handleClick}
-                disabled={isImporting}
-            >
-                {isImporting ? "⏳ Импорт..." : "📥 Импорт облигаций (CSV)"}
-            </button>
-
-            {message && (
-                <div className={`${styles.message} ${message.type === "error" ? styles.errorMsg : styles.successMsg}`}>
-                    {message.text}
-                </div>
-            )}
+            <label htmlFor="import-bonds-input" className={styles.importButton}>
+                {isUploading ? "Загрузка…" : "📥 Импорт CSV"}
+            </label>
         </div>
     );
 };
