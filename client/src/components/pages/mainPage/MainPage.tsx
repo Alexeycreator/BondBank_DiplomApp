@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "./MainPage.module.css";
-import { getInfoStatisticsBlockData, InfoStatisticsBlock } from "../../data/mainPageApi";
+import { getInfoStatisticsBlockData } from "../../data/mainPageApi";
 import ErrorCard from "../../errorCard/ErrorCard";
+import { InfoStatisticsBlock } from "../../data/types";
 
 const MainPage = () => {
     const [infoStatisticsBlockData, setInfoStatisticsBlockData] =
