@@ -1,14 +1,57 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+import { getInfoStatisticsBlockData, InfoStatisticsBlock } from "../../data/mainPageApi";
+
 import styles from "./MainPage.module.css";
 
 const MainPage = () => {
-    // Моковые данные для статистики
-    const stats = [
-        { label: "Всего облигаций", value: "1 284" },
-        { label: "Активных пользователей", value: "3 456" },
-        { label: "Партнеров", value: "12" },
-        { label: "Бирж", value: "4" },
-    ];
+    const [infoStatisticsBlockData, setInfoStatisticsBlockData] =
+        useState<InfoStatisticsBlock | null>(null);
+
+    const [loadingInfoStatisticsBlockData, setLoadingInfoStatisticsBlockData] =
+        useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchInfoStatisticsBlockData = async () => {
+        try {
+            setLoadingInfoStatisticsBlockData(true);
+            setError(null);
+            const data = await getInfoStatisticsBlockData();
+            setInfoStatisticsBlockData(data);
+            console.log(infoStatisticsBlockData);
+        } catch (err: any) {
+            console.error("Ошибка загрузки статистики:", err);
+            const errorMsg =
+                err.serverMessage ||
+                err.message ||
+                "Не удалось загрузить статистику. Попробуйте позже.";
+            setError(errorMsg);
+        } finally {
+            setLoadingInfoStatisticsBlockData(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInfoStatisticsBlockData();
+    }, []);
+
+    // Формируем массив статистики из полей модели
+    const stats = infoStatisticsBlockData
+        ? [
+            {
+                label: "Всего облигаций",
+                value: infoStatisticsBlockData.totalBonds?.toLocaleString("ru-RU") ?? "—",
+            },
+            {
+                label: "Активных пользователей",
+                value: infoStatisticsBlockData.activeUsers?.toLocaleString("ru-RU") ?? "—",
+            },
+            {
+                label: "Бирж",
+                value: infoStatisticsBlockData.exchanges?.toLocaleString("ru-RU") ?? "—",
+            },
+        ]
+        : [];
 
     return (
         <div className={styles.mainPage}>
@@ -26,14 +69,36 @@ const MainPage = () => {
             {/* Блок со статистикой */}
             <section className={styles.statsSection}>
                 <h2 className={styles.sectionTitle}>Ключевые показатели</h2>
-                <div className={styles.statsGrid}>
-                    {stats.map((stat, index) => (
-                        <div key={index} className={styles.statCard}>
-                            <p className={styles.statValue}>{stat.value}</p>
-                            <p className={styles.statLabel}>{stat.label}</p>
-                        </div>
-                    ))}
-                </div>
+
+                {loadingInfoStatisticsBlockData ? (
+                    <div className={styles.statsGrid}>
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className={styles.statCard}>
+                                <p className={styles.statValue}>…</p>
+                                <p className={styles.statLabel}>Загрузка…</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : error ? (
+                    <div className={styles.statsError}>
+                        <p>⚠️ {error}</p>
+                        <button
+                            className={styles.retryButton}
+                            onClick={fetchInfoStatisticsBlockData}
+                        >
+                            Повторить
+                        </button>
+                    </div>
+                ) : (
+                    <div className={styles.statsGrid}>
+                        {stats.map((stat, index) => (
+                            <div key={index} className={styles.statCard}>
+                                <p className={styles.statValue}>{stat.value}</p>
+                                <p className={styles.statLabel}>{stat.label}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </section>
 
             {/* Информационные карточки */}
