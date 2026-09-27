@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
-
-import { getInfoStatisticsBlockData, InfoStatisticsBlock } from "../../data/mainPageApi";
-
 import styles from "./MainPage.module.css";
+import { getInfoStatisticsBlockData, InfoStatisticsBlock } from "../../data/mainPageApi";
+import ErrorCard from "../../errorCard/ErrorCard";
 
 const MainPage = () => {
     const [infoStatisticsBlockData, setInfoStatisticsBlockData] =
         useState<InfoStatisticsBlock | null>(null);
-
     const [loadingInfoStatisticsBlockData, setLoadingInfoStatisticsBlockData] =
         useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<{ message: string; isNetwork: boolean } | null>(null);
 
     const fetchInfoStatisticsBlockData = async () => {
         try {
@@ -18,14 +16,14 @@ const MainPage = () => {
             setError(null);
             const data = await getInfoStatisticsBlockData();
             setInfoStatisticsBlockData(data);
-            console.log(infoStatisticsBlockData);
         } catch (err: any) {
             console.error("Ошибка загрузки статистики:", err);
-            const errorMsg =
-                err.serverMessage ||
-                err.message ||
+            const isNetwork = Boolean(err?.isNetworkError);
+            const message =
+                err?.serverMessage ||
+                err?.message ||
                 "Не удалось загрузить статистику. Попробуйте позже.";
-            setError(errorMsg);
+            setError({ message, isNetwork });
         } finally {
             setLoadingInfoStatisticsBlockData(false);
         }
@@ -35,7 +33,6 @@ const MainPage = () => {
         fetchInfoStatisticsBlockData();
     }, []);
 
-    // Формируем массив статистики из полей модели
     const stats = infoStatisticsBlockData
         ? [
             {
@@ -73,22 +70,24 @@ const MainPage = () => {
                 {loadingInfoStatisticsBlockData ? (
                     <div className={styles.statsGrid}>
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className={styles.statCard}>
+                            <div key={i} className={`${styles.statCard} ${styles.skeleton}`}>
                                 <p className={styles.statValue}>…</p>
                                 <p className={styles.statLabel}>Загрузка…</p>
                             </div>
                         ))}
                     </div>
                 ) : error ? (
-                    <div className={styles.statsError}>
-                        <p>⚠️ {error}</p>
-                        <button
-                            className={styles.retryButton}
-                            onClick={fetchInfoStatisticsBlockData}
-                        >
-                            Повторить
-                        </button>
-                    </div>
+                    <ErrorCard
+                        icon={error.isNetwork ? "🛰️" : "⚠️"}
+                        title={error.isNetwork ? "Сервер недоступен" : "Не удалось загрузить данные"}
+                        message={
+                            error.isNetwork
+                                ? "Не удаётся связаться с сервером. Проверьте, запущен ли бэкенд, и повторите попытку."
+                                : error.message
+                        }
+                        retryLabel="Повторить"
+                        onRetry={fetchInfoStatisticsBlockData}
+                    />
                 ) : (
                     <div className={styles.statsGrid}>
                         {stats.map((stat, index) => (
