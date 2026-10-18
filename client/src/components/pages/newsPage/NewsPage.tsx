@@ -3,12 +3,9 @@ import { useAuth } from "../../context/AuthContext";
 import { MOCK_NEWS } from "../../data/mockData";
 import { News } from "../../types";
 import styles from "./NewsPage.module.css";
+// ✅ Импортируем компонент карточки из правильного места
+import { NewsCard } from "../../infoCards/NewsCard";
 
-/**
- * Страница новостей
- * Отображает новости о биржах, облигациях и аналитике.
- * Администратор может редактировать новости.
- */
 const NewsPage = () => {
     const { isAdmin } = useAuth();
     const [news, setNews] = useState<News[]>(MOCK_NEWS);
@@ -22,9 +19,6 @@ const NewsPage = () => {
         ? news
         : news.filter((n) => n.category === filterCategory);
 
-    /**
-     * Открыть редактор для новой новости
-     */
     const handleCreateNews = () => {
         setEditingNews({
             id: news.length + 1,
@@ -37,17 +31,11 @@ const NewsPage = () => {
         setShowEditor(true);
     };
 
-    /**
-     * Открыть редактор для существующей
-     */
     const handleEditNews = (item: News) => {
         setEditingNews({ ...item });
         setShowEditor(true);
     };
 
-    /**
-     * Сохранить новость
-     */
     const handleSaveNews = () => {
         if (!editingNews) return;
 
@@ -61,9 +49,6 @@ const NewsPage = () => {
         setEditingNews(null);
     };
 
-    /**
-     * Удалить новость
-     */
     const handleDeleteNews = (id: number) => {
         if (window.confirm("Удалить новость?")) {
             setNews(news.filter((n) => n.id !== id));
@@ -107,32 +92,27 @@ const NewsPage = () => {
             <div className={styles.newsGrid}>
                 {filteredNews.length > 0 ? (
                     filteredNews.map((item) => (
-                        <div key={item.id} className={styles.newsCard}>
-                            <div className={styles.newsHeader}>
-                                <span className={styles.newsCategory}>{item.category}</span>
-                                <span className={styles.newsDate}>{item.date}</span>
-                            </div>
-                            <h2 className={styles.newsTitle}>{item.title}</h2>
-                            <p className={styles.newsContent}>{item.content}</p>
-                            <div className={styles.newsFooter}>
-                                <span className={styles.newsAuthor}>✍️ {item.author}</span>
-                                {isAdmin && (
-                                    <div className={styles.newsActions}>
-                                        <button
-                                            className={styles.editButton}
-                                            onClick={() => handleEditNews(item)}
-                                        >
-                                            ✏️
-                                        </button>
-                                        <button
-                                            className={styles.deleteButton}
-                                            onClick={() => handleDeleteNews(item.id)}
-                                        >
-                                            🗑️
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                        <div key={item.id} style={{ position: "relative" }}>
+                            <NewsCard news={item} />
+                            
+                            {isAdmin && (
+                                <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px" }}>
+                                    <button
+                                        className={styles.editButton}
+                                        onClick={() => handleEditNews(item)}
+                                        style={{ background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", cursor: "pointer", borderRadius: "4px", padding: "4px" }}
+                                    >
+                                        ✏️
+                                    </button>
+                                    <button
+                                        className={styles.deleteButton}
+                                        onClick={() => handleDeleteNews(item.id)}
+                                        style={{ background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", cursor: "pointer", borderRadius: "4px", padding: "4px" }}
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))
                 ) : (
@@ -140,7 +120,7 @@ const NewsPage = () => {
                 )}
             </div>
 
-            {/* ==================== РЕДАКТОР НОВОСТИ ==================== */}
+            {/* РЕДАКТОР НОВОСТИ */}
             {showEditor && editingNews && (
                 <div className={styles.modalOverlay} onClick={() => setShowEditor(false)}>
                     <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
