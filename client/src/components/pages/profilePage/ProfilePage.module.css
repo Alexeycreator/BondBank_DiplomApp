@@ -1,6 +1,6 @@
 .profilePage {
     padding: 20px 0;
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -9,267 +9,150 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    background-color: #ffffff;
+    background-color: #1f2a44;
     padding: 24px;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #2d3b5e;
     margin-bottom: 24px;
-    flex-wrap: wrap;
 }
 
 .avatar {
     width: 64px;
     height: 64px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4fc3f7, #38b0e8);
-    color: #ffffff;
+    background-color: #4fc3f7;
+    color: #1a1a2e;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    font-weight: 700;
-    flex-shrink: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.userInfo {
+    flex: 1;
 }
 
 .userName {
     font-size: 22px;
-    color: #1a1a2e;
-    margin: 0 0 6px 0;
+    color: #ffffff;
+    margin-bottom: 4px;
 }
 
-.roleBadge {
-    display: inline-block;
+.userRole {
+    font-size: 13px;
+    color: #a0aabf;
+    background-color: rgba(79, 195, 247, 0.15);
     padding: 4px 12px;
     border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    background-color: #e8f6fe;
-    color: #0288d1;
-}
-
-.adminBadge {
-    background-color: #fff3cd;
-    color: #856404;
+    display: inline-block;
 }
 
 .logoutButton {
-    margin-left: auto;
-    padding: 8px 20px;
-    background-color: transparent;
-    color: #e74c3c;
-    border: 1px solid #e74c3c;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s;
-}
-
-.logoutButton:hover {
-    background-color: #e74c3c;
-    color: #ffffff;
-}
-
-/* ==================== СООБЩЕНИЯ ==================== */
-.message {
-    padding: 12px 20px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.successMsg {
-    background-color: #e8f8f0;
-    color: #2ecc71;
-    border-left: 4px solid #2ecc71;
-}
-
-.errorMsg {
-    background-color: #fdeaea;
-    color: #e74c3c;
-    border-left: 4px solid #e74c3c;
-}
-
-/* ==================== СТАТУС ПРОФИЛЯ ==================== */
-.profileStatus {
-    padding: 16px 20px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.complete {
-    background-color: #e8f8f0;
-    color: #2ecc71;
-    border-left: 4px solid #2ecc71;
-}
-
-.incomplete {
-    background-color: #fff3cd;
-    color: #856404;
-    border-left: 4px solid #ff9800;
-}
-
-/* ==================== ТАБЫ ==================== */
-.tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.tab {
-    padding: 12px 20px;
-    background: none;
-    border: none;
-    font-size: 15px;
-    font-weight: 500;
-    color: #888;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s;
-    margin-bottom: -2px;
-}
-
-.tab:hover {
-    color: #4fc3f7;
-}
-
-.activeTab {
-    color: #1a1a2e;
-    border-bottom-color: #4fc3f7;
-}
-
-/* ==================== КОНТЕНТ ТАБА ==================== */
-.tabContent {
-    background-color: #ffffff;
-    padding: 28px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-}
-
-.sectionTitle {
-    font-size: 18px;
-    color: #1a1a2e;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.sectionTitle:not(:first-child) {
-    margin-top: 32px;
+    white-space: nowrap;
 }
 
 /* ==================== ФОРМА ==================== */
-.formGrid {
+.formContainer {
+    background-color: #1f2a44;
+    padding: 32px;
+    border-radius: 12px;
+    border: 1px solid #2d3b5e;
+}
+
+.formRow {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
 }
 
-.formGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.formGroup label {
-    font-size: 13px;
-    color: #666;
+/* ✅ Принудительно делаем лейблы светлыми */
+.formContainer :global(.form-label) {
+    color: #a0aabf !important; /* Светло-серый цвет */
     font-weight: 500;
 }
 
-.formGroup input {
-    padding: 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s;
+/* ✅ Темные поля ввода */
+.darkInput {
+    background-color: #151b2b !important;
+    border: 1px solid #2d3b5e !important;
+    color: #ffffff !important;
 }
 
-.formGroup input:focus {
-    border-color: #4fc3f7;
+.darkInput:focus {
+    border-color: #4fc3f7 !important;
+    box-shadow: 0 0 0 0.2rem rgba(79, 195, 247, 0.25) !important;
+    background-color: #151b2b !important;
 }
 
-/* ==================== КНОПКИ ==================== */
-.saveButton {
-    background-color: #4fc3f7;
-    color: #1a1a2e;
+/* ==================== ТАБЫ ==================== */
+:global(.custom-tabs) {
+    border-bottom-color: #2d3b5e;
+}
+
+:global(.custom-tabs .nav-link) {
+    color: #a0aabf;
     border: none;
-    padding: 12px 28px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    border-bottom: 2px solid transparent;
+    background-color: transparent;
+    transition: all 0.2s ease;
+    padding: 12px 16px;
+    font-weight: 500;
 }
 
-.saveButton:hover {
-    background-color: #38b0e8;
-}
-
-/* ==================== ОПАСНАЯ ЗОНА ==================== */
-.dangerZone {
-    margin-top: 40px;
-    padding: 24px;
-    border: 2px solid #fdeaea;
-    border-radius: 12px;
-    background-color: #fffafa;
-}
-
-.dangerTitle {
-    font-size: 18px;
-    color: #e74c3c;
-    margin-bottom: 12px;
-}
-
-.dangerText {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 16px;
-    line-height: 1.6;
-}
-
-.deleteButton {
-    background-color: #e74c3c;
+:global(.custom-tabs .nav-link:hover) {
     color: #ffffff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
-.deleteButton:hover {
-    background-color: #c0392b;
+:global(.custom-tabs .nav-link.active) {
+    color: #4fc3f7 !important;
+    background-color: transparent !important;
+    border-bottom: 2px solid #4fc3f7 !important;
 }
 
 /* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 768px) {
+    .formRow {
+        grid-template-columns: 1fr;
+    }
     .profileHeader {
         flex-direction: column;
         text-align: center;
     }
+}
 
-    .logoutButton {
-        margin-left: 0;
-    }
+/* ✅ Стилизация аккордеона под темную тему */
+.darkAccordion :global(.accordion-item) {
+    background-color: #151b2b !important; /* Темный фон для секций */
+    border: 1px solid #2d3b5e !important;
+    margin-bottom: 12px;
+    border-radius: 8px !important;
+    overflow: hidden;
+}
 
-    .tabs {
-        flex-wrap: wrap;
-    }
+.darkAccordion :global(.accordion-header) {
+    background-color: transparent;
+}
 
-    .tab {
-        padding: 10px 14px;
-        font-size: 13px;
-    }
+.darkAccordion :global(.accordion-button) {
+    background-color: #1f2a44 !important; /* Фон заголовка */
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: none !important;
+}
 
-    .formGrid {
-        grid-template-columns: 1fr;
-    }
+/* Цвет иконки (стрелочки) */
+.darkAccordion :global(.accordion-button::after) {
+    filter: invert(1); /* Делает стрелку белой */
+}
+
+.darkAccordion :global(.accordion-button:not(.collapsed)) {
+    background-color: #2d3b5e !important; /* Фон открытого заголовка */
+    color: #4fc3f7 !important; /* Голубой текст для активного */
+}
+
+.darkAccordion :global(.accordion-body) {
+    background-color: #151b2b !important; /* Темный фон тела */
+    color: #a0aabf;
 }
