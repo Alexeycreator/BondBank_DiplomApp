@@ -17,7 +17,6 @@ import BadRequestPage from "./components/pages/errorPages/BadRequestPage";
 import ServerErrorPage from "./components/pages/errorPages/ServerErrorPage";
 import AdminPage from "./components/pages/adminPage/AdminPage";
 import ServerHealthCheck from "./components/serverHealthCheck/ServerHealthCheck";
-import "./index.module.css";
 
 function App() {
     return (

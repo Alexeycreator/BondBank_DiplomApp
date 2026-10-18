@@ -8,27 +8,28 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    background-color: #1a1a2e;
+    background-color: #1a1a2e !important;
     font-family: Arial, sans-serif;
+    color: #ffffff;
 }
 
 #root {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #1a1a2e;
+    background-color: #1a1a2e !important;
 }
 
 .app {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #1a1a2e;
+    background-color: #1a1a2e !important;
 }
 
 .main {
     flex: 1;
-    background-color: #ffffff;
+    background-color: #1a1a2e !important;
     padding: 20px;
     max-width: 1200px;
     width: 100%;
