@@ -3,84 +3,25 @@
     padding: 20px 0;
 }
 
-/* ==================== ЗАГОЛОВОК ==================== */
 .pageTitle {
     font-size: 32px;
-    color: #1a1a2e;
+    color: #ffffff;
     margin-bottom: 8px;
 }
 
 .pageDescription {
     font-size: 16px;
-    color: #666;
+    color: #a0aabf;
     margin-bottom: 32px;
-}
-
-/* ==================== ПОИСК ==================== */
-.searchSection {
-    display: flex;
-    gap: 16px;
-    align-items: flex-end;
-    margin-bottom: 24px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    flex-wrap: wrap;
-}
-
-.searchField {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 180px;
-}
-
-.searchField label {
-    font-size: 13px;
-    color: #666;
-    font-weight: 500;
-}
-
-.searchSelect,
-.searchInput {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-.searchSelect:focus,
-.searchInput:focus {
-    border-color: #4fc3f7;
-}
-
-.resetButton {
-    padding: 10px 20px;
-    background-color: #f0f0f0;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s;
-    height: fit-content;
-}
-
-.resetButton:hover {
-    background-color: #e0e0e0;
 }
 
 /* ==================== ГРАФИК ==================== */
 .chartSection {
-    background-color: #ffffff;
+    background-color: #1f2a44;
     padding: 24px;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #2d3b5e;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     margin-bottom: 32px;
 }
 
@@ -96,169 +37,21 @@
     gap: 20px;
 }
 
-.forecastCard {
-    background-color: #ffffff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.forecastCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.selectedCard {
-    border-color: #4fc3f7;
-    background-color: #f8fcff;
-}
-
-/* ==================== ЗАГОЛОВОК КАРТОЧКИ ==================== */
-.forecastHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.forecastIsin {
-    font-family: monospace;
-    font-size: 12px;
-    color: #888;
-}
-
-.forecastChange {
-    font-weight: 700;
-    font-size: 15px;
-    padding: 4px 10px;
-    border-radius: 12px;
-}
-
-.positive {
-    color: #2ecc71;
-    background-color: #e8f8f0;
-}
-
-.negative {
-    color: #e74c3c;
-    background-color: #fdeaea;
-}
-
-/* ==================== НАЗВАНИЕ И ТИП ==================== */
-.forecastName {
-    font-size: 16px;
-    color: #1a1a2e;
-    margin-bottom: 6px;
-}
-
-.bondType {
-    display: inline-block;
-    font-size: 11px;
-    color: #0288d1;
-    background-color: #e8f6fe;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 600;
-    margin-bottom: 16px;
-}
-
-/* ==================== ЦЕНЫ ==================== */
-.forecastPrices {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
-    padding: 12px 0;
-    border-top: 1px solid #f0f0f0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.priceBlock {
-    text-align: center;
-}
-
-.priceLabel {
-    display: block;
-    font-size: 11px;
-    color: #999;
-    margin-bottom: 4px;
-}
-
-.currentPrice {
-    display: block;
-    font-size: 15px;
-    font-weight: 700;
-    color: #1a1a2e;
-}
-
-.forecastPrice {
-    display: block;
-    font-size: 15px;
-    font-weight: 700;
-    color: #ff9800;
-}
-
-/* ==================== УВЕРЕННОСТЬ ==================== */
-.forecastConfidence {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 16px;
-}
-
-.confidenceHigh {
-    font-weight: 700;
-    color: #2ecc71;
-}
-
-.confidenceMedium {
-    font-weight: 700;
-    color: #ff9800;
-}
-
-.confidenceLow {
-    font-weight: 700;
-    color: #e74c3c;
-}
-
-/* ==================== КНОПКА ПОДРОБНЕЕ ==================== */
-.detailsButton {
-    width: 100%;
-    padding: 10px;
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.detailsButton:hover {
-    background-color: #38b0e8;
-}
-
-/* ==================== НЕТ ДАННЫХ ==================== */
 .noData {
     grid-column: 1 / -1;
     text-align: center;
     padding: 40px;
-    color: #aaa;
+    color: #a0aabf;
     font-size: 16px;
+    background-color: #1f2a44;
+    border-radius: 12px;
+    border: 1px solid #2d3b5e;
 }
 
 /* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 768px) {
     .pageTitle {
         font-size: 24px;
-    }
-
-    .searchSection {
-        flex-direction: column;
-        align-items: stretch;
     }
 
     .forecastGrid {
@@ -268,24 +61,10 @@
     .chartContainer {
         height: 220px;
     }
-
-    .forecastPrices {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
 }
 
 @media (max-width: 480px) {
     .pageTitle {
         font-size: 20px;
-    }
-
-    .forecastCard {
-        padding: 16px;
-    }
-
-    .currentPrice,
-    .forecastPrice {
-        font-size: 14px;
     }
 }
