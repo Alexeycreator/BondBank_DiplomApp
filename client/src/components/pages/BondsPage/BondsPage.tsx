@@ -880,14 +880,8 @@ const BondsPage = () => {
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th
-                                    onClick={() => handleSort("id")}
-                                    className={styles.sortableHeader}
-                                >
-                                    ID{" "}
-                                    <span className={styles.sortIcon}>
-                                        {getSortIcon("id")}
-                                    </span>
+                                <th className={styles.sortableHeader} style={{ cursor: "default" }}>
+                                    №
                                 </th>
                                 <th
                                     onClick={() => handleSort("name")}
@@ -950,59 +944,52 @@ const BondsPage = () => {
                         </thead>
                         <tbody>
                             {paginatedBonds.length > 0 ? (
-                                paginatedBonds.map((bond) => (
-                                    <tr
-                                        key={bond.id}
-                                        onClick={() => handleBondClick(bond)}
-                                        className={
-                                            selectedBond?.id === bond.id
-                                                ? styles.selectedRow
-                                                : ""
-                                        }
-                                    >
-                                        <td>{bond.id}</td>
-                                        <td>{bond.name}</td>
-                                        <td className={styles.isin}>
-                                            {bond.isin}
-                                        </td>
-                                        <td>
-                                            <span
-                                                className={styles.typeBadge}
-                                                title={
-                                                    BOND_TYPE_LABELS[bond.type]
-                                                }
-                                            >
-                                                {bond.type.toUpperCase()}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {formatPrice(bond)}
-                                            {bond.currency !==
-                                                selectedCurrency && (
-                                                <span
-                                                    className={
-                                                        styles.currencyBadge
-                                                    }
-                                                >
-                                                    из {bond.currency}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td
+                                paginatedBonds.map((bond, index) => {
+                                    // Сквозная нумерация с учётом пагинации:
+                                    // 1-я страница → 1..50, 2-я → 51..100 и т.д.
+                                    const rowNumber = (safePage - 1) * PAGE_SIZE + index + 1;
+
+                                    return (
+                                        <tr
+                                            key={bond.id}
+                                            onClick={() => handleBondClick(bond)}
                                             className={
-                                                bond.yield !== null &&
-                                                bond.yield > 4.5
-                                                    ? styles.yieldHigh
-                                                    : styles.yieldLow
+                                                selectedBond?.id === bond.id
+                                                    ? styles.selectedRow
+                                                    : ""
                                             }
                                         >
-                                            {bond.yield !== null
-                                                ? `${bond.yield}%`
-                                                : "—"}
-                                        </td>
-                                        <td>{bond.maturity ?? "—"}</td>
-                                    </tr>
-                                ))
+                                            <td>{rowNumber}</td>
+                                            <td>{bond.name}</td>
+                                            <td className={styles.isin}>
+                                                {bond.isin}
+                                            </td>
+                                            <td>
+                                                <span
+                                                    className={styles.typeBadge}
+                                                    title={BOND_TYPE_LABELS[bond.type]}
+                                                >
+                                                    {bond.type.toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {formatPrice(bond)}
+                                            </td>
+                                            <td
+                                                className={
+                                                    bond.yield !== null && bond.yield > 4.5
+                                                        ? styles.yieldHigh
+                                                        : styles.yieldLow
+                                                }
+                                            >
+                                                {bond.yield !== null
+                                                    ? `${bond.yield}%`
+                                                    : "—"}
+                                            </td>
+                                            <td>{bond.maturity ?? "—"}</td>
+                                        </tr>
+                                    );
+                                })
                             ) : (
                                 <tr>
                                     <td colSpan={7} className={styles.noData}>
@@ -1045,11 +1032,10 @@ const BondsPage = () => {
                         {pageNumbers.map((num) => (
                             <button
                                 key={num}
-                                className={`${styles.pageButton} ${
-                                    num === safePage
-                                        ? styles.pageButtonActive
-                                        : ""
-                                }`}
+                                className={`${styles.pageButton} ${num === safePage
+                                    ? styles.pageButtonActive
+                                    : ""
+                                    }`}
                                 onClick={() => handlePageChange(num)}
                             >
                                 {num}
@@ -1060,10 +1046,10 @@ const BondsPage = () => {
                             <>
                                 {pageNumbers[pageNumbers.length - 1] <
                                     totalPages - 1 && (
-                                    <span className={styles.pageEllipsis}>
-                                        …
-                                    </span>
-                                )}
+                                        <span className={styles.pageEllipsis}>
+                                            …
+                                        </span>
+                                    )}
                                 <button
                                     className={styles.pageButton}
                                     onClick={() => handlePageChange(totalPages)}
