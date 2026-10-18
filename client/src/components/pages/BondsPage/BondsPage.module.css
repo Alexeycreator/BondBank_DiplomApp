@@ -3,7 +3,6 @@
     padding: 20px 0;
 }
 
-/* ==================== ЗАГОЛОВОК ==================== */
 .pageHeader {
     display: flex;
     justify-content: space-between;
@@ -15,17 +14,16 @@
 
 .pageTitle {
     font-size: 32px;
-    color: #1a1a2e;
+    color: #ffffff;
     margin-bottom: 8px;
 }
 
 .pageDescription {
     font-size: 16px;
-    color: #666;
+    color: #a0aabf;
     margin: 0;
 }
 
-/* ==================== ДЕЙСТВИЯ В ШАПКЕ ==================== */
 .headerActions {
     display: flex;
     align-items: center;
@@ -33,455 +31,145 @@
     flex-wrap: wrap;
 }
 
-/* ==================== ВЫБОР ВАЛЮТЫ (выделенный) ==================== */
-.currencySelector {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
-    border: 2px solid #4fc3f7;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(79, 195, 247, 0.2);
-    transition: box-shadow 0.2s, transform 0.2s;
+/* ==================== ВЫБОР ВАЛЮТЫ (ДРОПДАУН) ==================== */
+/* ✅ Стили для элементов выпадающего списка валют */
+.currencyItem {
+    color: #ffffff !important;
+    background-color: transparent !important;
+    transition: all 0.2s;
 }
 
-.currencySelector:hover {
-    box-shadow: 0 4px 14px rgba(79, 195, 247, 0.35);
-    transform: translateY(-1px);
+.currencyItem:hover, 
+.currencyItem:focus {
+    color: #4fc3f7 !important;
+    background-color: rgba(79, 195, 247, 0.15) !important;
 }
 
-.currencyIcon {
-    font-size: 24px;
-    line-height: 1;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+/* ✅ Стиль для активной (выбранной) валюты */
+.currencyItem.active, 
+.currencyItem:active {
+    background-color: #4fc3f7 !important;
+    color: #1a1a2e !important;
+    font-weight: bold;
 }
 
-.currencyTexts {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+/* ✅ Стилизация скроллбара для выпадающего списка */
+:global(.dropdown-menu)::-webkit-scrollbar {
+    width: 8px;
 }
 
-.currencyLabel {
-    font-size: 11px;
-    font-weight: 600;
-    color: #0277bd;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+:global(.dropdown-menu)::-webkit-scrollbar-track {
+    background: #1a1a2e; 
 }
 
-.currencySelect {
-    background: transparent;
-    border: none;
-    font-size: 16px;
-    font-weight: 700;
-    color: #0f172a;
-    cursor: pointer;
-    padding: 0;
-    padding-right: 20px;
-    outline: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%230277bd' d='M6 8L0 0h12z'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 2px center;
+:global(.dropdown-menu)::-webkit-scrollbar-thumb {
+    background-color: #2d3b5e; 
+    border-radius: 4px;
 }
 
-.currencySelect:focus {
-    outline: none;
+:global(.dropdown-menu)::-webkit-scrollbar-thumb:hover {
+    background-color: #4fc3f7;
 }
 
-.currencySelect option {
-    background: #ffffff;
-    color: #0f172a;
-    font-weight: 500;
-}
-
-/* ==================== ПОИСК ==================== */
-.searchSection {
-    display: flex;
-    gap: 16px;
-    align-items: flex-end;
-    margin-bottom: 20px;
-    padding: 20px;
-    background-color: #f8fafc;
-    border-radius: 12px;
-    border: 1px solid #e8e8e8;
-    flex-wrap: wrap;
-}
-
-.searchField {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 180px;
-}
-
-.searchField label {
-    font-size: 13px;
-    color: #666;
-    font-weight: 500;
-}
-
-.searchSelect,
-.searchInput {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.3s;
-    background: #ffffff;
-}
-
-.searchSelect:focus,
-.searchInput:focus {
-    border-color: #4fc3f7;
-}
-
-.resetButton {
-    padding: 10px 20px;
-    background-color: #f0f0f0;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s;
-    height: fit-content;
-}
-
-.resetButton:hover {
-    background-color: #e0e0e0;
-}
-
-/* ==================== ГРАФИК + ИНФОРМАЦИЯ ==================== */
-.chartAndInfoSection {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
-    margin-bottom: 40px;
-    align-items: stretch;
-}
-
-.chartSection {
-    background-color: #ffffff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    min-height: 400px;
-}
-
-.chartContainer {
-    position: relative;
-    flex: 1;
-    min-height: 350px;
-    width: 100%;
-}
-
-/* ==================== ИНФОРМАЦИЯ ОБ ОБЛИГАЦИИ ==================== */
-.infoSection {
-    background-color: #ffffff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    overflow-y: auto;
-    max-height: 600px;
-}
-
-.infoTitle {
-    font-size: 18px;
-    color: #1a1a2e;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #4fc3f7;
-}
-
-.infoList {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.infoRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #f5f5f5;
-    gap: 12px;
-}
-
-.infoLabel {
-    font-size: 13px;
-    color: #888;
-    flex-shrink: 0;
-}
-
-.infoValue {
-    font-size: 14px;
-    color: #1a1a2e;
-    font-weight: 500;
-    text-align: right;
-    word-break: break-word;
-}
-
-.infoValueHighlight {
-    font-size: 16px;
-    color: #4fc3f7;
-    font-weight: 700;
-}
-
-.noSelection {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-height: 300px;
-    color: #aaa;
-    text-align: center;
-    font-size: 14px;
-}
-
-/* ==================== ТАБЛИЦА ==================== */
+/* ==================== СЕКЦИЯ ТАБЛИЦЫ ==================== */
 .tableSection {
-    background-color: #ffffff;
+    background-color: #1f2a44;
     padding: 24px;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid #2d3b5e;
 }
 
 .sectionTitle {
     font-size: 20px;
-    color: #1a1a2e;
+    color: #ffffff;
     margin-bottom: 16px;
-}
-
-.tableWrapper {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-.table th {
-    background-color: #f5f5f5;
-    color: #333;
-    padding: 12px 16px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #e0e0e0;
-    white-space: nowrap;
-}
-
-.table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.table tbody tr {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f8f8;
-}
-
-.selectedRow {
-    background-color: #e8f6fe !important;
-    border-left: 3px solid #4fc3f7;
-}
-
-/* ==================== СОРТИРОВКА ==================== */
-.sortableHeader {
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s;
-}
-
-.sortableHeader:hover {
-    background-color: #eef5ff;
-}
-
-.sortIcon {
-    display: inline-block;
-    font-size: 11px;
-    color: #4fc3f7;
-    margin-left: 4px;
-    opacity: 0.8;
-}
-
-.headerCurrency {
-    font-size: 12px;
-    color: #0277bd;
-    font-weight: 600;
 }
 
 /* ==================== СТИЛИ ЯЧЕЕК ==================== */
 .isin {
     font-family: monospace;
     font-size: 12px;
-    color: #555;
+    color: #a0aabf !important;
 }
 
-.typeBadge {
+.sortIcon {
     display: inline-block;
-    padding: 4px 10px;
-    background-color: #e8f6fe;
-    color: #0288d1;
-    border-radius: 12px;
     font-size: 11px;
+    color: #4fc3f7 !important;
+    margin-left: 4px;
+    opacity: 0.8;
+}
+
+.headerCurrency {
+    font-size: 12px;
+    color: #4fc3f7 !important;
     font-weight: 600;
 }
 
-.currencyBadge {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 6px;
-    font-size: 10px;
-    font-weight: 600;
-    color: #0277bd;
-    background: #e3f2fd;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    vertical-align: middle;
-}
-
-.yieldHigh {
-    color: #e74c3c;
-    font-weight: 600;
-}
-
-.yieldLow {
-    color: #2ecc71;
-    font-weight: 600;
-}
-
-.noData {
-    text-align: center;
-    color: #aaa;
-    padding: 40px !important;
+.selectedRow td {
+    background-color: rgba(79, 195, 247, 0.15) !important;
+    color: #ffffff !important;
+    border-left: 3px solid #4fc3f7;
 }
 
 /* ==================== ПАГИНАЦИЯ ==================== */
-.pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-top: 16px;
-    flex-wrap: wrap;
+:global(.pagination .page-link) {
+    background-color: #1a1a2e !important;
+    border-color: #2d3b5e !important;
+    color: #ffffff !important;
+    margin: 0 2px;
+    border-radius: 6px !important;
 }
 
-.pageButton {
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    border: 1px solid #d0d7de;
-    background: #fff;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background 0.15s, border-color 0.15s;
+:global(.pagination .page-link:hover) {
+    background-color: #2d3b5e !important;
+    border-color: #4fc3f7 !important;
+    color: #ffffff !important;
 }
 
-.pageButton:hover:not(:disabled) {
-    background: #f0f6ff;
-    border-color: #4fc3f7;
+:global(.pagination .page-item.active .page-link) {
+    background-color: #4fc3f7 !important;
+    border-color: #4fc3f7 !important;
+    color: #1a1a2e !important;
+    font-weight: bold;
 }
 
-.pageButton:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+:global(.pagination .page-item.disabled .page-link) {
+    background-color: #151b2b !important;
+    border-color: #2d3b5e !important;
+    color: #4a5568 !important;
 }
 
-.pageButtonActive {
-    background: #4fc3f7;
-    border-color: #4fc3f7;
-    color: #fff;
+/* ==================== ТАБЫ В МОДАЛЬНОМ ОКНЕ ==================== */
+:global(.custom-tabs) {
+    border-bottom-color: #2d3b5e;
+}
+
+:global(.custom-tabs .nav-link) {
+    color: #a0aabf;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background-color: transparent;
+    transition: all 0.2s ease;
+    padding: 12px 16px;
+}
+
+:global(.custom-tabs .nav-link:hover) {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+:global(.custom-tabs .nav-link.active) {
+    color: #4fc3f7 !important;
+    background-color: transparent !important;
+    border-bottom: 2px solid #4fc3f7 !important;
     font-weight: 600;
 }
 
-.pageEllipsis {
-    padding: 0 4px;
-    color: #6b7280;
-}
-
-.pageInfo {
-    margin-left: 12px;
-    font-size: 13px;
-    color: #6b7280;
-}
-
 /* ==================== АДАПТИВНОСТЬ ==================== */
-@media (max-width: 992px) {
-    .chartAndInfoSection {
-        grid-template-columns: 1fr;
-    }
-
-    .chartContainer {
-        min-height: 300px;
-    }
-
-    .infoSection {
-        max-height: none;
-    }
-}
-
 @media (max-width: 768px) {
     .pageTitle {
         font-size: 24px;
-    }
-
-    .searchSection {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .table th,
-    .table td {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-
-    .chartContainer {
-        min-height: 250px;
-    }
-
-    .currencySelector {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .table {
-        font-size: 11px;
-    }
-
-    .table th,
-    .table td {
-        padding: 6px 8px;
-    }
-
-    .pageTitle {
-        font-size: 20px;
-    }
-
-    .infoTitle {
-        font-size: 16px;
-    }
-
-    .chartContainer {
-        min-height: 200px;
     }
 }

@@ -1,17 +1,16 @@
 import React, { useRef, useState } from "react";
 import axios from "axios";
 import styles from "./ImportExport.module.css";
+import { useToast } from "../context/ToastContext";
 
 export interface ImportBondsProps {
-    /** Колбэк, вызывается после успешной загрузки файла на сервер */
     onImport: () => void | Promise<void>;
-    /** Опциональный колбэк при ошибке */
-    onError?: (message: string) => void;
 }
 
-const ImportBonds: React.FC<ImportBondsProps> = ({ onImport, onError }) => {
+const ImportBonds: React.FC<ImportBondsProps> = ({ onImport }) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const { showToast } = useToast();
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -19,7 +18,6 @@ const ImportBonds: React.FC<ImportBondsProps> = ({ onImport, onError }) => {
 
         try {
             setIsUploading(true);
-
             const formData = new FormData();
             formData.append("file", file);
 
@@ -30,13 +28,11 @@ const ImportBonds: React.FC<ImportBondsProps> = ({ onImport, onError }) => {
             );
 
             await onImport();
+            showToast("Успешно", "Данные успешно импортированы", "success");
         } catch (err: any) {
-            const msg =
-                err?.response?.data?.message ||
-                err?.message ||
-                "Не удалось импортировать файл";
+            const msg = err?.response?.data?.message || err?.message || "Не удалось импортировать файл";
             console.error("Ошибка импорта:", err);
-            onError?.(msg);
+            showToast("Ошибка", msg, "danger");
         } finally {
             setIsUploading(false);
             if (inputRef.current) inputRef.current.value = "";
@@ -45,14 +41,7 @@ const ImportBonds: React.FC<ImportBondsProps> = ({ onImport, onError }) => {
 
     return (
         <div className={styles.importBonds}>
-            <input
-                ref={inputRef}
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
-                id="import-bonds-input"
-            />
+            <input ref={inputRef} type="file" accept=".csv" onChange={handleFileChange} style={{ display: "none" }} id="import-bonds-input" />
             <label htmlFor="import-bonds-input" className={styles.importButton}>
                 {isUploading ? "Загрузка…" : "📥 Импорт CSV"}
             </label>

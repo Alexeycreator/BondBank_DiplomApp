@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./ImportExport.module.css";
 import { BondView } from "../data/types";
+import { useToast } from "../context/ToastContext";
 
 export interface ExportBondsProps {
     bonds: BondView[];
@@ -8,58 +9,31 @@ export interface ExportBondsProps {
 }
 
 const ExportBonds: React.FC<ExportBondsProps> = ({ bonds, filename }) => {
+    const { showToast } = useToast();
+
     const handleExport = () => {
         if (bonds.length === 0) {
-            alert("Нет данных для экспорта");
+            showToast("Ошибка", "Нет данных для экспорта", "warning");
             return;
         }
 
-        // Формируем заголовки CSV
-        const headers = [
-            "ID",
-            "Название",
-            "ISIN",
-            "Тип",
-            "Цена",
-            "Валюта",
-            "Доходность",
-            "Дата погашения",
-            "Обновлено",
-        ];
-
-        // Формируем строки
+        const headers = ["ID", "Название", "ISIN", "Тип", "Цена", "Валюта", "Доходность", "Дата погашения", "Обновлено"];
         const rows = bonds.map((bond) => [
-            bond.id,
-            bond.name,
-            bond.isin,
-            bond.type.toUpperCase(),
-            bond.price,
-            bond.currency,
-            bond.yield !== null ? `${bond.yield}%` : "—",
-            bond.maturity ?? "—",
-            bond.updatedAt,
+            bond.id, bond.name, bond.isin, bond.type.toUpperCase(), bond.price,
+            bond.currency, bond.yield !== null ? `${bond.yield}%` : "—",
+            bond.maturity ?? "—", bond.updatedAt,
         ]);
 
-        // Собираем CSV
         const escape = (value: unknown): string => {
             const str = String(value ?? "");
-            // Экранируем кавычки и оборачиваем, если есть запятые/кавычки/переносы
             if (str.includes(",") || str.includes('"') || str.includes("\n")) {
                 return `"${str.replace(/"/g, '""')}"`;
             }
             return str;
         };
 
-        const csv = [
-            headers.map(escape).join(","),
-            ...rows.map((row) => row.map(escape).join(",")),
-        ].join("\n");
-
-        // Скачиваем файл
-        const blob = new Blob(["\uFEFF" + csv], {
-            type: "text/csv;charset=utf-8;",
-        }); // \uFEFF — BOM, чтобы Excel корректно открыл кириллицу
-
+        const csv = [headers.map(escape).join(","), ...rows.map((row) => row.map(escape).join(","))].join("\n");
+        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -68,6 +42,9 @@ const ExportBonds: React.FC<ExportBondsProps> = ({ bonds, filename }) => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+
+        // ✅ Показываем уведомление об успехе
+        showToast("Успешно", `Файл ${filename}.csv скачан`, "success");
     };
 
     return (
