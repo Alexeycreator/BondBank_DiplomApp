@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Pagination, Dropdown, Form, Button, InputGroup } from "react-bootstrap";
+import { Pagination, Form, Button, InputGroup } from "react-bootstrap";
 import styles from "./PaginationControl.module.css";
 
 interface PaginationControlProps {
-  /** Текущая страница (начиная с 1) */
   currentPage: number;
-  /** Общее количество страниц */
   totalPages: number;
-  /** Текущий размер страницы */
   pageSize: number;
-  /** Доступные варианты размера страницы */
   pageSizeOptions?: number[];
-  /** Колбэк при смене страницы */
   onPageChange: (page: number) => void;
-  /** Колбэк при смене размера страницы */
   onPageSizeChange: (size: number) => void;
 }
 
@@ -29,12 +23,10 @@ const PaginationControl: React.FC<PaginationControlProps> = ({
 }) => {
   const [jumpPage, setJumpPage] = useState("");
 
-  // Сбрасываем поле ввода при изменении текущей страницы извне
   useEffect(() => {
     setJumpPage("");
   }, [currentPage]);
 
-  // Формируем список страниц с многоточиями
   const getPageNumbers = (): (number | "...")[] => {
     const delta = 2;
     const range: number[] = [];
@@ -87,28 +79,26 @@ const PaginationControl: React.FC<PaginationControlProps> = ({
 
   return (
     <div className={styles.paginationContainer}>
-      {/* Слева: выбор количества строк на странице */}
+      {/* Слева: выбор количества строк */}
       <div className={styles.paginationSection}>
         <span className={styles.label}>Строк на странице:</span>
-        <Dropdown>
-          <Dropdown.Toggle variant="outline-secondary" size="sm" id="page-size-dropdown">
-            {pageSize}
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            {pageSizeOptions.map((size) => (
-              <Dropdown.Item
-                key={size}
-                active={size === pageSize}
-                onClick={() => onPageSizeChange(size)}
-              >
-                {size}
-              </Dropdown.Item>
-            ))}
-          </Dropdown.Menu>
-        </Dropdown>
+        
+        {/* ✅ Используем Form.Select из Bootstrap */}
+        <Form.Select
+          size="sm"
+          value={pageSize}
+          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          className={styles.darkSelect}
+        >
+          {pageSizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </Form.Select>
       </div>
 
-      {/* По центру: навигация по страницам */}
+      {/* По центру: пагинация */}
       <div className={styles.paginationCenter}>
         <Pagination className="mb-0">
           <Pagination.Prev
@@ -135,9 +125,11 @@ const PaginationControl: React.FC<PaginationControlProps> = ({
         </Pagination>
       </div>
 
-      {/* Справа: переход на конкретную страницу */}
+      {/* Справа: переход на страницу */}
       <div className={styles.paginationSection}>
         <span className={styles.label}>Перейти на:</span>
+        
+        {/* ✅ Используем InputGroup из Bootstrap */}
         <InputGroup size="sm" className={styles.jumpInputGroup}>
           <Form.Control
             type="number"
@@ -146,10 +138,11 @@ const PaginationControl: React.FC<PaginationControlProps> = ({
             value={jumpPage}
             onChange={handleJumpChange}
             onKeyDown={handleJumpKeyDown}
-            onBlur={() => setJumpPage("")} // Очищаем при потере фокуса, если ввод не завершен
+            onBlur={() => setJumpPage("")}
             placeholder={`1–${totalPages}`}
+            className={styles.darkInput}
           />
-          <Button variant="outline-secondary" onClick={handleJump}>
+          <Button variant="outline-secondary" onClick={handleJump} className={styles.darkButton}>
             ОК
           </Button>
         </InputGroup>

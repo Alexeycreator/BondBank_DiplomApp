@@ -1,0 +1,52 @@
+/* Обертка для скролла (Table responsive уже делает это, но на всякий случай) */
+.tableWrapper {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+/* Кастомные стили поверх Bootstrap */
+.customTable {
+    margin-bottom: 0 !important;
+    font-size: 14px;
+    border-color: #2d3b5e !important; /* Темная рамка для таблицы */
+}
+
+/* Стили для заголовков */
+.customTable thead th {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    color: #a0aabf !important;
+    border-bottom: 2px solid #2d3b5e !important;
+    padding: 12px 16px !important;
+    white-space: nowrap;
+}
+
+/* Стили для ячеек */
+.customTable tbody td {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    vertical-align: middle;
+}
+
+/* Кликабельные строки */
+.clickable {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* Стили для сортировки (наследуются из Page CSS, но можно продублировать) */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.sortable:hover {
+    color: #ffffff !important;
+}
+
+/* Стили для пустой таблицы */
+.noData {
+    text-align: center;
+    color: #a0aabf !important;
+    padding: 40px !important;
+}

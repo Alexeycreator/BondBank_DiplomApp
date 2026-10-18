@@ -18,6 +18,8 @@ html, body {
     flex-direction: column;
     min-height: 100vh;
     background-color: #1a1a2e !important;
+    width: 100%; /* ✅ Добавлено */
+    overflow-x: hidden; /* ✅ Добавлено, чтобы предотвратить горизонтальную прокрутку */
 }
 
 .app {
@@ -25,13 +27,24 @@ html, body {
     flex-direction: column;
     min-height: 100vh;
     background-color: #1a1a2e !important;
+    width: 100%; /* ✅ Добавлено */
 }
 
+/* ✅ Основной контейнер с жесткими отступами от краев */
 .main {
     flex: 1;
-    background-color: #1a1a2e !important;
-    padding: 20px;
+    background-color: transparent;
+    padding: 20px 40px !important; /* ✅ Жесткий отступ */
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
+    box-sizing: border-box; 
+}
+
+@media (max-width: 1024px) {
+    .main { padding: 20px 24px !important; }
+}
+
+@media (max-width: 768px) {
+    .main { padding: 16px !important; }
 }

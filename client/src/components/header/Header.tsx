@@ -48,9 +48,6 @@ const Header = () => {
                 <nav className={styles.nav}>
                     <ul className={styles.navList}>
                         <li className={styles.navItem}>
-                            <Link to="/" className={styles.navLink}>Главная</Link>
-                        </li>
-                        <li className={styles.navItem}>
                             <Link to="/bonds" className={styles.navLink}>Облигации</Link>
                         </li>
                         <li className={styles.navItem}>
@@ -75,25 +72,6 @@ const Header = () => {
 
                 {/* ==================== ПРАВАЯ ЧАСТЬ ==================== */}
                 <div className={styles.actions}>
-                    {/* Выбор валюты */}
-                    <div className={styles.currencySelector}>
-                        <label htmlFor="currency" className={styles.currencyLabel}>
-                            💱
-                        </label>
-                        <select
-                            id="currency"
-                            className={styles.currencySelect}
-                            value={selectedCurrency}
-                            onChange={handleCurrencyChange}
-                        >
-                            {currencies.map((curr) => (
-                                <option key={curr} value={curr}>
-                                    {curr}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
                     {/* Авторизация / Профиль */}
                     {isAuthenticated ? (
                         <div className={styles.userMenu}>

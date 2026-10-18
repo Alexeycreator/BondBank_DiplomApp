@@ -11,7 +11,7 @@
 .paginationSection {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px; /* Чуть больше отступ для инпутов */
 }
 
 .paginationCenter {
@@ -21,16 +21,58 @@
 }
 
 .label {
-  font-size: 0.875rem; /* ~14px */
-  color: #6c757d; /* Стандартный muted цвет Bootstrap */
+  font-size: 0.875rem;
+  color: #a0aabf; /* Светло-серый цвет */
   white-space: nowrap;
 }
 
-.jumpInputGroup {
-  width: 110px;
+/* ✅ Стилизация селекта (количество строк) */
+.darkSelect {
+  background-color: #1a1a2e !important;
+  color: #ffffff !important;
+  border: 1px solid #2d3b5e !important;
+  width: auto;
+  min-width: 80px;
 }
 
-/* Адаптивность для мобильных устройств */
+.darkSelect:focus {
+  border-color: #4fc3f7 !important;
+  box-shadow: 0 0 0 0.2rem rgba(79, 195, 247, 0.25) !important;
+}
+
+/* ✅ Стилизация инпута (переход на страницу) */
+.darkInput {
+  background-color: #1a1a2e !important;
+  color: #ffffff !important;
+  border: 1px solid #2d3b5e !important;
+}
+
+.darkInput:focus {
+  border-color: #4fc3f7 !important;
+  box-shadow: 0 0 0 0.2rem rgba(79, 195, 247, 0.25) !important;
+  background-color: #1a1a2e !important;
+}
+
+.darkInput::placeholder {
+  color: #6c757d !important;
+}
+
+/* ✅ Стилизация кнопки "ОК" */
+.darkButton {
+  border-color: #2d3b5e !important;
+  color: #ffffff !important;
+}
+
+.darkButton:hover {
+  background-color: #2d3b5e !important;
+  border-color: #4fc3f7 !important;
+}
+
+.jumpInputGroup {
+  width: 140px;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
   .paginationContainer {
     flex-direction: column;
@@ -39,7 +81,7 @@
   }
 
   .paginationCenter {
-    order: -1; /* Выносим пагинацию наверх на мобильных */
+    order: -1;
   }
 
   .paginationSection {

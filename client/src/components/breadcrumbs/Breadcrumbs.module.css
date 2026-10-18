@@ -1,0 +1,90 @@
+.breadcrumbContainer {
+    background-color: transparent;
+    padding: 16px 0;
+    margin-bottom: 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+/* Ссылки */
+.breadcrumbContainer :global(.breadcrumb-item a) {
+    color: #a0aabf;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumbContainer :global(.breadcrumb-item a:hover) {
+    color: #4fc3f7;
+}
+
+/* Активный элемент */
+.breadcrumbContainer :global(.breadcrumb-item.active) {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Разделитель */
+.breadcrumbContainer :global(.breadcrumb-item + .breadcrumb-item::before) {
+    color: #4a5568; 
+}
+
+/* ✅ Стили для троеточия */
+.ellipsisItem {
+    display: flex;
+    align-items: center;
+}
+
+.dropdownToggle {
+    color: #a0aabf !important;
+    text-decoration: none !important;
+    padding: 0 8px !important;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ✅ Убираем стандартную стрелку Bootstrap */
+.dropdownToggle::after {
+    display: none !important;
+}
+
+.dropdownToggle:hover {
+    color: #4fc3f7 !important;
+}
+
+/* ✅ Стили для темного выпадающего меню */
+.dropdownMenu {
+    background-color: #1f2a44 !important; /* Темный фон */
+    border: 1px solid #2d3b5e !important;  /* Темная рамка */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+    padding: 8px 0 !important;
+    border-radius: 8px !important;
+    margin-top: 8px !important;
+}
+
+/* ✅ Стили для пунктов меню */
+.dropdownMenu :global(.dropdown-item) {
+    color: #a0aabf !important;
+    font-size: 14px;
+    padding: 8px 20px !important;
+    transition: all 0.2s ease !important;
+    background-color: transparent !important;
+}
+
+/* ✅ Эффект при наведении и фокусе (подсветка голубым) */
+.dropdownMenu :global(.dropdown-item:hover),
+.dropdownMenu :global(.dropdown-item:focus) {
+    background-color: rgba(79, 195, 247, 0.15) !important;
+    color: #4fc3f7 !important;
+}
+
+/* ✅ Убираем стандартный синий фон при клике */
+.dropdownMenu :global(.dropdown-item.active),
+.dropdownMenu :global(.dropdown-item:active) {
+    background-color: #4fc3f7 !important;
+    color: #1a1a2e !important;
+}

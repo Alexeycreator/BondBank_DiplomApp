@@ -17,62 +17,67 @@ import BadRequestPage from "./components/pages/errorPages/BadRequestPage";
 import ServerErrorPage from "./components/pages/errorPages/ServerErrorPage";
 import AdminPage from "./components/pages/adminPage/AdminPage";
 import ServerHealthCheck from "./components/serverHealthCheck/ServerHealthCheck";
+import { Breadcrumbs } from "./components/breadcrumbs/Breadcrumbs";
+import { ToastProvider } from "./components/context/ToastContext";
 
 function App() {
     return (
         <AuthProvider>
-            <BrowserRouter>
-                <ServerHealthCheck>
-                    <div className="app">
-                        <Header />
-                        <main className="main">
-                            <Routes>
-                                {/* ==================== ПУБЛИЧНЫЕ СТРАНИЦЫ ==================== */}
-                                <Route path="/" element={<MainPage />} />
-                                <Route path="/bonds" element={<BondsPage />} />
-                                <Route path="/forecast" element={<ForecastsPage />} />
-                                <Route path="/about" element={<AboutUsPage />} />
-                                <Route path="/news" element={<NewsPage />} />
-                                <Route path="/auth" element={<AuthPage />} />
+            <ToastProvider>
+                <BrowserRouter>
+                    <ServerHealthCheck>
+                        <div className="app">
+                            <Header />
+                            <main className="main" style={{ padding: "20px 40px" }}>
+                                <Breadcrumbs />
+                                <Routes>
+                                    {/* ==================== ПУБЛИЧНЫЕ СТРАНИЦЫ ==================== */}
+                                    <Route path="/" element={<MainPage />} />
+                                    <Route path="/bonds" element={<BondsPage />} />
+                                    <Route path="/forecast" element={<ForecastsPage />} />
+                                    <Route path="/about" element={<AboutUsPage />} />
+                                    <Route path="/news" element={<NewsPage />} />
+                                    <Route path="/auth" element={<AuthPage />} />
 
-                                {/* ==================== ЗАЩИЩЁННЫЕ СТРАНИЦЫ ==================== */}
-                                <Route
-                                    path="/portfolios"
-                                    element={
-                                        <ProtectedRoute>
-                                            <PortfoliosPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
-                                <Route
-                                    path="/profile"
-                                    element={
-                                        <ProtectedRoute>
-                                            <ProfilePage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                    {/* ==================== ЗАЩИЩЁННЫЕ СТРАНИЦЫ ==================== */}
+                                    <Route
+                                        path="/portfolios"
+                                        element={
+                                            <ProtectedRoute>
+                                                <PortfoliosPage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
+                                    <Route
+                                        path="/profile"
+                                        element={
+                                            <ProtectedRoute>
+                                                <ProfilePage />
+                                            </ProtectedRoute>
+                                        }
+                                    />
 
-                                {/* ==================== АДМИН-ПАНЕЛЬ ==================== */}
-                                <Route
-                                    path="/admin"
-                                    element={
-                                        <AdminRoute>
-                                            <AdminPage />
-                                        </AdminRoute>
-                                    }
-                                />
+                                    {/* ==================== АДМИН-ПАНЕЛЬ ==================== */}
+                                    <Route
+                                        path="/admin"
+                                        element={
+                                            <AdminRoute>
+                                                <AdminPage />
+                                            </AdminRoute>
+                                        }
+                                    />
 
-                                {/* ==================== СТРАНИЦЫ ОШИБОК ==================== */}
-                                <Route path="/400" element={<BadRequestPage />} />
-                                <Route path="/500" element={<ServerErrorPage />} />
-                                <Route path="*" element={<NotFoundPage />} />
-                            </Routes>
-                        </main>
-                        <Footer />
-                    </div>
-                </ServerHealthCheck>
-            </BrowserRouter>
+                                    {/* ==================== СТРАНИЦЫ ОШИБОК ==================== */}
+                                    <Route path="/400" element={<BadRequestPage />} />
+                                    <Route path="/500" element={<ServerErrorPage />} />
+                                    <Route path="*" element={<NotFoundPage />} />
+                                </Routes>
+                            </main>
+                            <Footer />
+                        </div>
+                    </ServerHealthCheck>
+                </BrowserRouter>
+            </ToastProvider>
         </AuthProvider>
     );
 }
