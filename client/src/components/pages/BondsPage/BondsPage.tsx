@@ -32,6 +32,9 @@ import {
     SgSpecificData,
     MeSpecificData,
 } from "../../data/types";
+// ✅ 1. Импортируем новый компонент пагинации
+// Убедитесь, что путь правильный (зависит от того, куда вы его положили)
+import PaginationControl from "../../pagination/PaginationControl";
 
 ChartJS.register(
     CategoryScale,
@@ -42,9 +45,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
-/** Размер страницы пагинации */
-const PAGE_SIZE = 50;
 
 /** Известные типы облигаций — для безопасной валидации */
 const BOND_TYPES: readonly BondType[] = ["lse", "wb", "sg", "me"] as const;
@@ -281,6 +281,9 @@ const BondsPage = () => {
     const [badRequest, setBadRequest] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(pageFromUrl);
 
+    // ✅ 2. Добавляем состояние для размера страницы (заменяем константу PAGE_SIZE)
+    const [pageSize, setPageSize] = useState<number>(50);
+
     // ✅ Состояние сортировки
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -355,13 +358,14 @@ const BondsPage = () => {
     }, [filteredBonds, sortField, sortDirection]);
 
     // ==================== ПАГИНАЦИЯ ====================
-    const totalPages = Math.max(1, Math.ceil(sortedBonds.length / PAGE_SIZE));
+    // ✅ 3. Используем pageSize вместо PAGE_SIZE
+    const totalPages = Math.max(1, Math.ceil(sortedBonds.length / pageSize));
     const safePage = Math.min(currentPage, totalPages);
 
     const paginatedBonds = useMemo(() => {
-        const start = (safePage - 1) * PAGE_SIZE;
-        return sortedBonds.slice(start, start + PAGE_SIZE);
-    }, [sortedBonds, safePage]);
+        const start = (safePage - 1) * pageSize;
+        return sortedBonds.slice(start, start + pageSize);
+    }, [sortedBonds, safePage, pageSize]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -387,14 +391,15 @@ const BondsPage = () => {
         setCurrentPage(clamped);
     };
 
-    const pageNumbers = useMemo(() => {
-        const delta = 2;
-        const start = Math.max(1, safePage - delta);
-        const end = Math.min(totalPages, safePage + delta);
-        const nums: number[] = [];
-        for (let i = start; i <= end; i++) nums.push(i);
-        return nums;
-    }, [safePage, totalPages]);
+    // ✅ 4. Обработчик изменения количества строк на странице
+    const handlePageSizeChange = (newSize: number) => {
+        setPageSize(newSize);
+        // При смене размера страницы сбрасываем пагинацию на 1-ю страницу
+        const params = new URLSearchParams(location.search);
+        params.delete("page");
+        navigate(`/bonds?${params.toString()}`, { replace: true });
+        setCurrentPage(1);
+    };
 
     // ==================== СОРТИРОВКА: ОБРАБОТЧИК ====================
     const handleSort = (field: SortField) => {
@@ -947,7 +952,7 @@ const BondsPage = () => {
                                 paginatedBonds.map((bond, index) => {
                                     // Сквозная нумерация с учётом пагинации:
                                     // 1-я страница → 1..50, 2-я → 51..100 и т.д.
-                                    const rowNumber = (safePage - 1) * PAGE_SIZE + index + 1;
+                                    const rowNumber = (safePage - 1) * pageSize + index + 1;
 
                                     return (
                                         <tr
@@ -1001,77 +1006,15 @@ const BondsPage = () => {
                     </table>
                 </div>
 
-                {/* ПАГИНАЦИЯ */}
-                {totalPages > 1 && (
-                    <div className={styles.pagination}>
-                        <button
-                            className={styles.pageButton}
-                            onClick={() => handlePageChange(safePage - 1)}
-                            disabled={safePage === 1}
-                            aria-label="Предыдущая страница"
-                        >
-                            ←
-                        </button>
-
-                        {pageNumbers[0] > 1 && (
-                            <>
-                                <button
-                                    className={styles.pageButton}
-                                    onClick={() => handlePageChange(1)}
-                                >
-                                    1
-                                </button>
-                                {pageNumbers[0] > 2 && (
-                                    <span className={styles.pageEllipsis}>
-                                        …
-                                    </span>
-                                )}
-                            </>
-                        )}
-
-                        {pageNumbers.map((num) => (
-                            <button
-                                key={num}
-                                className={`${styles.pageButton} ${num === safePage
-                                    ? styles.pageButtonActive
-                                    : ""
-                                    }`}
-                                onClick={() => handlePageChange(num)}
-                            >
-                                {num}
-                            </button>
-                        ))}
-
-                        {pageNumbers[pageNumbers.length - 1] < totalPages && (
-                            <>
-                                {pageNumbers[pageNumbers.length - 1] <
-                                    totalPages - 1 && (
-                                        <span className={styles.pageEllipsis}>
-                                            …
-                                        </span>
-                                    )}
-                                <button
-                                    className={styles.pageButton}
-                                    onClick={() => handlePageChange(totalPages)}
-                                >
-                                    {totalPages}
-                                </button>
-                            </>
-                        )}
-
-                        <button
-                            className={styles.pageButton}
-                            onClick={() => handlePageChange(safePage + 1)}
-                            disabled={safePage === totalPages}
-                            aria-label="Следующая страница"
-                        >
-                            →
-                        </button>
-
-                        <span className={styles.pageInfo}>
-                            Стр. {safePage} из {totalPages}
-                        </span>
-                    </div>
+                {/* ✅ 5. Заменяем старый блок пагинации на новый компонент */}
+                {totalPages > 0 && (
+                    <PaginationControl
+                        currentPage={safePage}
+                        totalPages={totalPages}
+                        pageSize={pageSize}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                    />
                 )}
             </section>
         </div>

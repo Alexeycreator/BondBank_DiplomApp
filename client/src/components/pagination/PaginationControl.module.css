@@ -1,0 +1,53 @@
+.paginationContainer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  width: 100%;
+}
+
+.paginationSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.paginationCenter {
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.label {
+  font-size: 0.875rem; /* ~14px */
+  color: #6c757d; /* Стандартный muted цвет Bootstrap */
+  white-space: nowrap;
+}
+
+.jumpInputGroup {
+  width: 110px;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .paginationContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .paginationCenter {
+    order: -1; /* Выносим пагинацию наверх на мобильных */
+  }
+
+  .paginationSection {
+    justify-content: space-between;
+  }
+
+  .jumpInputGroup {
+    width: 100%;
+    max-width: 150px;
+  }
+}
