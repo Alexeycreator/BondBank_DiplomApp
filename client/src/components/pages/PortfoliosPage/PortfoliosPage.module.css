@@ -14,26 +14,32 @@
 
 .pageTitle {
     font-size: 32px;
-    color: #1a1a2e;
+    color: #ffffff;
     margin-bottom: 8px;
 }
 
 .pageDescription {
     font-size: 16px;
-    color: #666;
+    color: #a0aabf;
     margin: 0;
 }
 
 .sectionTitle {
     font-size: 22px;
-    color: #1a1a2e;
+    color: #ffffff;
     margin-bottom: 16px;
 }
 
 .subsectionTitle {
     font-size: 18px;
-    color: #1a1a2e;
+    color: #ffffff;
     margin: 24px 0 16px;
+}
+
+.ownerInfo {
+    color: #4fc3f7;
+    font-size: 14px;
+    margin-top: 4px;
 }
 
 /* ==================== КНОПКА СОЗДАНИЯ ==================== */
@@ -60,39 +66,75 @@
 .dateSection {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
     margin-bottom: 24px;
     padding: 16px 20px;
-    background-color: #ffffff;
+    background-color: #1f2a44;
+    border: 1px solid #2d3b5e;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+}
+
+.dateControlsWrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .dateLabel {
     font-size: 14px;
     font-weight: 600;
-    color: #1a1a2e;
+    color: #ffffff;
+    margin: 0;
 }
 
 .dateInput {
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #2d3b5e;
     border-radius: 6px;
     font-size: 14px;
     outline: none;
     cursor: pointer;
     transition: border-color 0.3s;
+    background-color: #1a1a2e;
+    color: #ffffff;
+    color-scheme: dark;
 }
 
 .dateInput:focus {
     border-color: #4fc3f7;
 }
 
+.rangeSwitch {
+    margin: 0;
+    margin-left: 16px;
+    color: #ffffff;
+}
+
+.rangeSwitch :global(.form-check-input) {
+    background-color: #1a1a2e;
+    border-color: #2d3b5e;
+    cursor: pointer;
+}
+
+.rangeSwitch :global(.form-check-input:checked) {
+    background-color: #4fc3f7;
+    border-color: #4fc3f7;
+}
+
+.rangeSwitch :global(.form-check-label) {
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+}
+
 .historicalBadge {
     padding: 6px 14px;
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: rgba(255, 152, 0, 0.15);
+    color: #ff9800;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 500;
@@ -105,7 +147,7 @@
     border: none;
     border-radius: 6px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s;
     margin-left: auto;
@@ -126,138 +168,13 @@
     gap: 20px;
 }
 
-.portfolioCard {
-    background-color: #ffffff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e8e8e8;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.portfolioCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-}
-
-.portfolioName {
-    font-size: 18px;
-    color: #1a1a2e;
-    margin-bottom: 6px;
-}
-
-.portfolioDescription {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 8px;
-    line-height: 1.5;
-    font-style: italic;
-}
-
-.portfolioType {
-    display: inline-block;
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 16px;
-}
-
-.portfolioStats {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    padding: 12px 0;
-    border-top: 1px solid #f0f0f0;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.statLabel {
-    display: block;
-    font-size: 12px;
-    color: #999;
-}
-
-.statValue {
-    display: block;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a2e;
-}
-
-/* ==================== ПРОГРЕСС-БАР ==================== */
-.progressBar {
-    height: 6px;
-    background-color: #f0f0f0;
-    border-radius: 3px;
-    overflow: hidden;
-    margin-bottom: 16px;
-}
-
-.progressFill {
-    height: 100%;
-    background: linear-gradient(90deg, #4fc3f7, #38b0e8);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-}
-
-/* ==================== КНОПКИ ==================== */
-.viewButton {
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s;
-    width: 100%;
-}
-
-.viewButton:hover {
-    background-color: #38b0e8;
-}
-
-.closeButton {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #888;
-    cursor: pointer;
-    padding: 0 8px;
-    transition: color 0.3s;
-}
-
-.closeButton:hover {
-    color: #e74c3c;
-}
-
-.todayButton {
-    padding: 8px 16px;
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.todayButton:hover {
-    background-color: #38b0e8;
-}
-
-.detailsActions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
 /* ==================== ДЕТАЛИ ПОРТФЕЛЯ ==================== */
 .detailsSection {
-    background-color: #ffffff;
+    background-color: #1f2a44;
     padding: 24px;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #2d3b5e;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     margin-top: 24px;
     animation: slideIn 0.3s ease;
 }
@@ -280,17 +197,18 @@
 }
 
 .keyStatCard {
-    background-color: #f8f9fa;
+    background-color: #151b2b;
     padding: 16px;
     border-radius: 8px;
     text-align: center;
+    border: 1px solid #2d3b5e;
     border-left: 4px solid #4fc3f7;
 }
 
 .keyStatLabel {
     display: block;
     font-size: 12px;
-    color: #888;
+    color: #a0aabf;
     margin-bottom: 6px;
 }
 
@@ -298,7 +216,7 @@
     display: block;
     font-size: 20px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: #ffffff;
 }
 
 /* ==================== ГРАФИКИ ==================== */
@@ -330,10 +248,10 @@
 }
 
 .chartCard {
-    background-color: #fafafa;
+    background-color: #151b2b;
     padding: 16px;
     border-radius: 10px;
-    border: 1px solid #f0f0f0;
+    border: 1px solid #2d3b5e;
     height: 320px;
     position: relative;
 }
@@ -344,76 +262,18 @@
 
 .chartHint {
     font-size: 13px;
-    color: #856404;
-    background-color: #fff3cd;
+    color: #ff9800;
+    background-color: rgba(255, 152, 0, 0.1);
     padding: 8px 14px;
     border-radius: 6px;
     margin-bottom: 12px;
     display: inline-block;
 }
 
-/* ==================== ПОИСК И ФИЛЬТРАЦИЯ ==================== */
-.filtersSection {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding: 16px;
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-}
-
-.filterField {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 180px;
-}
-
-.filterField label {
-    font-size: 12px;
-    color: #666;
-    font-weight: 600;
-}
-
-.filterInput,
-.filterSelect {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.3s;
-    background-color: #ffffff;
-}
-
-.filterInput:focus,
-.filterSelect:focus {
-    border-color: #4fc3f7;
-}
-
-.filterResetButton {
-    padding: 8px 16px;
-    background-color: #f0f0f0;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s;
-    height: fit-content;
-}
-
-.filterResetButton:hover {
-    background-color: #e0e0e0;
-}
-
+/* ==================== ПРОЧИЕ ЭЛЕМЕНТЫ ==================== */
 .filteredCount {
     font-size: 13px;
-    color: #888;
+    color: #a0aabf;
     margin-bottom: 12px;
 }
 
@@ -421,273 +281,53 @@
     color: #4fc3f7;
 }
 
-/* ==================== ТАБЛИЦА ==================== */
-.tableWrapper {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-.table th {
-    background-color: #f5f5f5;
-    color: #333;
-    padding: 12px 16px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f8f8;
+.tableHint {
+    font-size: 13px;
+    color: #a0aabf;
+    margin-bottom: 12px;
 }
 
 .isin {
     font-family: monospace;
     font-size: 12px;
-    color: #555;
+    color: #a0aabf !important;
 }
 
-.typeBadge {
-    display: inline-block;
-    padding: 3px 10px;
-    background-color: #e8f6fe;
-    color: #0288d1;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.yieldCell {
-    color: #2ecc71;
-    font-weight: 600;
-}
-
-.noBonds {
-    text-align: center;
-    color: #999;
-    padding: 40px !important;
-    line-height: 1.8;
-    font-size: 14px;
-}
-
-/* ==================== МОДАЛЬНОЕ ОКНО ==================== */
-.modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    padding: 20px;
-    animation: fadeIn 0.2s ease;
-}
-
-.modal {
-    background-color: #ffffff;
-    padding: 32px;
-    border-radius: 16px;
-    max-width: 600px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    animation: slideUp 0.3s ease;
-}
-
-.modalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
-
-.modalTitle {
-    font-size: 22px;
-    color: #1a1a2e;
-    margin: 0;
-}
-
-.modalClose {
+/* ==================== КНОПКИ УПРАВЛЕНИЯ ==================== */
+.closeButton {
     background: none;
     border: none;
     font-size: 24px;
-    color: #888;
+    color: #a0aabf;
     cursor: pointer;
     padding: 0 8px;
     transition: color 0.3s;
 }
 
-.modalClose:hover {
+.closeButton:hover {
     color: #e74c3c;
 }
 
-.modalError {
-    background-color: #fdeaea;
-    color: #e74c3c;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 16px;
-    border-left: 4px solid #e74c3c;
-}
-
-.formGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 20px;
-    position: relative;
-}
-
-.formGroup label {
-    font-size: 13px;
-    color: #555;
-    font-weight: 600;
-}
-
-.formGroup input,
-.formGroup textarea {
-    padding: 12px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    font-family: inherit;
-    transition: border-color 0.3s;
-    resize: vertical;
-}
-
-.formGroup input:focus,
-.formGroup textarea:focus {
-    border-color: #4fc3f7;
-    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
-}
-
-.required {
-    color: #e74c3c;
-    font-weight: 700;
-}
-
-.optional {
-    color: #999;
-    font-weight: 400;
-    font-size: 12px;
-}
-
-.charCount {
-    position: absolute;
-    right: 12px;
-    bottom: 8px;
-    font-size: 11px;
-    color: #aaa;
-    pointer-events: none;
-}
-
-/* ==================== ВЫБОР ТИПА ==================== */
-.typeOptions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.typeOption {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 14px 16px;
-    background-color: #fafafa;
-    border: 2px solid #e8e8e8;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.typeOption:hover {
-    border-color: #4fc3f7;
-    background-color: #f8fcff;
-}
-
-.typeOptionActive {
-    border-color: #4fc3f7;
-    background-color: #e8f6fe;
-    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.15);
-}
-
-.typeOption input[type="radio"] {
-    display: none;
-}
-
-.typeOptionTitle {
-    font-size: 15px;
-    font-weight: 600;
+.todayButton {
+    padding: 8px 16px;
+    background-color: #4fc3f7;
     color: #1a1a2e;
-}
-
-.typeOptionDesc {
-    font-size: 13px;
-    color: #666;
-}
-
-.typeOptionLimits {
-    font-size: 11px;
-    color: #4fc3f7;
-    font-weight: 500;
-    margin-top: 4px;
-}
-
-/* ==================== КНОПКИ МОДАЛА ==================== */
-.modalActions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #f0f0f0;
-}
-
-.cancelButton {
-    padding: 12px 24px;
-    background-color: #f0f0f0;
-    color: #333;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
-.cancelButton:hover {
-    background-color: #e0e0e0;
-}
-
-.confirmButton {
-    padding: 12px 32px;
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.confirmButton:hover {
+.todayButton:hover {
     background-color: #38b0e8;
-    transform: translateY(-1px);
+}
+
+.detailsActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 /* ==================== ПРЕДУПРЕЖДЕНИЕ ==================== */
@@ -700,10 +340,11 @@
 }
 
 .warningCard {
-    background-color: #ffffff;
+    background-color: #1f2a44;
     padding: 48px 40px;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid #2d3b5e;
     text-align: center;
     max-width: 520px;
     width: 100%;
@@ -717,13 +358,13 @@
 
 .warningTitle {
     font-size: 24px;
-    color: #1a1a2e;
+    color: #ffffff;
     margin-bottom: 16px;
 }
 
 .warningText {
     font-size: 15px;
-    color: #666;
+    color: #a0aabf;
     line-height: 1.6;
     margin-bottom: 24px;
 }
@@ -744,29 +385,33 @@
     background-color: #38b0e8;
 }
 
+/* ==================== ТАБЫ (ТЕМНАЯ ТЕМА) ==================== */
+:global(.custom-tabs) {
+    border-bottom-color: #2d3b5e;
+}
+
+:global(.custom-tabs .nav-link) {
+    color: #a0aabf;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background-color: transparent;
+    transition: all 0.2s ease;
+    padding: 12px 16px;
+    font-weight: 500;
+}
+
+:global(.custom-tabs .nav-link:hover) {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+:global(.custom-tabs .nav-link.active) {
+    color: #4fc3f7 !important;
+    background-color: transparent !important;
+    border-bottom: 2px solid #4fc3f7 !important;
+}
+
 /* ==================== АНИМАЦИИ ==================== */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -834,46 +479,10 @@
         width: 100%;
         justify-content: space-between;
     }
-
-    .filtersSection {
-        flex-direction: column;
-    }
-
-    .filterField {
-        width: 100%;
-    }
-
-    .table th,
-    .table td {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-
-    .modal {
-        padding: 24px 20px;
-    }
-
-    .modalActions {
-        flex-direction: column;
-    }
-
-    .cancelButton,
-    .confirmButton {
-        width: 100%;
-    }
 }
 
 @media (max-width: 480px) {
     .keyStats {
         grid-template-columns: 1fr;
-    }
-
-    .table {
-        font-size: 11px;
-    }
-
-    .table th,
-    .table td {
-        padding: 6px 8px;
     }
 }
