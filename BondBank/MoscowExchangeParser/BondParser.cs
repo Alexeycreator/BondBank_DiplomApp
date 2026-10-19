@@ -208,11 +208,5 @@ public sealed class BondParser(
             folderPath: folderPath,
             logger: logger
         );
-
-        if (success)
-        {
-            // Здесь можно сохранить запись в БД (если вы решили это делать), 
-            // что файл успешно улетел в облако.
-        }
     }
 }
