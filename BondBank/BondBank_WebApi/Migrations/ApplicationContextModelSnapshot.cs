@@ -490,6 +490,55 @@ namespace BondBank_WebApi.Migrations
                     b.ToTable("Snils");
                 });
 
+            modelBuilder.Entity("BondBank_WebApi.Models.DataBase.StoredFileModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Folder")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("LocalPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("MinIoKey")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MinIoKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_StoredFileModel_MinIoKey");
+
+                    b.HasIndex("OriginalFileName")
+                        .HasDatabaseName("IX_StoredFileModel_OriginalFileName");
+
+                    b.ToTable("StoredFiles");
+                });
+
             modelBuilder.Entity("BondBank_WebApi.Models.DataBase.UsersModel", b =>
                 {
                     b.Property<int>("Id")

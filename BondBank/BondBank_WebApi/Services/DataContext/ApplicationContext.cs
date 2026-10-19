@@ -20,6 +20,7 @@ public sealed class ApplicationContext(DbContextOptions<ApplicationContext> opti
     public DbSet<WienerBoerseBondsModel> WienerBoerseBonds { get; set; }
     public DbSet<PortfoliosModel> Portfolios { get; set; }
     public DbSet<BondHistoryModel> BondHistories { get; set; }
+    public DbSet<StoredFileModel> StoredFile { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -240,6 +241,19 @@ public sealed class ApplicationContext(DbContextOptions<ApplicationContext> opti
             .HasIndex(b => b.Isin)
             .IsUnique()
             .HasDatabaseName("IX_SixGroupBondsModel_Isin");
+
+        #endregion
+        
+        #region IX_StoredFileModel
+
+        modelBuilder.Entity<StoredFileModel>()
+            .HasIndex(f => f.OriginalFileName)
+            .HasDatabaseName("IX_StoredFileModel_OriginalFileName");
+        
+        modelBuilder.Entity<StoredFileModel>()
+            .HasIndex(f => f.MinIoKey)
+            .IsUnique()
+            .HasDatabaseName("IX_StoredFileModel_MinIoKey");
 
         #endregion
     }
