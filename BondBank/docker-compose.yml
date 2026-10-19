@@ -1,6 +1,82 @@
 ﻿services:
-  bondbank_webapi:
-    image: bondbank_webapi
-    build:
-      context: .
-      dockerfile: BondBank_WebApi/Dockerfile
+  # ==================== POSTGRES (для Keycloak) ====================
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: root
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bondbank_network
+
+  # ==================== KEYCLOAK ====================
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.0
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin_kk
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin_kk
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: root
+      KC_PROXY: edge
+    command: start-dev
+    networks:
+      - bondbank_network
+
+  # ==================== MINIO (сборка от coollabsio) ====================
+  minio:
+    image: coollabsio/minio:latest
+    container_name: bondbank-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Веб-консоль
+    environment:
+      MINIO_ROOT_USER: admin_mio
+      MINIO_ROOT_PASSWORD: admin_mio
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - bondbank_network
+
+  # ==================== ИНИЦИАЛИЗАЦИЯ БАКЕТА ====================
+  minio-init:
+    image: coollabsio/minio:latest
+    container_name: bondbank-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 admin_mio admin_mio; do
+        echo 'Ожидание MinIO...'; sleep 2;
+      done;
+      mc mb --ignore-existing local/bondbank-files;
+      echo 'Бакет bondbank-files готов';
+      "
+    networks:
+      - bondbank_network
+
+# ==================== СЕТИ И ТОМА ====================
+networks:
+  bondbank_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:
