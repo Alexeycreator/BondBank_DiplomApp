@@ -32,7 +32,6 @@ public sealed class ApplicationContext(DbContextOptions<ApplicationContext> opti
             .HasOne(u => u.Passports)
             .WithOne(p => p.User)
             .HasForeignKey<UsersModel>(u => u.PassportId)
-            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
         // снилс

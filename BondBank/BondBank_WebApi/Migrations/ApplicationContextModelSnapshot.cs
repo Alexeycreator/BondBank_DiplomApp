@@ -508,10 +508,11 @@ namespace BondBank_WebApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("KeycloakId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
-                    b.Property<DateTime?>("LockoutEnd")
+                    b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Login")
@@ -519,31 +520,12 @@ namespace BondBank_WebApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int>("LoginAttempts")
+                    b.Property<int?>("PassportId")
                         .HasColumnType("integer");
-
-                    b.Property<int>("PassportId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PasswordHash")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(12)
                         .HasColumnType("character varying(12)");
-
-                    b.Property<string>("RefreshToken")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTime?>("RefreshTokenExpiryTime")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("SecondName")
                         .IsRequired()
@@ -559,7 +541,6 @@ namespace BondBank_WebApi.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("TIN")
-                        .IsRequired()
                         .HasMaxLength(12)
                         .HasColumnType("character varying(12)");
 
@@ -752,8 +733,7 @@ namespace BondBank_WebApi.Migrations
                     b.HasOne("BondBank_WebApi.Models.DataBase.PassportsModel", "Passports")
                         .WithOne("User")
                         .HasForeignKey("BondBank_WebApi.Models.DataBase.UsersModel", "PassportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BondBank_WebApi.Models.DataBase.SnilsModel", "Snils")
                         .WithOne("User")
