@@ -82,12 +82,12 @@ public class KeycloakUserSyncService
                     Login: username
                 ));
 
-                logger.LogInformation($"User {email} synced from Keycloak to local DB");
+                logger.LogInformation($"Пользователь {email} синхронизирован из Keycloak в локальную базу данных.");
             }
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error syncing user from Keycloak: {ex.Message}");
+            logger.LogError($"Ошибка синхронизации пользователя из Keycloak: {ex.Message}");
             throw;
         }
     }
@@ -119,7 +119,7 @@ public class KeycloakUserSyncService
             if (!createResponse.IsSuccessStatusCode)
             {
                 var errorBody = await createResponse.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to create user in Keycloak: {errorBody}");
+                throw new Exception($"Не удалось создать пользователя в Keycloak: {errorBody}");
             }
 
             // Keycloak возвращает ID в заголовке Location
@@ -139,7 +139,7 @@ public class KeycloakUserSyncService
                 
                 if (!roleMappingResponse.IsSuccessStatusCode)
                 {
-                    logger.LogWarning($"Failed to assign role {request.Role} to user {userId}");
+                    logger.LogWarning($"Не удалось назначить роль {request.Role} пользователю {userId}");
                 }
             }
 
@@ -149,7 +149,7 @@ public class KeycloakUserSyncService
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error creating user in Keycloak: {ex.Message}");
+            logger.LogError($"Ошибка при создании пользователя в Keycloak: {ex.Message}");
             throw;
         }
     }
@@ -176,7 +176,7 @@ public class KeycloakUserSyncService
             if (!updateResponse.IsSuccessStatusCode)
             {
                 var errorBody = await updateResponse.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to update user in Keycloak: {errorBody}");
+                throw new Exception($"Не удалось обновить пользователя в Keycloak: {errorBody}");
             }
 
             await usersService.UpdateUserFromKeycloakAsync(request.KeycloakUserId, new UpdateUserFromKeycloakDto(
@@ -189,7 +189,7 @@ public class KeycloakUserSyncService
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error updating user in Keycloak: {ex.Message}");
+            logger.LogError($"Ошибка при обновлении пользователя в Keycloak: {ex.Message}");
             throw;
         }
     }
@@ -206,14 +206,14 @@ public class KeycloakUserSyncService
             if (!deleteResponse.IsSuccessStatusCode)
             {
                 var errorBody = await deleteResponse.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to delete user in Keycloak: {errorBody}");
+                throw new Exception($"Не удалось удалить пользователя в Keycloak: {errorBody}");
             }
 
             await usersService.DeleteUserByKeycloakIdAsync(keycloakUserId);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error deleting user from Keycloak: {ex.Message}");
+            logger.LogError($"Ошибка при удалении пользователя из Keycloak: {ex.Message}");
             throw;
         }
     }
