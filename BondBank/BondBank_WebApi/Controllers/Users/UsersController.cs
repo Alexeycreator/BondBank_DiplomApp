@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BondBank_WebApi.Controllers.Users;
 
@@ -8,10 +9,10 @@ namespace BondBank_WebApi.Controllers.Users;
 [Route("api/[controller]/users")]
 public sealed class UsersController(
     ILogger<UsersController> logger,
-    IUsersControllerService usersService)
-    : ControllerBase
+    IUsersControllerService usersService) : ControllerBase
 {
     [HttpGet("get-all")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetAllUsersInfoAsync()
     {
         try
@@ -32,6 +33,7 @@ public sealed class UsersController(
     }
 
     [HttpGet("get-user-by-id")]
+    [Authorize]
     public async Task<IActionResult> GetFullInfoUserByIdAsync(int userId)
     {
         try
@@ -57,6 +59,7 @@ public sealed class UsersController(
     }
 
     [HttpGet("get-user-by-email")]
+    [Authorize]
     public async Task<IActionResult> GetInfoByEmailAsync(string email)
     {
         try
@@ -83,6 +86,7 @@ public sealed class UsersController(
     }
 
     [HttpGet("get-user-by-login")]
+    [Authorize]
     public async Task<IActionResult> GetInfoByLoginAsync(string login)
     {
         try
@@ -109,6 +113,7 @@ public sealed class UsersController(
     }
 
     [HttpGet("get-user-by-tin")]
+    [Authorize]
     public async Task<IActionResult> GetInfoByTinAsync(string tin)
     {
         try
@@ -148,6 +153,7 @@ public sealed class UsersController(
     }
 
     [HttpGet("get-user-by-fullName")]
+    [Authorize]
     public async Task<IActionResult> GetInfoByFullNameAsync(string secondName, string firstName, string surName)
     {
         try
@@ -174,6 +180,7 @@ public sealed class UsersController(
     }
 
     [HttpGet("get-user-by-phoneNumber")]
+    [Authorize]
     public async Task<IActionResult> GetInfoByPhoneNumberAsync(string phoneNumber)
     {
         try
