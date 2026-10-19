@@ -91,6 +91,30 @@ public sealed class MinioStorageService
 
         return fileKeys;
     }
+    
+    public async Task<List<MinioFileInfo>> ListFilesWithInfoAsync(string folderPath = "")
+    {
+        var request = new ListObjectsV2Request
+        {
+            BucketName = bucketName,
+            Prefix = string.IsNullOrEmpty(folderPath) ? null : $"{folderPath}/"
+        };
+
+        var response = await s3Client.ListObjectsV2Async(request);
+    
+        var files = new List<MinioFileInfo>();
+        foreach (var s3Object in response.S3Objects)
+        {
+            files.Add(new MinioFileInfo
+            {
+                Key = s3Object.Key,
+                Size = s3Object.Size,
+                LastModified = s3Object.LastModified ?? DateTime.UtcNow
+            });
+        }
+
+        return files;
+    }
 
     // ==================== СКАЧИВАНИЕ ====================
     /// <summary>

@@ -8,6 +8,7 @@ using BondBank_WebApi.Controllers.Users;
 using BondBank_WebApi.HelperMethods;
 using BondBank_WebApi.Services.Analysis;
 using BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
+using BondBank_WebApi.Services.BackgroundServices.MinIO;
 using BondBank_WebApi.Services.BackgroundServices.ParsersData;
 using BondBank_WebApi.Services.BackgroundServices.SavingBondHistories;
 using BondBank_WebApi.Services.DataContext;
@@ -131,6 +132,7 @@ builder.Services.AddNLog();
 
 builder.Services.AddHttpClient<ConnectionMonitor>();
 builder.Services.AddHttpClient<CsvHelper>();
+builder.Services.AddHttpClient<ParserFilesBackgroundService>();
 
 builder.Services.AddDbContext<ApplicationContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnectionString")));
@@ -179,6 +181,8 @@ var minioConfig = new MinioConfig
 
 builder.Services.AddSingleton(minioConfig);
 builder.Services.AddSingleton<MinioStorageService>();
+
+builder.Services.AddHostedService<ParserFilesBackgroundService>();
 
 var app = builder.Build();
 
