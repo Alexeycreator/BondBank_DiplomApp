@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <PackageReference Include="alglib.net" Version="3.19.0" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.104.4" />
       <PackageReference Include="DotNetEnv" Version="3.2.0" />
       <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.16">

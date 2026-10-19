@@ -10,5 +10,11 @@
   "WebService":{
     "Host": "localhost",
     "Port": 7240
+  },
+  "MinIo": {
+    "Endpoint": "http://localhost:9000",
+    "AccessKey": "admin_mio",
+    "SecretKey": "admin_mio",
+    "BucketName": "bondbank-files"
   }
 }

@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Net;
 using Microsoft.Extensions.Logging;
 using Shared.BotHelpers;
-using Shared.Config;
 using Shared.Connection;
 
 namespace Shared.Services;

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Services;
 using Shared.Services.Interfaces;
+using Shared.Services.MinIO;
 using Shared.WorkingWithFiles;
 
 namespace LjubljanaStockExchangeParser;
@@ -24,13 +25,14 @@ public sealed class BondParser(
     ConnectionMonitor connectionMonitor,
     BotService botService,
     CsvHelper csvHelper,
-    CsvService csvServiceDll) : IBondProvider<BondModel>
+    CsvService csvServiceDll,
+    MinioStorageService minioService) : IBondProvider<BondModel>
 {
     private readonly string urlBonds = $"https://ljse.si/en/financni-instrumenti/26?status=ALL&model=ALL&type=BOND";
-    private List<BondModel> bonds = new List<BondModel>();
-    private HtmlDocument document = new HtmlDocument();
-    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
-    private string FileName => $"Lse_Bonds_{csvServiceDll.GetDate()}.csv";
+    private List<BondModel> bonds = new();
+    private HtmlDocument document = new();
+    private static readonly string DirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
+    private string FileName => $"lse_bonds_{csvServiceDll.GetDate()}.csv";
 
     /// <summary>
     /// Получение бондов
@@ -46,7 +48,7 @@ public sealed class BondParser(
                 await FillingBondsAsync();
             }
 
-            await csvHelper.SendFileOnWebServer(dirPath, FileName);
+            await csvHelper.SendFileOnWebServer(DirPath, FileName);
         }
         catch (Exception ex)
         {
@@ -108,7 +110,8 @@ public sealed class BondParser(
                         Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
 
                     logger.LogInformation($"Запись данных в файл");
-                    csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
+                    csvHelper.WhiteInFileCsv(DirPath, FileName, bonds);
+                    await SendToMinIo(DirPath, FileName, "text/csv", "bonds/lse", logger);
                 }
                 else
                 {
@@ -132,5 +135,24 @@ public sealed class BondParser(
     private string GetCorrectNumber(string line)
     {
         return Regex.Replace(line.Replace('.', ','), @"[^\d.]", "");
+    }
+
+    private async Task SendToMinIo(string fullLocalPath, string fileName, string contentType, string folderPath,
+        ILogger log)
+    {
+        var fullPath = Path.Combine(fullLocalPath, fileName);
+        bool success = await minioService.TryUploadFileFromPathAsync(
+            fullLocalPath: fullPath,
+            fileName: fileName,
+            contentType: contentType,
+            folderPath: folderPath,
+            logger: logger
+        );
+
+        if (success)
+        {
+            // Здесь можно сохранить запись в БД (если вы решили это делать), 
+            // что файл успешно улетел в облако.
+        }
     }
 }

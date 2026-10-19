@@ -23,6 +23,8 @@ using Shared.Connection;
 using Shared.Services;
 using Shared.WorkingWithFiles;
 using DotNetEnv;
+using Shared.Config.MinIO;
+using Shared.Services.MinIO;
 
 Env.Load();
 
@@ -167,6 +169,17 @@ builder.Services.AddScoped<IUsersControllerService, UsersControllerService>();
 // Регистрация HttpClient для KeycloakUserSyncService
 builder.Services.AddHttpClient<KeycloakUserSyncService>();
 
+var minioConfig = new MinioConfig
+{
+    Endpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT") ?? "http://localhost:9000",
+    AccessKey = Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY") ?? "admin_mio",
+    SecretKey = Environment.GetEnvironmentVariable("MINIO_SECRET_KEY") ?? "admin_mio",
+    BucketName = Environment.GetEnvironmentVariable("MINIO_BUCKET_NAME") ?? "bondbank-files"
+};
+
+builder.Services.AddSingleton(minioConfig);
+builder.Services.AddSingleton<MinioStorageService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -181,7 +194,6 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty;
         c.DisplayRequestDuration();
         c.OAuthClientId(builder.Configuration["Keycloak:ClientId"]);
-        // Убрали ClientSecret для публичного клиента
         c.OAuthRealm("bondbank");
         c.OAuthAppName("BondBank Swagger");
         c.OAuthScopeSeparator(" ");

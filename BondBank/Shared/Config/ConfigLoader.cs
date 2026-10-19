@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DotNetEnv;
 using Shared.Config.Bot;
+using Shared.Config.MinIO;
 using Shared.Config.WebService;
 
 namespace Shared.Config;
@@ -45,12 +46,16 @@ public sealed class ConfigLoader
 
     private static ServiceConfig? LoadFromEnvironment()
     {
-        var telegramIp = Environment.GetEnvironmentVariable("BotTelegram__IpAddress");
-        var telegramPort = Environment.GetEnvironmentVariable("BotTelegram__Port");
-        var vkIp = Environment.GetEnvironmentVariable("BotVk__IpAddress");
-        var vkPort = Environment.GetEnvironmentVariable("BotVk__Port");
-        var webHost = Environment.GetEnvironmentVariable("WebService__Host");
-        var webPort = Environment.GetEnvironmentVariable("WebService__Port");
+        var telegramIp = Environment.GetEnvironmentVariable("BOT_TELEGRAM_IP_ADDRESS");
+        var telegramPort = Environment.GetEnvironmentVariable("BOT_TELEGRAM_PORT");
+        var vkIp = Environment.GetEnvironmentVariable("BOT_VK_IP_ADDRESS");
+        var vkPort = Environment.GetEnvironmentVariable("BOT_VK_PORT");
+        var webHost = Environment.GetEnvironmentVariable("WEB_SERVICE_HOST");
+        var webPort = Environment.GetEnvironmentVariable("WEB_SERVICE_PORT");
+        var minioEndpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT");
+        var minioAccessKey = Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY");
+        var minioSecretKey = Environment.GetEnvironmentVariable("MINIO_SECRET_KEY");
+        var minioBucketName = Environment.GetEnvironmentVariable("MINIO_BUCKET_NAME");
 
         // Если хотя бы одно значение есть — используем .env
         if (telegramIp == null && vkIp == null && webHost == null)
@@ -74,6 +79,13 @@ public sealed class ConfigLoader
             {
                 Host = webHost ?? "localhost",
                 Port = int.TryParse(webPort, out var wp) ? wp : 7240
+            },
+            MinIo = new MinioConfig()
+            {
+                AccessKey =  minioAccessKey ?? "admin_mio",
+                SecretKey = minioSecretKey ?? "admin_mio",
+                BucketName = minioBucketName ?? "bondbank-files",
+                Endpoint = minioEndpoint ?? "http://localhost:9000"
             }
         };
     }

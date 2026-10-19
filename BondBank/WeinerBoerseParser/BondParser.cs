@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Services;
 using Shared.Services.Interfaces;
+using Shared.Services.MinIO;
 using Shared.WorkingWithFiles;
 using WeinerBoerseParser.Models;
 using WeinerBoerseParser.HelperMethods;
@@ -24,14 +25,15 @@ public sealed class BondParser(
     ConnectionMonitor connectionMonitor,
     BotService botService,
     CsvService csvServiceDll,
-    CsvHelper csvHelper) : IBondProvider<BondModel>
+    CsvHelper csvHelper,
+    MinioStorageService minioService) : IBondProvider<BondModel>
 {
     private int numberPage = 1;
     private const int CountCells = 9;
-    private List<BondModel> bonds = new List<BondModel>();
-    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
-    private HtmlDocument document = new HtmlDocument();
-    private string FileName => $"Wb_Bonds_{csvServiceDll.GetDate()}.csv";
+    private List<BondModel> bonds = new();
+    private static readonly string DirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
+    private HtmlDocument document = new();
+    private string FileName => $"wb_bonds_{csvServiceDll.GetDate()}.csv";
 
     /// <summary>
     /// Получение бондов
@@ -57,7 +59,7 @@ public sealed class BondParser(
                 $"Облигации парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}" +
                 Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
             logger.LogInformation($"Отправка сформированных данных на сервер...");
-            await csvHelper.SendFileOnWebServer(dirPath, FileName);
+            await csvHelper.SendFileOnWebServer(DirPath, FileName);
         }
         catch (ArgumentException ex)
         {
@@ -126,7 +128,8 @@ public sealed class BondParser(
                     {
                         logger.LogInformation(
                             $"Данные со страницы №{numberPage} извлечены. Количество: {bonds.Count}");
-                        csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
+                        csvHelper.WhiteInFileCsv(DirPath, FileName, bonds);
+                        await SendToMinIo(DirPath, FileName, "text/csv", $"bonds/wb", logger);
                     }
                     else
                     {
@@ -180,5 +183,24 @@ public sealed class BondParser(
         logger.LogInformation(
             $"Всего страниц с облигациями: {Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds))}");
         return Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds));
+    }
+
+    private async Task SendToMinIo(string fullLocalPath, string fileName, string contentType, string folderPath,
+        ILogger log)
+    {
+        var fullPath = Path.Combine(fullLocalPath, fileName);
+        bool success = await minioService.TryUploadFileFromPathAsync(
+            fullLocalPath: fullPath,
+            fileName: fileName,
+            contentType: contentType,
+            folderPath: folderPath,
+            logger: logger
+        );
+
+        if (success)
+        {
+            // Здесь можно сохранить запись в БД (если вы решили это делать), 
+            // что файл успешно улетел в облако.
+        }
     }
 }

@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Shared.BotHelpers;
 using Shared.Services;
 using Shared.Services.Interfaces;
+using Shared.Services.MinIO;
 using Shared.WorkingWithFiles;
 
 namespace MoscowExchangeParser;
@@ -25,11 +26,12 @@ public sealed class BondParser(
     ConnectionMonitor connectionMonitor,
     BotService botService,
     CsvService csvServiceDll,
-    CsvHelper csvHelper) : IBondProvider<Bond>
+    CsvHelper csvHelper,
+    MinioStorageService minioService) : IBondProvider<Bond>
 {
     private readonly string urlMoscowExchange = $"https://www.moex.com/";
-    private List<Bond> bonds = new List<Bond>();
-    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
+    private List<Bond> bonds = new();
+    private static readonly string DirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
 
     // массив всех json файлов с бондами
     private readonly string[] urlGettingBonds =
@@ -60,7 +62,7 @@ public sealed class BondParser(
         $@"https://iss.moex.com/iss/emitters/3455/securities.jsonp?iss.meta=off&iss.json=extended&callback=JSON_CALLBACK&lang=ru"
     ];
 
-    private string FileName => $"Me_Bonds_{csvServiceDll.GetDate()}.csv";
+    private string FileName => $"me_bonds_{csvServiceDll.GetDate()}.csv";
 
     /// <summary>
     /// Получение бондов
@@ -76,7 +78,7 @@ public sealed class BondParser(
                 await FillingBondsAsync();
             }
 
-            await csvHelper.SendFileOnWebServer(dirPath, FileName);
+            await csvHelper.SendFileOnWebServer(DirPath, FileName);
         }
         catch (Exception ex)
         {
@@ -147,8 +149,7 @@ public sealed class BondParser(
                                 UpdatedAt = DateTime.Now
                             }).ToList();
                             var totalSecuritiesBonds = securitiesBonds.SecuritiesCursorBonds[0].Total;
-                            var filteredBonds = currentBond.Where(
-                                b => b.SecurityType == "Биржевая облигация").ToList();
+                            var filteredBonds = currentBond.Where(b => b.SecurityType == "Биржевая облигация").ToList();
                             bonds.AddRange(filteredBonds);
                             logger.LogInformation(
                                 $"Добавлено {filteredBonds.Count} биржевых облигаций из {totalSecuritiesBonds} других облигаций");
@@ -183,7 +184,8 @@ public sealed class BondParser(
                 $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество биржевых облигаций: {bonds.Count}" +
                 Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
             logger.LogInformation($"Запись данных в файл");
-            csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
+            csvHelper.WhiteInFileCsv(DirPath, FileName, bonds);
+            await SendToMinIo(DirPath, FileName, "text/csv", "bonds/me", logger);
         }
         catch (Exception ex)
         {
@@ -193,5 +195,24 @@ public sealed class BondParser(
         }
 
         return bonds;
+    }
+
+    private async Task SendToMinIo(string fullLocalPath, string fileName, string contentType, string folderPath,
+        ILogger log)
+    {
+        var fullPath = Path.Combine(fullLocalPath, fileName);
+        bool success = await minioService.TryUploadFileFromPathAsync(
+            fullLocalPath: fullPath,
+            fileName: fileName,
+            contentType: contentType,
+            folderPath: folderPath,
+            logger: logger
+        );
+
+        if (success)
+        {
+            // Здесь можно сохранить запись в БД (если вы решили это делать), 
+            // что файл успешно улетел в облако.
+        }
     }
 }

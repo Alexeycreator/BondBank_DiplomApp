@@ -7,9 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using Shared.BotHelpers;
+using Shared.Config.MinIO;
 using Shared.Connection;
 using Shared.Services;
 using Shared.Services.Interfaces;
+using Shared.Services.MinIO;
 using Shared.WorkingWithFiles;
 
 Env.Load();
@@ -39,6 +41,17 @@ services.AddSingleton<CsvHelper>();
 
 services.AddSingleton<BondParser>();
 services.AddSingleton<IBondProvider<BondModel>, BondParser>();
+
+var minioConfig = new MinioConfig
+{
+    Endpoint = Environment.GetEnvironmentVariable("MINIO_ENDPOINT") ?? "http://localhost:9000",
+    AccessKey = Environment.GetEnvironmentVariable("MINIO_ACCESS_KEY") ?? "admin_mio",
+    SecretKey = Environment.GetEnvironmentVariable("MINIO_SECRET_KEY") ?? "admin_mio",
+    BucketName = Environment.GetEnvironmentVariable("MINIO_BUCKET_NAME") ?? "bondbank-files"
+};
+
+services.AddSingleton(minioConfig);
+services.AddSingleton<MinioStorageService>();
 
 var sp = services.BuildServiceProvider();
 

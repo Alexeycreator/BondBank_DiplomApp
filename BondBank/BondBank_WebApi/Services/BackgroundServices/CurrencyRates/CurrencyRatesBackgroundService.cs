@@ -1,8 +1,10 @@
+using Amazon.S3;
 using BondBank_WebApi.HelperMethods;
+using BondBank_WebApi.Models.DataBase;
 using BondBank_WebApi.Services.DataContext;
 using Shared.BotHelpers;
-using Shared.Config;
 using Shared.Services;
+using Shared.Services.MinIO;
 using Shared.WorkingWithFiles;
 
 namespace BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
@@ -22,10 +24,11 @@ public sealed class CurrencyRatesBackgroundService(
     BotService botService,
     IServiceScopeFactory serviceScopeFactory,
     CsvHelper csvHelper,
-    CsvService csvServiceDll) : BackgroundService
+    CsvService csvServiceDll,
+    MinioStorageService minioService) : BackgroundService
 {
-    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "CurrencyRates");
-    private string FileName => $"Rates_{csvServiceDll.GetDate()}.csv";
+    private static readonly string DirPath = Path.Combine(Directory.GetCurrentDirectory(), "CurrencyRates");
+    private string FileName => $"rates_{csvServiceDll.GetDate()}.csv";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -39,7 +42,7 @@ public sealed class CurrencyRatesBackgroundService(
                 var currentTime = DateTime.Now;
 
                 // проверяем рабочие часы
-                if (currentTime.Hour is >= 8 and <= 17)
+                if (currentTime.Hour is >= 8 and <= 22)
                 {
                     // создаем scope объекты, чтобы не нагружать систему
                     using var scope = serviceScopeFactory.CreateScope();
@@ -58,7 +61,8 @@ public sealed class CurrencyRatesBackgroundService(
                         await botService.SendCommandToAllBotsAsync(BotCommand.Info, $"Курсы валют успешно получены");
 
                         await currencyRatesPushInDataBase.PushingInDataBase(dbContext, currencyRates);
-                        csvHelper.WhiteInFileCsv(dirPath, FileName, currencyRates);
+                        csvHelper.WhiteInFileCsv(DirPath, FileName, currencyRates);
+                        await SendToMinIo(DirPath, FileName, "text/csv", "rates", logger);
                     }
                     else
                     {
@@ -95,5 +99,24 @@ public sealed class CurrencyRatesBackgroundService(
     {
         logger.LogInformation($"Сервис фоновой работы с курсами валют остановлен");
         await base.StopAsync(cancellationToken);
+    }
+
+    private async Task SendToMinIo(string fullLocalPath, string fileName, string contentType, string folderPath,
+        ILogger log)
+    {
+        var fullPath = Path.Combine(fullLocalPath, fileName);
+        bool success = await minioService.TryUploadFileFromPathAsync(
+            fullLocalPath: fullPath,
+            fileName: fileName,
+            contentType: contentType,
+            folderPath: folderPath,
+            logger: logger
+        );
+
+        if (success)
+        {
+            // Здесь можно сохранить запись в БД (если вы решили это делать), 
+            // что файл успешно улетел в облако.
+        }
     }
 }

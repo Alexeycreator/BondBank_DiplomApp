@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Shared.BotHelpers;
 using Shared.Services;
 using Shared.Services.Interfaces;
+using Shared.Services.MinIO;
 using Shared.WorkingWithFiles;
 using SixGroupParser.HelperMethods;
 using SixGroupParser.Models;
@@ -23,14 +24,15 @@ public sealed class BondParser(
     ConnectionMonitor connectionMonitor,
     BotService botService,
     CsvService csvServiceDll,
-    CsvHelper csvHelper) : IBondProvider<BondModel>
+    CsvHelper csvHelper,
+    MinioStorageService minioService) : IBondProvider<BondModel>
 {
     private readonly string urlBondsSixGroup =
         $"https://www.six-group.com/fqs/ref.json?select=ShortName,ValorId,TradingBaseCurrency,CouponRate,MaturityDate,ClosingPrice,ClosingPerformance,BidPrice,AskPrice,MarketTime,MarketDate,IssuerNameFull,ProductLine,IndustrySectorCode,SecTypeCode,ISIN,AmountInIssue,YieldToWorst&where=PortalSegment=BO&orderby=ShortName&page=1&pagesize=20";
 
-    private static readonly string dirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
-    private List<BondModel> bonds = new List<BondModel>();
-    private string FileName => $"Sg_Bonds_{csvServiceDll.GetDate()}.csv";
+    private static readonly string DirPath = Path.Combine(Directory.GetCurrentDirectory(), "Bonds");
+    private List<BondModel> bonds = new();
+    private string FileName => $"sg_bonds_{csvServiceDll.GetDate()}.csv";
 
     /// <summary>
     /// Получение бондов
@@ -46,7 +48,7 @@ public sealed class BondParser(
                 await FillingBondsAsync();
             }
 
-            await csvHelper.SendFileOnWebServer(dirPath, FileName);
+            await csvHelper.SendFileOnWebServer(DirPath, FileName);
         }
         catch (Exception ex)
         {
@@ -130,7 +132,8 @@ public sealed class BondParser(
                     $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}" +
                     Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
                 logger.LogInformation($"Запись данных в файл");
-                csvHelper.WhiteInFileCsv(dirPath, FileName, bonds);
+                csvHelper.WhiteInFileCsv(DirPath, FileName, bonds);
+                await SendToMinIo(DirPath, FileName, "text/csv", "bonds/sg", logger);
             }
         }
         catch (InvalidOperationException ex)
@@ -173,5 +176,24 @@ public sealed class BondParser(
     private int GettingTotalBonds(JObject jsonRespBonds)
     {
         return (jsonRespBonds["totalRows"] ?? throw new InvalidOperationException()).Value<int>();
+    }
+
+    private async Task SendToMinIo(string fullLocalPath, string fileName, string contentType, string folderPath,
+        ILogger log)
+    {
+        var fullPath = Path.Combine(fullLocalPath, fileName);
+        bool success = await minioService.TryUploadFileFromPathAsync(
+            fullLocalPath: fullPath,
+            fileName: fileName,
+            contentType: contentType,
+            folderPath: folderPath,
+            logger: logger
+        );
+
+        if (success)
+        {
+            // Здесь можно сохранить запись в БД (если вы решили это делать), 
+            // что файл успешно улетел в облако.
+        }
     }
 }
