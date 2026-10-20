@@ -8,7 +8,7 @@ namespace Shared.Services.MinIO;
 public sealed class MinioStorageService
 {
     private readonly IAmazonS3 s3Client;
-    public readonly string bucketName;
+    private readonly string bucketName;
 
     public MinioStorageService(MinioConfig settings)
     {
