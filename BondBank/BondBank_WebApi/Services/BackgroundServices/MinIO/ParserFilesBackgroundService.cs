@@ -36,7 +36,8 @@ public sealed class ParserFilesBackgroundService(
                 using var scope = serviceScopeFactory.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
-                await PushToDb(dbContext, stoppingToken);
+                await CleanupDuplicateFilesAsync(dbContext, stoppingToken);
+                await PushToDbAsync(dbContext, stoppingToken);
 
                 logger.LogInformation("Цикл обработки файлов завершен. Ожидание 5 минут...");
                 await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
@@ -85,7 +86,7 @@ public sealed class ParserFilesBackgroundService(
         }
     }
 
-    private async Task PushToDb(ApplicationContext dbContext, CancellationToken stoppingToken)
+    private async Task PushToDbAsync(ApplicationContext dbContext, CancellationToken stoppingToken)
     {
         var projectRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
         var currencyRatesDir = configuration["StoragePaths:CurrencyRates"] ?? "CurrencyRates";
@@ -107,8 +108,8 @@ public sealed class ParserFilesBackgroundService(
                 {
                     if (existingKeys.Contains(file.Key)) continue;
 
-                    var fileNameWithPrefix = file.Key.Split('/').Last();
-                    var originalName = fileNameWithPrefix.Split('_', 2).Last();
+                    var fileNameWithPrefix = minioService.GetFileNameWithPrefix(file);
+                    var originalName = minioService.GetOriginalFileName(fileNameWithPrefix);
 
                     var storedFile = new StoredFileModel
                     {
@@ -143,6 +144,59 @@ public sealed class ParserFilesBackgroundService(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Ошибка при обработке папки {Folder}", folder);
+            }
+        }
+    }
+
+    private async Task CleanupDuplicateFilesAsync(ApplicationContext dbContext, CancellationToken stoppingToken)
+    {
+        foreach (var folder in folderPaths)
+        {
+            try
+            {
+                var files = await minioService.ListFilesWithInfoAsync(folder);
+                if (files.Count == 0) continue;
+
+                var groupedFiles = files
+                    .GroupBy(f =>
+                    {
+                        var fileNameWithPrefix = minioService.GetFileNameWithPrefix(f);
+                        return minioService.GetOriginalFileName(fileNameWithPrefix);
+                    })
+                    .ToList();
+
+                int deletedCount = 0;
+
+                foreach (var group in groupedFiles)
+                {
+                    var sortedFiles = group.OrderByDescending(f => f.LastModified).ToList();
+                    var duplicates = sortedFiles.Skip(1).ToList();
+
+                    foreach (var duplicate in duplicates)
+                    {
+                        await minioService.DeleteFileAsync(duplicate.Key);
+                        var dbRecord = await dbContext.StoredFile
+                            .FirstOrDefaultAsync(f => f.MinIoKey == duplicate.Key, stoppingToken);
+
+                        if (dbRecord != null)
+                        {
+                            dbContext.StoredFile.Remove(dbRecord);
+                        }
+
+                        deletedCount++;
+                    }
+                }
+
+                if (deletedCount > 0)
+                {
+                    await dbContext.SaveChangesAsync(stoppingToken);
+                    logger.LogInformation("Папка {Folder}: удалено устаревших дубликатов (из MinIO и БД): {Count}",
+                        folder, deletedCount);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ошибка при очистке дубликатов в папке {Folder}", folder);
             }
         }
     }
