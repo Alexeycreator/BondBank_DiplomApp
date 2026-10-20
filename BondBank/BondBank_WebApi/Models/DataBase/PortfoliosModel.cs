@@ -8,7 +8,6 @@ namespace BondBank_WebApi.Models.DataBase;
 public class PortfoliosModel : DataBaseModel
 {
     [Required] [MaxLength(100)] public string Name { get; set; } = "DefaultName";
-
     [Required] public int UserId { get; set; }
     [JsonIgnore] public virtual UsersModel? Users { get; set; }
     [JsonIgnore] public virtual ICollection<LjubljanaStockExchangeBondsModel>? LjubljanaStockExchangeBonds { get; set; }

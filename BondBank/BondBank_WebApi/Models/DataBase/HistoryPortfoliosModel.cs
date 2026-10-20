@@ -8,11 +8,8 @@ namespace BondBank_WebApi.Models.DataBase;
 public class HistoryPortfoliosModel : DataBaseModel
 {
     [Required] public DateTime DateSavePortfolioUser { get; set; }
-
-    [Required(AllowEmptyStrings = true)]
-    [MaxLength(4000)]
-    public string Details { get; set; } = string.Empty;
-
+    [Column(TypeName = "decimal(18,4)")] public decimal TotalValue { get; set; }
+    [Column(TypeName = "decimal(18,4)")] public decimal TotalYield { get; set; }
     [Required] public int UsersId { get; set; }
     [Required] public int PortfoliosId { get; set; }
     [JsonIgnore] public virtual UsersModel? Users { get; set; }
