@@ -9,7 +9,6 @@ import BondsPage from "./components/pages/bondsPage/BondsPage";
 import ForecastsPage from "./components/pages/forecastsPage/ForecastsPage";
 import PortfoliosPage from "./components/pages/portfoliosPage/PortfoliosPage";
 import AboutUsPage from "./components/pages/aboutUsPage/AboutUsPage";
-import AuthPage from "./components/pages/authPage/AuthPage";
 import ProfilePage from "./components/pages/profilePage/ProfilePage";
 import NewsPage from "./components/pages/newsPage/NewsPage";
 import NotFoundPage from "./components/pages/errorPages/NotFoundPage";
@@ -37,7 +36,6 @@ function App() {
                                     <Route path="/forecast" element={<ForecastsPage />} />
                                     <Route path="/about" element={<AboutUsPage />} />
                                     <Route path="/news" element={<NewsPage />} />
-                                    <Route path="/auth" element={<AuthPage />} />
 
                                     {/* ==================== ЗАЩИЩЁННЫЕ СТРАНИЦЫ ==================== */}
                                     <Route

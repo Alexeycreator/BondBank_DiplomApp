@@ -1,24 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User } from "../types";
-import { MOCK_USERS } from "../data/mockData";
+import keycloak from "../../keycloak";
 
 /**
  * Интерфейс контекста авторизации
  */
 interface AuthContextType {
-    user: User | null;
+    user: any | null; // Данные из токена Keycloak
     isAuthenticated: boolean;
     isAdmin: boolean;
-    login: (login: string, password: string) => {
-        success: boolean;
-        message: string;
-        blockedUser?: User;
-    };
-    register: (userData: Partial<User>) => { success: boolean; message: string };
     logout: () => void;
-    updateUser: (userData: Partial<User>) => void;
-    deleteAccount: () => void;
-    hasCompleteProfile: boolean;
+    hasCompleteProfile: boolean; // Оставляем, если нужно проверять профиль
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,134 +18,42 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  * Провайдер авторизации
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<any | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-    // Загружаем пользователя из localStorage при монтировании
+    // При монтировании проверяем, авторизован ли пользователь в Keycloak
     useEffect(() => {
-        const savedUser = localStorage.getItem("currentUser");
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
+        if (keycloak.authenticated) {
+            setIsAuthenticated(true);
+            setUser(keycloak.tokenParsed);
+
+            // ✅ Проверяем роль admin из токена Keycloak
+            const roles = keycloak.tokenParsed?.realm_access?.roles || [];
+            setIsAdmin(roles.includes('admin'));
         }
     }, []);
 
-    /**
-     * Проверка, что профиль заполнен полностью (паспорт, СНИЛС, ИНН)
-     */
-    const hasCompleteProfile = !!(
-        user &&
-        user.passport &&
-        user.snils &&
-        user.tin
-    );
+    // ✅ В вашей логике hasCompleteProfile проверяет наличие паспорта, СНИЛС и ИНН.
+    // Теперь эти данные можно проверять либо из токена (если вы их туда кладете),
+    // либо через запрос к вашему API (который знает, заполнен ли профиль).
+    // Пока для примера сделаем заглушку (или проверку по наличию email).
+    const hasCompleteProfile = !!user?.email; 
 
     /**
- * Авторизация
- */
-    const login = (login: string, password: string) => {
-        const foundUser = MOCK_USERS.find(
-            (u) => u.login === login && u.password === password
-        );
-
-        if (!foundUser) {
-            return { success: false, message: "Неверный логин или пароль" };
-        }
-
-        // ✅ Проверка блокировки
-        if (foundUser.isBlocked) {
-            return {
-                success: false,
-                message: "BLOCKED", // ← специальный код для обработки
-                blockedUser: foundUser,
-            };
-        }
-
-        setUser(foundUser);
-        localStorage.setItem("currentUser", JSON.stringify(foundUser));
-        return { success: true, message: "Вход выполнен успешно" };
-    };
-
-    /**
-     * Регистрация
-     */
-    const register = (userData: Partial<User>) => {
-        const exists = MOCK_USERS.find((u) => u.login === userData.login);
-        if (exists) {
-            return { success: false, message: "Пользователь с таким логином уже существует" };
-        }
-
-        const newUser: User = {
-            id: MOCK_USERS.length + 1,
-            login: userData.login || "",
-            password: userData.password || "",
-            email: userData.email || "",
-            phoneNumber: userData.phoneNumber || "",
-            secondName: userData.secondName || "",
-            firstName: userData.firstName || "",
-            surName: userData.surName || "",
-            role: "user",
-            createdAt: new Date().toISOString().split("T")[0],
-            lastSeen: ""
-        };
-
-        MOCK_USERS.push(newUser);
-        setUser(newUser);
-        localStorage.setItem("currentUser", JSON.stringify(newUser));
-
-        return { success: true, message: "Регистрация прошла успешно" };
-    };
-
-    /**
-     * Выход
+     * Выход (перенаправляет на страницу логина Keycloak и выходит)
      */
     const logout = () => {
-        setUser(null);
-        localStorage.removeItem("currentUser");
-    };
-
-    /**
-     * Обновление профиля
-     */
-    const updateUser = (userData: Partial<User>) => {
-        if (!user) return;
-
-        const updated = { ...user, ...userData };
-        setUser(updated);
-
-        // Обновляем в моковом массиве
-        const index = MOCK_USERS.findIndex((u) => u.id === user.id);
-        if (index !== -1) {
-            MOCK_USERS[index] = updated;
-        }
-
-        localStorage.setItem("currentUser", JSON.stringify(updated));
-    };
-
-    /**
-     * Удаление аккаунта
-     */
-    const deleteAccount = () => {
-        if (!user) return;
-
-        const index = MOCK_USERS.findIndex((u) => u.id === user.id);
-        if (index !== -1) {
-            MOCK_USERS.splice(index, 1);
-        }
-
-        setUser(null);
-        localStorage.removeItem("currentUser");
+        keycloak.logout({ redirectUri: window.location.origin });
     };
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                isAuthenticated: !!user,
-                isAdmin: user?.role === "admin",
-                login,
-                register,
+                isAuthenticated,
+                isAdmin,
                 logout,
-                updateUser,
-                deleteAccount,
                 hasCompleteProfile,
             }}
         >

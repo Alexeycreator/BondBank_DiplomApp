@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import keycloak from "../../keycloak"; // ✅ Импортируем keycloak
 import styles from "./Header.module.css";
 
 /**
@@ -11,18 +12,12 @@ const Header = () => {
     const navigate = useNavigate();
     const { isAuthenticated, user, isAdmin, logout } = useAuth();
 
-    // Состояние для выбранной валюты
-    const [selectedCurrency, setSelectedCurrency] = useState("RUB");
-
-    // Список доступных валют
-    const currencies = ["RUB", "USD", "EUR", "CNY"];
-
     /**
-     * Обработчик изменения валюты
+     * Обработчик входа через Keycloak
      */
-    const handleCurrencyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedCurrency(event.target.value);
-        console.log(`Валюта изменена на: ${event.target.value}`);
+    const handleLogin = () => {
+        // ✅ Вызываем форму входа Keycloak
+        keycloak.login();
     };
 
     /**
@@ -32,6 +27,12 @@ const Header = () => {
         logout();
         navigate("/");
     };
+
+    // ✅ Извлекаем имя и фамилию из токена Keycloak
+    // В Keycloak поля могут называться given_name и family_name
+    const userFirstName = user?.given_name || user?.name || "";
+    const userLastName = user?.family_name || "";
+    const userInitials = `${userFirstName?.[0] || ""}${userLastName?.[0] || ""}`;
 
     return (
         <header className={styles.header}>
@@ -77,10 +78,12 @@ const Header = () => {
                         <div className={styles.userMenu}>
                             <Link to="/profile" className={styles.profileLink}>
                                 <span className={styles.userAvatar}>
-                                    {user?.firstName?.[0]}{user?.secondName?.[0]}
+                                    {/* ✅ Инициалы из Keycloak */}
+                                    {userInitials}
                                 </span>
                                 <span className={styles.userName}>
-                                    {user?.firstName} {user?.secondName}
+                                    {/* ✅ Имя из Keycloak */}
+                                    {userFirstName} {userLastName}
                                 </span>
                                 {isAdmin && <span className={styles.adminBadge}>👑</span>}
                             </Link>
@@ -90,9 +93,10 @@ const Header = () => {
                         </div>
                     ) : (
                         <div className={styles.authButtons}>
-                            <Link to="/auth" className={styles.loginButton}>
+                            {/* ✅ Заменили Link на кнопку с вызовом keycloak.login() */}
+                            <button onClick={handleLogin} className={styles.loginButton}>
                                 Войти
-                            </Link>
+                            </button>
                         </div>
                     )}
                 </div>

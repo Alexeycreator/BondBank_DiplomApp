@@ -1,34 +1,37 @@
-import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "./context/AuthContext";
+import { useEffect } from 'react';
+import { useAuth } from './context/AuthContext';
+import keycloak from '../keycloak';
 
-/**
- * Защищённый маршрут — доступен только авторизованным пользователям
- */
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    const { isAuthenticated } = useAuth();
-    const location = useLocation();
+interface ProtectedRouteProps {
+    children: React.ReactNode;
+    requiredRole?: string;
+}
 
-    if (!isAuthenticated) {
-        return <Navigate to="/auth" state={{ from: location }} replace />;
-    }
-
-    return <>{children}</>;
-};
-
-/**
- * Маршрут только для администратора
- */
-export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     const { isAuthenticated, isAdmin } = useAuth();
 
+    useEffect(() => {
+        if (!isAuthenticated) {
+            keycloak.login();
+        }
+    }, [isAuthenticated]);
+
     if (!isAuthenticated) {
-        return <Navigate to="/auth" replace />;
+        return null;
     }
 
-    if (!isAdmin) {
-        return <Navigate to="/" replace />;
+    if (requiredRole === 'admin' && !isAdmin) {
+        return (
+            <div style={{ padding: '50px', textAlign: 'center' }}>
+                <h2>⛔ Доступ запрещен</h2>
+                <p>У вас нет прав администратора для просмотра этой страницы.</p>
+            </div>
+        );
     }
 
     return <>{children}</>;
 };
+
+export const AdminRoute = ({ children }: { children: React.ReactNode }) => (
+    <ProtectedRoute requiredRole="admin">{children}</ProtectedRoute>
+);
