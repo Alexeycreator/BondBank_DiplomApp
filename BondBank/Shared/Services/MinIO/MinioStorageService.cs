@@ -91,7 +91,7 @@ public sealed class MinioStorageService
 
         return fileKeys;
     }
-    
+
     public async Task<List<MinioFileInfo>> ListFilesWithInfoAsync(string folderPath = "")
     {
         var request = new ListObjectsV2Request
@@ -101,7 +101,7 @@ public sealed class MinioStorageService
         };
 
         var response = await s3Client.ListObjectsV2Async(request);
-    
+
         var files = new List<MinioFileInfo>();
         foreach (var s3Object in response.S3Objects)
         {
@@ -179,5 +179,15 @@ public sealed class MinioStorageService
         }
 
         return false;
+    }
+
+    public string GetFileNameWithPrefix(MinioFileInfo file)
+    {
+        return file.Key.Split('/').Last();
+    }
+    
+    public string GetOriginalFileName(string fileNameWithPrefix)
+    {
+        return fileNameWithPrefix.Split('_', 2).Last();
     }
 }
