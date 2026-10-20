@@ -27,7 +27,7 @@ public sealed class MinioStorageService
     }
 
     // ==================== ЗАГРУЗКА ====================
-    public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType,
+    private async Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType,
         string folderPath = "")
     {
         // Генерируем уникальный ключ (путь) для файла, чтобы избежать перезаписи
