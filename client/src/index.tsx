@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@flaticon/flaticon-uicons/css/all/all.css';
 import App from './App';
 import keycloak from './keycloak';
 

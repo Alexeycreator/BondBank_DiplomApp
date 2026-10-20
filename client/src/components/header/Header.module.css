@@ -134,6 +134,7 @@
     gap: 10px;
 }
 
+/* Кнопка входа (если вдруг понадобится) */
 .loginButton {
     background-color: #4fc3f7;
     color: #1a1a2e;
@@ -153,68 +154,44 @@
     transform: translateY(-1px);
 }
 
-/* ==================== МЕНЮ ПОЛЬЗОВАТЕЛЯ ==================== */
-.userMenu {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.profileLink {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    color: #ffffff;
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: background-color 0.3s;
-}
-
-.profileLink:hover {
-    background-color: rgba(79, 195, 247, 0.1);
-}
-
-.userAvatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #4fc3f7, #38b0e8);
-    color: #1a1a2e;
+/* ==================== ИКОНКА ПОЛЬЗОВАТЕЛЯ (НОВАЯ) ==================== */
+.userIconToggle {
+    background: transparent !important;
+    border: none !important;
+    padding: 8px !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.userName {
-    font-size: 14px;
-    font-weight: 500;
-    color: #ffffff;
-}
-
-.adminBadge {
-    font-size: 14px;
-    margin-left: 2px;
-}
-
-.logoutButton {
-    background-color: transparent;
-    color: #e74c3c;
-    border: 1px solid #e74c3c;
-    border-radius: 6px;
-    padding: 7px 16px;
-    font-size: 13px;
-    font-weight: 500;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    transition: transform 0.2s ease, color 0.2s ease;
+    outline: none !important;
+    box-shadow: none !important;
     cursor: pointer;
-    transition: all 0.3s ease;
 }
 
-.logoutButton:hover {
-    background-color: #e74c3c;
-    color: #ffffff;
+/* Увеличиваем размер иконки и меняем цвет при наведении */
+.userIconToggle i {
+    font-size: 28px;
+    color: #a0aabf; /* Цвет по умолчанию (серый) */
+    transition: color 0.2s;
+}
+
+.userIconToggle:hover i {
+    color: #4fc3f7; /* Голубой при наведении */
+}
+
+/* ✅ Убираем стандартную стрелку (треугольник) у Dropdown.Toggle */
+.userIconToggle::after {
+    display: none !important;
+}
+
+/* Убираем синюю рамку фокуса при клике */
+.userIconToggle:focus,
+.userIconToggle:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 /* ==================== АДАПТИВНОСТЬ ==================== */
@@ -256,15 +233,6 @@
     .actions {
         justify-content: center;
         flex-wrap: wrap;
-    }
-
-    .userMenu {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .userName {
-        display: none;
     }
 }
 

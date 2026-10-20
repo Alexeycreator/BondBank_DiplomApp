@@ -1,38 +1,22 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Dropdown } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
-import keycloak from "../../keycloak"; // ✅ Импортируем keycloak
+import keycloak from "../../keycloak";
 import styles from "./Header.module.css";
 
-/**
- * Шапка приложения
- * Содержит навигацию, выбор валюты, кнопку входа и профиль пользователя
- */
 const Header = () => {
     const navigate = useNavigate();
     const { isAuthenticated, user, isAdmin, logout } = useAuth();
 
-    /**
-     * Обработчик входа через Keycloak
-     */
-    const handleLogin = () => {
-        // ✅ Вызываем форму входа Keycloak
-        keycloak.login();
-    };
-
-    /**
-     * Обработчик выхода из аккаунта
-     */
+    const handleLogin = () => keycloak.login();
     const handleLogout = () => {
         logout();
         navigate("/");
     };
 
-    // ✅ Извлекаем имя и фамилию из токена Keycloak
-    // В Keycloak поля могут называться given_name и family_name
     const userFirstName = user?.given_name || user?.name || "";
     const userLastName = user?.family_name || "";
-    const userInitials = `${userFirstName?.[0] || ""}${userLastName?.[0] || ""}`;
 
     return (
         <header className={styles.header}>
@@ -63,41 +47,49 @@ const Header = () => {
                         <li className={styles.navItem}>
                             <Link to="/about" className={styles.navLink}>О нас</Link>
                         </li>
-                        {isAdmin && (
-                            <li className={styles.navItem}>
-                                <Link to="/admin" className={styles.navLink}>👑 Админ-панель</Link>
-                            </li>
-                        )}
                     </ul>
                 </nav>
 
-                {/* ==================== ПРАВАЯ ЧАСТЬ ==================== */}
+                {/* ==================== ПРАВАЯ ЧАСТЬ (АВТОРИЗАЦИЯ) ==================== */}
                 <div className={styles.actions}>
-                    {/* Авторизация / Профиль */}
                     {isAuthenticated ? (
-                        <div className={styles.userMenu}>
-                            <Link to="/profile" className={styles.profileLink}>
-                                <span className={styles.userAvatar}>
-                                    {/* ✅ Инициалы из Keycloak */}
-                                    {userInitials}
-                                </span>
-                                <span className={styles.userName}>
-                                    {/* ✅ Имя из Keycloak */}
+                        <Dropdown align="end" data-bs-theme="dark">
+                            <Dropdown.Toggle
+                                variant="link"
+                                id="dropdown-user"
+                                className={styles.userIconToggle}
+                            >
+                                <i className="fi fi-sr-user"></i>
+                            </Dropdown.Toggle>
+
+                            {/* ✅ Убираем bg-dark, оставляем тему */}
+                            <Dropdown.Menu>
+                                <Dropdown.Header>
                                     {userFirstName} {userLastName}
-                                </span>
-                                {isAdmin && <span className={styles.adminBadge}>👑</span>}
-                            </Link>
-                            <button className={styles.logoutButton} onClick={handleLogout}>
-                                Выйти
-                            </button>
-                        </div>
+                                </Dropdown.Header>
+                                <Dropdown.Divider />
+
+                                <Dropdown.Item as={Link} to="/profile">
+                                    <i className="fi fi-sr-id-badge me-2"></i> Личный кабинет
+                                </Dropdown.Item>
+
+                                {isAdmin && (
+                                    <Dropdown.Item as={Link} to="/admin">
+                                        <i className="fi fi-sr-star me-2"></i> Админ-панель
+                                    </Dropdown.Item>
+                                )}
+
+                                <Dropdown.Divider />
+
+                                <Dropdown.Item onClick={handleLogout} className="text-danger">
+                                    <i className="fi fi-br-exit me-2"></i> Выйти
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
                     ) : (
-                        <div className={styles.authButtons}>
-                            {/* ✅ Заменили Link на кнопку с вызовом keycloak.login() */}
-                            <button onClick={handleLogin} className={styles.loginButton}>
-                                Войти
-                            </button>
-                        </div>
+                        <button onClick={handleLogin} className={styles.userIconToggle} title="Войти">
+                            <i className="fi fi-sr-sign-in-alt"></i>
+                        </button>
                     )}
                 </div>
             </div>
