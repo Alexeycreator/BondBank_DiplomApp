@@ -107,13 +107,14 @@ namespace BondBank_WebApi.Migrations
                     b.Property<DateTime>("DateSavePortfolioUser")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
                     b.Property<int>("PortfoliosId")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalValue")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("TotalYield")
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<int>("UsersId")
                         .HasColumnType("integer");
@@ -521,7 +522,7 @@ namespace BondBank_WebApi.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<long>("SizeBytes")
+                    b.Property<long?>("SizeBytes")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("UploadedAt")
