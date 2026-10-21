@@ -1,158 +1,224 @@
 .profilePage {
-    padding: 20px 0;
-    max-width: 1000px;
-    margin: 0 auto;
+  padding: 20px 0;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 /* ==================== ШАПКА ПРОФИЛЯ ==================== */
 .profileHeader {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background-color: #1f2a44;
-    padding: 24px;
-    border-radius: 12px;
-    border: 1px solid #2d3b5e;
-    margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: #1f2a44;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #2d3b5e;
+  margin-bottom: 24px;
 }
 
 .avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #4fc3f7;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  flex-shrink: 0; /* Чтобы аватар не сжимался на мобильных */
 }
 
 .userInfo {
-    flex: 1;
+  flex: 1;
+  word-break: break-word; /* Чтобы длинные имена не вылезали */
 }
 
 .userName {
-    font-size: 22px;
-    color: #ffffff;
-    margin-bottom: 4px;
+  font-size: 22px;
+  color: #ffffff;
+  margin-bottom: 4px;
 }
 
 .userRole {
-    font-size: 13px;
-    color: #a0aabf;
-    background-color: rgba(79, 195, 247, 0.15);
-    padding: 4px 12px;
-    border-radius: 12px;
-    display: inline-block;
+  font-size: 13px;
+  color: #a0aabf;
+  background-color: rgba(79, 195, 247, 0.15);
+  padding: 4px 12px;
+  border-radius: 12px;
+  display: inline-block;
 }
 
 .logoutButton {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 /* ==================== ФОРМА ==================== */
 .formContainer {
-    background-color: #1f2a44;
-    padding: 32px;
-    border-radius: 12px;
-    border: 1px solid #2d3b5e;
+  background-color: #1f2a44;
+  padding: 32px;
+  border-radius: 12px;
+  border: 1px solid #2d3b5e;
 }
 
 .formRow {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
-/* ✅ Принудительно делаем лейблы светлыми */
+/* Светлые лейблы */
 .formContainer :global(.form-label) {
-    color: #a0aabf !important; /* Светло-серый цвет */
-    font-weight: 500;
+  color: #a0aabf !important;
+  font-weight: 500;
 }
 
-/* ✅ Темные поля ввода */
+/* Темные поля ввода */
 .darkInput {
-    background-color: #151b2b !important;
-    border: 1px solid #2d3b5e !important;
-    color: #ffffff !important;
+  background-color: #151b2b !important;
+  border: 1px solid #2d3b5e !important;
+  color: #ffffff !important;
 }
 
 .darkInput:focus {
-    border-color: #4fc3f7 !important;
-    box-shadow: 0 0 0 0.2rem rgba(79, 195, 247, 0.25) !important;
-    background-color: #151b2b !important;
+  border-color: #4fc3f7 !important;
+  box-shadow: 0 0 0 0.2rem rgba(79, 195, 247, 0.25) !important;
+  background-color: #151b2b !important;
+}
+
+/* ✅ Плейсхолдеры */
+.darkInput::placeholder {
+  color: #6c757d !important;
+  opacity: 1;
+}
+
+/* ✅ Стилизация поля с датой */
+.darkInput[type="date"] {
+  color-scheme: dark; /* Делает встроенный календарь темным */
+}
+
+.darkInput[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* Делает иконку календаря белой */
+  cursor: pointer;
+}
+
+/* Когда дата не выбрана, текст в ней темный (как плейсхолдер) */
+.darkInput[type="date"]:not(:valid)::-webkit-datetime-edit-text,
+.darkInput[type="date"]:not(:valid)::-webkit-datetime-edit-month-field,
+.darkInput[type="date"]:not(:valid)::-webkit-datetime-edit-day-field,
+.darkInput[type="date"]:not(:valid)::-webkit-datetime-edit-year-field {
+  color: #6c757d;
+}
+
+/* Когда дата выбрана, текст белый */
+.darkInput[type="date"]:valid::-webkit-datetime-edit-text,
+.darkInput[type="date"]:valid::-webkit-datetime-edit-month-field,
+.darkInput[type="date"]:valid::-webkit-datetime-edit-day-field,
+.darkInput[type="date"]:valid::-webkit-datetime-edit-year-field {
+  color: #ffffff;
+}
+
+/* ✅ Кнопка справа */
+.formActionsRight {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  width: 100%;
 }
 
 /* ==================== ТАБЫ ==================== */
 :global(.custom-tabs) {
-    border-bottom-color: #2d3b5e;
+  border-bottom-color: #2d3b5e;
 }
 
 :global(.custom-tabs .nav-link) {
-    color: #a0aabf;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background-color: transparent;
-    transition: all 0.2s ease;
-    padding: 12px 16px;
-    font-weight: 500;
+  color: #a0aabf;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  padding: 12px 16px;
+  font-weight: 500;
 }
 
 :global(.custom-tabs .nav-link:hover) {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 :global(.custom-tabs .nav-link.active) {
-    color: #4fc3f7 !important;
-    background-color: transparent !important;
-    border-bottom: 2px solid #4fc3f7 !important;
+  color: #4fc3f7 !important;
+  background-color: transparent !important;
+  border-bottom: 2px solid #4fc3f7 !important;
+}
+
+/* ==================== АККОРДЕОН ==================== */
+.darkAccordion :global(.accordion-item) {
+  background-color: #151b2b !important;
+  border: 1px solid #2d3b5e !important;
+  margin-bottom: 12px;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.darkAccordion :global(.accordion-header) {
+  background-color: transparent;
+}
+
+.darkAccordion :global(.accordion-button) {
+  background-color: #1f2a44 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.darkAccordion :global(.accordion-button::after) {
+  filter: invert(1);
+}
+
+.darkAccordion :global(.accordion-button:not(.collapsed)) {
+  background-color: #2d3b5e !important;
+  color: #4fc3f7 !important;
+}
+
+.darkAccordion :global(.accordion-body) {
+  background-color: #151b2b !important;
+  color: #a0aabf;
 }
 
 /* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 768px) {
-    .formRow {
-        grid-template-columns: 1fr;
-    }
-    .profileHeader {
-        flex-direction: column;
-        text-align: center;
-    }
-}
+  .profilePage {
+    padding: 10px 0;
+  }
 
-/* ✅ Стилизация аккордеона под темную тему */
-.darkAccordion :global(.accordion-item) {
-    background-color: #151b2b !important; /* Темный фон для секций */
-    border: 1px solid #2d3b5e !important;
-    margin-bottom: 12px;
-    border-radius: 8px !important;
-    overflow: hidden;
-}
+  .formRow {
+    grid-template-columns: 1fr; /* Все поля в одну колонку */
+    gap: 12px;
+  }
 
-.darkAccordion :global(.accordion-header) {
-    background-color: transparent;
-}
+  .profileHeader {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
 
-.darkAccordion :global(.accordion-button) {
-    background-color: #1f2a44 !important; /* Фон заголовка */
-    color: #ffffff !important;
-    font-weight: 600;
-    box-shadow: none !important;
-}
+  .logoutButton {
+    width: 100%;
+    margin-top: 10px;
+  }
 
-/* Цвет иконки (стрелочки) */
-.darkAccordion :global(.accordion-button::after) {
-    filter: invert(1); /* Делает стрелку белой */
-}
+  .formContainer {
+    padding: 20px;
+  }
 
-.darkAccordion :global(.accordion-button:not(.collapsed)) {
-    background-color: #2d3b5e !important; /* Фон открытого заголовка */
-    color: #4fc3f7 !important; /* Голубой текст для активного */
-}
+  /* Кнопка на мобильных на всю ширину для удобства */
+  .formActionsRight {
+    justify-content: center;
+  }
 
-.darkAccordion :global(.accordion-body) {
-    background-color: #151b2b !important; /* Темный фон тела */
-    color: #a0aabf;
+  .formActionsRight button {
+    width: 100%;
+  }
 }
