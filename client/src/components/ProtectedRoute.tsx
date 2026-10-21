@@ -1,37 +1,28 @@
-import { useEffect } from 'react';
-import { useAuth } from './context/AuthContext';
-import keycloak from '../keycloak';
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
-interface ProtectedRouteProps {
-    children: React.ReactNode;
-    requiredRole?: string;
-}
-
-export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-    const { isAuthenticated, isAdmin } = useAuth();
-
-    useEffect(() => {
-        if (!isAuthenticated) {
-            keycloak.login();
-        }
-    }, [isAuthenticated]);
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated } = useAuth();
+    const location = useLocation();
 
     if (!isAuthenticated) {
-        return null;
-    }
-
-    if (requiredRole === 'admin' && !isAdmin) {
-        return (
-            <div style={{ padding: '50px', textAlign: 'center' }}>
-                <h2>⛔ Доступ запрещен</h2>
-                <p>У вас нет прав администратора для просмотра этой страницы.</p>
-            </div>
-        );
+        return <Navigate to="/" state={{ from: location }} replace />;
     }
 
     return <>{children}</>;
 };
 
-export const AdminRoute = ({ children }: { children: React.ReactNode }) => (
-    <ProtectedRoute requiredRole="admin">{children}</ProtectedRoute>
-);
+export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated, isAdmin } = useAuth();
+    const location = useLocation();
+
+    if (!isAuthenticated) {
+        return <Navigate to="/" state={{ from: location }} replace />;
+    }
+
+    if (!isAdmin) {
+        return <Navigate to="/" replace />;
+    }
+
+    return <>{children}</>;
+};

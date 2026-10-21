@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Modal, Button, Form, Tabs, Tab } from "react-bootstrap";
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
@@ -11,7 +11,6 @@ import { PortfolioCard } from "../../infoCards/PortfolioCard";
 import { CreatePortfolioModal } from "../../portfolios/CreatePortfolioModal";
 import { DataTable, TableColumn } from "../../table/DataTable";
 import { SearchFilters } from "../../search/SearchFilters";
-// ✅ Импортируем бейдж
 import { StatusBadge } from "../../infoCards/StatusBadge";
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
@@ -39,7 +38,7 @@ const PORTFOLIO_LIMITS: Record<PortfolioType, { maxBonds: number; maxYield: numb
 };
 
 const PortfoliosPage = () => {
-    const { hasCompleteProfile, user, isAdmin } = useAuth();
+    const { hasCompleteProfile, user, isAdmin, isAuthenticated, login } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -68,10 +67,25 @@ const PortfoliosPage = () => {
         { id: 4, userId: 2, name: "Портфель Петрова", description: "Личный портфель", type: "balanced", currentValue: 850000, currentYield: 5.0, createdAt: "2026-06-01" },
     ]);
 
+    // ✅ Защита от повторного редиректа
+    const hasRedirected = useRef(false);
+
     useEffect(() => {
-        if (!urlParams.userId && user) { navigate(`/portfolios?userId=${user.id}`, { replace: true }); return; }
-        if (urlParams.userId && user && urlParams.userId !== user.id && !isAdmin) { navigate(`/portfolios?userId=${user.id}`, { replace: true }); }
-    }, [urlParams.userId, user, isAdmin, navigate]);
+        if (!user || hasRedirected.current) return; // Ждем загрузки пользователя и проверяем флаг
+
+        // Если в URL нет userId, подставляем текущего пользователя
+        if (!urlParams.userId) {
+            hasRedirected.current = true;
+            navigate(`/portfolios?userId=${user.id}`, { replace: true });
+            return;
+        }
+
+        // Если в URL чужой userId, а пользователь не админ — редиректим на свой
+        if (urlParams.userId !== user.id && !isAdmin) {
+            hasRedirected.current = true;
+            navigate(`/portfolios?userId=${user.id}`, { replace: true });
+        }
+    }, [urlParams.userId, user?.id, isAdmin, navigate]);
 
     const userPortfolios = useMemo(() => {
         if (!urlParams.userId) return [];
@@ -83,7 +97,7 @@ const PortfoliosPage = () => {
         const found = portfolios.find((p) => p.id === urlParams.portfolioId && p.userId === urlParams.userId);
         if (found) setSelectedPortfolio(found);
         else { setSelectedPortfolio(null); navigate(`/portfolios?userId=${urlParams.userId || user?.id}`, { replace: true }); }
-    }, [urlParams.portfolioId, urlParams.userId, portfolios, navigate, user]);
+    }, [urlParams.portfolioId, urlParams.userId, portfolios, navigate, user?.id]);
 
     const currentPortfolioBonds: Record<number, PortfolioBond[]> = {
         1: [{ name: "SIJ 4. IZDAJA", isin: "SI0032103580", bondType: "lse", quantity: 50, price: 98.50, total: 4925, yield: 4.2 }, { name: "SDH 3. IZDAJA", isin: "SI0002103529", bondType: "wb", quantity: 30, price: 97.80, total: 2934, yield: 5.1 }, { name: "TIVOLI 2. IZDAJA", isin: "SI0032104232", bondType: "sg", quantity: 20, price: 96.30, total: 1926, yield: 4.9 }, { name: "SIJ 5. IZDAJA", isin: "SI0032103598", bondType: "lse", quantity: 40, price: 99.20, total: 3968, yield: 3.8 }],
@@ -140,7 +154,7 @@ const PortfoliosPage = () => {
 
     const getTotalQuantity = (portfolioId: number): number => (isHistoricalView ? historicalPortfolioBonds[selectedDate]?.[portfolioId] || [] : currentPortfolioBonds[portfolioId] || []).reduce((sum, bond) => sum + bond.quantity, 0);
     const getBondsCount = (portfolioId: number): number => (isHistoricalView ? historicalPortfolioBonds[selectedDate]?.[portfolioId] || [] : currentPortfolioBonds[portfolioId] || []).length;
-    
+
     const getPortfolioValue = (portfolio: Portfolio) => {
         if (!isHistoricalView) return { value: portfolio.currentValue, yield: portfolio.currentYield, isHistorical: false };
         const history = portfolioHistory[portfolio.id] || [];
@@ -179,7 +193,7 @@ const PortfoliosPage = () => {
 
     const rawHistory = selectedPortfolio ? portfolioHistory[selectedPortfolio.id] || [] : [];
     const history = getFilteredHistory(rawHistory);
-    
+
     const valueLabels = history.map((h) => `${new Date(h.date).getDate()}.${new Date(h.date).getMonth() + 1}`);
     const valueDatasets = [{ label: "Стоимость портфеля (₽)", data: history.map((h) => h.totalValue), borderColor: isHistoricalView ? "#ff9800" : "#2ecc71", backgroundColor: isHistoricalView ? "rgba(255, 152, 0, 0.1)" : "rgba(46, 204, 113, 0.1)", fill: true, tension: 0.3, pointBackgroundColor: history.map((h) => h.date === selectedDate ? "#e74c3c" : isHistoricalView ? "#ff9800" : "#2ecc71"), pointRadius: history.map((h) => (h.date === selectedDate ? 8 : 4)), pointHoverRadius: 10 }];
     const yieldDatasets = [{ label: "Доходность портфеля (%)", data: history.map((h) => Number(h.yield.toFixed(2))), borderColor: "#4fc3f7", backgroundColor: "rgba(79, 195, 247, 0.1)", fill: true, tension: 0.3 }];
@@ -190,24 +204,55 @@ const PortfoliosPage = () => {
     const portfolioColumns: TableColumn<PortfolioBond>[] = [
         { key: "name", title: "Название", render: (bond) => bond.name },
         { key: "isin", title: "ISIN", render: (bond) => <span className={styles.isin}>{bond.isin}</span> },
-        { 
-            key: "type", 
-            title: "Тип", 
-            // ✅ Используем StatusBadge
-            render: (bond) => <StatusBadge variantType="type" value={bond.bondType} /> 
+        {
+            key: "type",
+            title: "Тип",
+            render: (bond) => <StatusBadge variantType="type" value={bond.bondType} />
         },
         { key: "quantity", title: "Количество", render: (bond) => bond.quantity },
         { key: "price", title: "Цена", render: (bond) => bond.price },
-        { 
-            key: "yield", 
-            title: "Доходность", 
-            // ✅ Используем StatusBadge
-            render: (bond) => <StatusBadge variantType="yield" value={bond.yield} /> 
+        {
+            key: "yield",
+            title: "Доходность",
+            render: (bond) => <StatusBadge variantType="yield" value={bond.yield} />
         },
         { key: "total", title: "Итого", render: (bond) => bond.total.toFixed(2) },
     ];
 
-    if (!hasCompleteProfile) return (<div className={styles.warningPage}><div className={styles.warningCard}><div className={styles.warningIcon}>⚠️</div><h1 className={styles.warningTitle}>Профиль не заполнен</h1><p className={styles.warningText}>Чтобы создавать портфели, необходимо заполнить паспортные данные, ИНН и СНИЛС.</p><button className={styles.warningButton} onClick={() => navigate("/profile")}>Перейти в профиль</button></div></div>);
+    if (!isAuthenticated) {
+        return (
+            <div className={styles.warningPage}>
+                <div className={styles.warningCard}>
+                    <div className={styles.warningIcon}>🔒</div>
+                    <h1 className={styles.warningTitle}>Требуется авторизация</h1>
+                    <p className={styles.warningText}>
+                        Чтобы просматривать портфели и управлять ими, пожалуйста, войдите в систему или зарегистрируйтесь.
+                    </p>
+                    <button 
+                        className={styles.warningButton} 
+                        onClick={() => login()}
+                    >
+                        Войти / Зарегистрироваться
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!hasCompleteProfile) {
+        return (
+            <div className={styles.warningPage}>
+                <div className={styles.warningCard}>
+                    <div className={styles.warningIcon}>⚠️</div>
+                    <h1 className={styles.warningTitle}>Профиль не заполнен</h1>
+                    <p className={styles.warningText}>Чтобы создавать портфели, необходимо заполнить паспортные данные, ИНН и СНИЛС.</p>
+                    <button className={styles.warningButton} onClick={() => navigate("/profile")}>
+                        Перейти в профиль
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.portfoliosPage}>
@@ -237,7 +282,7 @@ const PortfoliosPage = () => {
                 {isHistoricalView && (
                     <>
                         <span className={styles.historicalBadge}>
-                            Исторические данные: {formatDate(selectedDate)} 
+                            Исторические данные: {formatDate(selectedDate)}
                             {isRangeMode && ` — ${formatDate(endDate)}`}
                         </span>
                         <button className={styles.resetDateButton} onClick={() => { setSelectedDate(today); setEndDate(today); setIsRangeMode(false); }}>🔄 Вернуться на сегодня</button>
@@ -276,7 +321,7 @@ const PortfoliosPage = () => {
                     </div>
 
                     <Tabs defaultActiveKey="overview" id="portfolio-tabs" className="custom-tabs mb-4" fill>
-                        
+
                         <Tab eventKey="overview" title="📊 Обзор">
                             <div className="pt-3">
                                 <div className={styles.keyStats}>
@@ -332,10 +377,10 @@ const PortfoliosPage = () => {
                 </section>
             )}
 
-            <Modal 
-                show={!!selectedBondForModal} 
-                onHide={() => setSelectedBondForModal(null)} 
-                centered 
+            <Modal
+                show={!!selectedBondForModal}
+                onHide={() => setSelectedBondForModal(null)}
+                centered
                 scrollable
                 contentClassName="bg-dark text-white border-secondary"
             >

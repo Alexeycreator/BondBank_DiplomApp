@@ -6,20 +6,21 @@ import '@flaticon/flaticon-uicons/css/all/all.css';
 import App from './App';
 import keycloak from './keycloak';
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-root.render(
-    <React.StrictMode>
-        <App />
-    </React.StrictMode>
-);
-
 keycloak.init({ 
     onLoad: 'check-sso', 
     checkLoginIframe: false,
     silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
     pkceMethod: 'S256'
-}).then((authenticated) => {
-    console.log("Keycloak инициализирован. Авторизован:", authenticated);
+}).then(() => {
+    // Рендерим только когда Keycloak точно знает, авторизован пользователь или нет
+    const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+    root.render(
+        <React.StrictMode>
+            <App />
+        </React.StrictMode>
+    );
 }).catch((error) => {
-    console.error("Ошибка при инициализации Keycloak (сайт продолжит работу как гость):", error);
+    console.error("Ошибка Keycloak:", error);
+    const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+    root.render(<React.StrictMode><App /></React.StrictMode>);
 });
