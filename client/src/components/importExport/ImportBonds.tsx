@@ -22,7 +22,7 @@ const ImportBonds: React.FC<ImportBondsProps> = ({ onImport }) => {
             formData.append("file", file);
 
             await axios.post(
-                `${process.env.REACT_APP_API_URL_HTTPS}/Bonds/import-bonds`,
+                `${import.meta.env.VITE_API_URL_HTTPS}/Bonds/import-bonds`,
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );

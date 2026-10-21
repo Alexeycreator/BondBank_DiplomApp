@@ -1,51 +1,73 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import keycloak from "../../keycloak";
+import { usersApi } from "../data/usersApi";
 
-/**
- * Интерфейс контекста авторизации
- */
 interface AuthContextType {
-    user: any | null; // Данные из токена Keycloak
+    user: any | null;
     isAuthenticated: boolean;
     isAdmin: boolean;
     logout: () => void;
-    hasCompleteProfile: boolean; // Оставляем, если нужно проверять профиль
+    login: () => void; // <-- Добавили функцию для входа
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/**
- * Провайдер авторизации
- */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<any | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [isKeycloakReady, setIsKeycloakReady] = useState<boolean>(false); // Ждем инициализации
 
-    // При монтировании проверяем, авторизован ли пользователь в Keycloak
     useEffect(() => {
+        // Проверяем, инициализирован ли Keycloak
         if (keycloak.authenticated) {
-            setIsAuthenticated(true);
-            setUser(keycloak.tokenParsed);
-
-            // ✅ Проверяем роль admin из токена Keycloak
-            const roles = keycloak.tokenParsed?.realm_access?.roles || [];
-            setIsAdmin(roles.includes('admin'));
+            setIsKeycloakReady(true);
+            updateAuthState();
+        } else {
+            // Если не авторизован, но Keycloak уже загружен
+            setIsKeycloakReady(true);
         }
+
+        // Слушаем события Keycloak (если токен обновится или протухнет)
+        keycloak.onAuthSuccess = () => {
+            updateAuthState();
+        };
+        keycloak.onAuthLogout = () => {
+            setIsAuthenticated(false);
+            setUser(null);
+            setIsAdmin(false);
+        };
     }, []);
 
-    // ✅ В вашей логике hasCompleteProfile проверяет наличие паспорта, СНИЛС и ИНН.
-    // Теперь эти данные можно проверять либо из токена (если вы их туда кладете),
-    // либо через запрос к вашему API (который знает, заполнен ли профиль).
-    // Пока для примера сделаем заглушку (или проверку по наличию email).
-    const hasCompleteProfile = !!user?.email; 
+    const updateAuthState = () => {
+        setIsAuthenticated(true);
+        setUser(keycloak.tokenParsed);
 
-    /**
-     * Выход (перенаправляет на страницу логина Keycloak и выходит)
-     */
+        const roles = keycloak.tokenParsed?.realm_access?.roles || [];
+        setIsAdmin(roles.includes("admin"));
+
+        const syncUserWithBackend = async () => {
+            try {
+                await usersApi.sendHeartbeat();
+                console.log("✅ Пользователь успешно синхронизирован с БД");
+            } catch (error) {
+                console.error("❌ Ошибка синхронизации:", error);
+            }
+        };
+        syncUserWithBackend();
+    };
+
+    const login = () => {
+        keycloak.login({ redirectUri: window.location.origin });
+    };
+
     const logout = () => {
         keycloak.logout({ redirectUri: window.location.origin });
     };
+
+    if (!isKeycloakReady) {
+        return <div>Загрузка...</div>;
+    }
 
     return (
         <AuthContext.Provider
@@ -54,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 isAuthenticated,
                 isAdmin,
                 logout,
-                hasCompleteProfile,
+                login
             }}
         >
             {children}
@@ -62,9 +84,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-/**
- * Хук для использования контекста авторизации
- */
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

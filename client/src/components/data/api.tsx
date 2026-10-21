@@ -1,10 +1,10 @@
-/* eslint-disable no-throw-literal */
 import axios from "axios";
+import keycloak from "../../keycloak";
 
 const apiUrl =
-    process.env.REACT_APP_API_URL_HTTPS ||
-    process.env.REACT_APP_API_URL_HTTP ||
-    "https://localhost:57041/api";
+    import.meta.env.VITE_API_URL_HTTPS ||
+    import.meta.env.VITE_API_URL_HTTP ||
+    "http://localhost:57042/api";
 
 export const api = axios.create({
     baseURL: apiUrl,
@@ -13,18 +13,21 @@ export const api = axios.create({
     },
 });
 
-/**
- * Универсальный обработчик ошибок axios.
- * Бросает объект с полями serverMessage / statusCode / isNetworkError.
- */
+api.interceptors.request.use(
+    (config) => {
+        if (keycloak.token) {
+            config.headers.Authorization = `Bearer ${keycloak.token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
+
 export function handleApiError(error: any): never {
     if (error.response) {
         throw {
             ...error,
-            serverMessage:
-                error.response.data?.message ||
-                error.response.data ||
-                "Неизвестная ошибка",
+            serverMessage: error.response.data?.message || "Неизвестная ошибка",
             statusCode: error.response.status,
         };
     } else if (error.request) {

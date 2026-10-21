@@ -3,8 +3,8 @@ import axios from "axios";
 import ErrorCard from "../errorCard/ErrorCard";
 
 const apiUrl =
-    process.env.REACT_APP_API_URL_HTTPS ||
-    process.env.REACT_APP_API_URL_HTTP ||
+    import.meta.env.VITE_API_URL_HTTPS ||
+    import.meta.env.VITE_API_URL_HTTP ||
     "https://localhost:57041/api";
 
 const HEALTH_ENDPOINT = "/Health/ping";
