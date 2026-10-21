@@ -1,8 +1,8 @@
 import React from "react";
 import { Table } from "react-bootstrap";
 import styles from "./DataTable.module.css";
+import Spinner from "../spinner/Spinner"; // Подключаем ваш компонент спиннера
 
-// Описываем структуру колонки
 export interface TableColumn<T> {
     key: string;
     title: React.ReactNode;
@@ -20,6 +20,7 @@ interface DataTableProps<T> {
     rowClassName?: (item: T) => string;
     emptyMessage?: string;
     startIndex?: number;
+    isLoading?: boolean; // <--- Добавили пропс
 }
 
 export function DataTable<T>({
@@ -30,16 +31,11 @@ export function DataTable<T>({
     rowClassName,
     emptyMessage = "Данных нет",
     startIndex = 1,
+    isLoading = false, // <--- Значение по умолчанию
 }: DataTableProps<T>) {
     return (
         <div className={styles.tableWrapper}>
-            {/* ✅ Используем Table из Bootstrap с variant="dark" */}
-            <Table 
-                variant="dark" 
-                hover 
-                responsive 
-                className={styles.customTable}
-            >
+            <Table variant="dark" hover responsive className={styles.customTable}>
                 <thead>
                     <tr>
                         {columns.map((col, index) => (
@@ -56,7 +52,13 @@ export function DataTable<T>({
                     </tr>
                 </thead>
                 <tbody>
-                    {data.length > 0 ? (
+                    {isLoading ? (
+                        <tr>
+                            <td colSpan={columns.length} className={styles.noData} style={{ padding: "50px" }}>
+                                <Spinner size="medium" variant="primary" label="Загрузка данных..." />
+                            </td>
+                        </tr>
+                    ) : data.length > 0 ? (
                         data.map((item, rowIndex) => {
                             const rowNum = startIndex + rowIndex;
                             const customClass = rowClassName ? rowClassName(item) : "";

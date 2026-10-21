@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Modal, Tabs, Tab } from "react-bootstrap";
+import { Modal, Tabs, Tab, Dropdown, Toast, ToastContainer } from "react-bootstrap";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import styles from "./BondsPage.module.css";
 import NotFoundPage from "../errorPages/NotFoundPage";
@@ -8,7 +8,6 @@ import BadRequestPage from "../errorPages/BadRequestPage";
 import ImportBonds from "../../importExport/ImportBonds";
 import ExportBonds from "../../importExport/ExportBonds";
 import ErrorCard from "../../errorCard/ErrorCard";
-import Spinner from "../../spinner/Spinner";
 import { useAuth } from "../../context/AuthContext";
 import { getBondsInfo } from "../../data/bondsPageApi";
 import {
@@ -21,7 +20,6 @@ import { LineChart } from "../../charts/LineChart";
 import { BondDetailsCard, BondDetailRow } from "../../infoCards/BondDetailsCard";
 import { SearchFilters } from "../../search/SearchFilters";
 import { StatusBadge } from "../../infoCards/StatusBadge";
-import { Dropdown } from "react-bootstrap";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -112,21 +110,43 @@ const BondsPage = () => {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
+    // Состояния для уведомлений
+    const [showSlowWarning, setShowSlowWarning] = useState(false);
+    const [showEmptyWarning, setShowEmptyWarning] = useState(false);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     const fetchBondsInfo = async () => {
         try {
             setLoading(true);
             setLoadError(null);
+            setShowEmptyWarning(false);
+            setShowSlowWarning(false);
+
+            // Запускаем таймер на 5 секунд
+            timerRef.current = setTimeout(() => {
+                setShowSlowWarning(true);
+            }, 5000);
+
             const data = await getBondsInfo();
             setBondsInfo(data);
+
+            // Если данные пришли, но список пуст
+            if (data.bondsByTable.length === 0) {
+                setShowEmptyWarning(true);
+            }
         } catch (err: any) {
             console.error("Ошибка загрузки облигаций:", err);
             setLoadError(err.serverMessage || err.message || "Не удалось загрузить облигации");
         } finally {
             setLoading(false);
+            if (timerRef.current) clearTimeout(timerRef.current);
         }
     };
 
-    useEffect(() => { fetchBondsInfo(); }, []);
+    useEffect(() => { 
+        fetchBondsInfo(); 
+        return () => { if (timerRef.current) clearTimeout(timerRef.current); }
+    }, []);
 
     const currencyRatesById = useMemo<Map<number, CurrencyRatesModel>>(() => {
         const map = new Map<number, CurrencyRatesModel>();
@@ -404,7 +424,6 @@ const BondsPage = () => {
             key: "type",
             title: <>Тип <span className={styles.sortIcon}>{getSortIcon("type")}</span></>,
             onClick: () => handleSort("type"),
-            // ✅ Используем StatusBadge
             render: (bond) => <StatusBadge variantType="type" value={bond.type} />
         },
         { key: "price", title: <>Цена <span className={styles.headerCurrency}>({selectedCurrency})</span> <span className={styles.sortIcon}>{getSortIcon("price")}</span></>, onClick: () => handleSort("price"), render: (bond) => formatPrice(bond) },
@@ -412,7 +431,6 @@ const BondsPage = () => {
             key: "yield",
             title: <>Доходность <span className={styles.sortIcon}>{getSortIcon("yield")}</span></>,
             onClick: () => handleSort("yield"),
-            // ✅ Используем StatusBadge
             render: (bond) => bond.yield !== null
                 ? <StatusBadge variantType="yield" value={bond.yield} />
                 : "—"
@@ -422,7 +440,6 @@ const BondsPage = () => {
 
     if (badRequest) return <BadRequestPage message={badRequest} hint="Проверьте ISIN (12 символов)" returnPath="/bonds" returnLabel="Вернуться" />;
     if (notFound) return <NotFoundPage isin={isinFromUrl || ""} returnPath="/bonds" returnLabel="Вернуться" />;
-    if (loading) return <div className={styles.bondsPage}><Spinner size="large" variant="primary" label="Загрузка…" fullScreen /></div>;
     if (loadError) return <div className={styles.bondsPage}><ErrorCard icon="⚠️" title="Ошибка" message={loadError} retryLabel="Повторить" onRetry={fetchBondsInfo} /></div>;
 
     const searchAvailableTypes = typeBonds.map((type) => ({
@@ -432,10 +449,32 @@ const BondsPage = () => {
 
     return (
         <div className={styles.bondsPage}>
+            {/* Контейнер уведомлений в правом верхнем углу */}
+            <ToastContainer position="top-end" className="p-3" style={{ position: "fixed", zIndex: 9999 }}>
+                <Toast show={showSlowWarning} onClose={() => setShowSlowWarning(false)} bg="warning" delay={15000} autohide>
+                    <Toast.Header>
+                        <strong className="me-auto">⏳ Загрузка занимает много времени</strong>
+                    </Toast.Header>
+                    <Toast.Body className="text-dark">
+                        Данных слишком много. Загрузка может занять больше минуты. Пожалуйста, подождите.
+                    </Toast.Body>
+                </Toast>
+
+                <Toast show={showEmptyWarning} onClose={() => setShowEmptyWarning(false)} bg="primary" delay={15000} autohide>
+                    <Toast.Header>
+                        <strong className="me-auto">📭 Облигаций нет в системе</strong>
+                    </Toast.Header>
+                    <Toast.Body className="text-white">
+                        Упс, облигаций нет в системе. Если это ошибка, обратитесь в поддержку: <br/>
+                        <b>Email:</b> support@bondbank.ru <br/>
+                        <b>Телефон:</b> 8 (800) 555-35-35
+                    </Toast.Body>
+                </Toast>
+            </ToastContainer>
+
             <div className={styles.pageHeader}>
                 <div>
                     <h1 className={styles.pageTitle}>📈 Облигации</h1>
-                    <p className={styles.pageDescription}>Список доступных облигаций и график динамики цены</p>
                 </div>
                 <div className={styles.headerActions}>
                     {isAdmin && <ImportBonds onImport={handleImport} />}
@@ -445,7 +484,6 @@ const BondsPage = () => {
                             💱 {selectedCurrency}
                         </Dropdown.Toggle>
 
-                        {/* ✅ Добавляем стили для ограничения высоты и скролла */}
                         <Dropdown.Menu
                             className="bg-dark border-secondary"
                             style={{ maxHeight: "250px", overflowY: "auto" }}
@@ -455,7 +493,6 @@ const BondsPage = () => {
                                     key={curr}
                                     onClick={() => setSelectedCurrency(curr)}
                                     active={curr === selectedCurrency}
-                                    // ✅ Убираем стандартный синий фон и белый текст
                                     className={styles.currencyItem}
                                 >
                                     {curr}
@@ -467,7 +504,9 @@ const BondsPage = () => {
             </div>
 
             <section className={styles.tableSection}>
-                <h2 className={styles.sectionTitle}>Список облигаций ({sortedBonds.length})</h2>
+                <h2 className={styles.sectionTitle}>
+                    Список облигаций {!loading && `(${sortedBonds.length})`}
+                </h2>
 
                 <SearchFilters
                     searchType={searchType}
@@ -483,9 +522,27 @@ const BondsPage = () => {
                     availableTypes={searchAvailableTypes}
                 />
 
-                <DataTable data={paginatedBonds} columns={bondColumns} keyExtractor={(bond) => bond.id} onRowClick={handleBondClick} rowClassName={(bond) => selectedBond?.id === bond.id ? styles.selectedRow : ""} emptyMessage="Облигации не найдены" startIndex={(safePage - 1) * pageSize + 1} />
+                <DataTable 
+                    data={paginatedBonds} 
+                    columns={bondColumns} 
+                    keyExtractor={(bond) => bond.id} 
+                    onRowClick={handleBondClick} 
+                    rowClassName={(bond) => selectedBond?.id === bond.id ? styles.selectedRow : ""} 
+                    emptyMessage={loading ? "" : "Облигации не найдены"}
+                    startIndex={(safePage - 1) * pageSize + 1} 
+                    isLoading={loading} 
+                />
 
-                {totalPages > 0 && <PaginationControl currentPage={safePage} totalPages={totalPages} pageSize={pageSize} onPageChange={handlePageChange} onPageSizeChange={handlePageSizeChange} />}
+                {/* Прячем пагинацию во время загрузки */}
+                {!loading && totalPages > 0 && (
+                    <PaginationControl 
+                        currentPage={safePage} 
+                        totalPages={totalPages} 
+                        pageSize={pageSize} 
+                        onPageChange={handlePageChange} 
+                        onPageSizeChange={handlePageSizeChange} 
+                    />
+                )}
             </section>
 
             <Modal
