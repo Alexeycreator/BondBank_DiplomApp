@@ -86,28 +86,31 @@ public sealed class BondParser(
         var container = document.GetElementbyId($"c7928-module-container");
         if (container != null)
         {
-            var tableBody = document.GetElementbyId($"c7928-module-container").ChildNodes
-                .FindFirst($"tbody").ChildNodes.Where(x => x.Name == $"tr").ToArray();
+            var tableBody = document.GetElementbyId($"c7928-module-container")
+                ?.ChildNodes
+                .FindFirst($"tbody")
+                ?.ChildNodes.Where(x => x.Name == $"tr").ToArray();
             logger.LogInformation($"Контент страницы {numberPage} получен");
             logger.LogInformation($"Извлечение данных...");
-            var countCells = document.GetElementbyId($"c7928-module-container").ChildNodes
-                .FindFirst("tbody").SelectSingleNode(".//tr").ChildNodes.Count;
+            var countCells = document.GetElementbyId($"c7928-module-container")!.ChildNodes
+                .FindFirst("tbody")!.SelectSingleNode(".//tr")!.ChildNodes.Count;
             try
             {
                 if (countCells == CountCells)
                 {
                     foreach (var tableRow in tableBody)
                     {
-                        var cellName = tableRow.ChildNodes.FindFirst($"td").ChildNodes.FindFirst($"a")
-                            .InnerText;
-                        var cellLast = tableRow.SelectSingleNode($".//td[2]").InnerText;
-                        var cellChange = tableRow.SelectSingleNode($".//td[3]").InnerText;
-                        var cellDate = tableRow.SelectSingleNode($".//td[4]").InnerText;
-                        var cellIsin = tableRow.SelectSingleNode($".//td[5]").InnerText;
-                        var cellBid = tableRow.SelectSingleNode($".//td[6]").InnerText;
-                        var cellAsk = tableRow.SelectSingleNode($".//td[7]").InnerText;
-                        var cellMaturity = tableRow.SelectSingleNode($".//td[8]").InnerText;
-                        var cellStatus = tableRow.SelectSingleNode($".//td[9]").InnerText;
+                        var cellName = tableRow.ChildNodes.FindFirst($"td")
+                            ?.ChildNodes.FindFirst($"a")
+                            ?.InnerText;
+                        var cellLast = tableRow.SelectSingleNode($".//td[2]")?.InnerText;
+                        var cellChange = tableRow.SelectSingleNode($".//td[3]")?.InnerText;
+                        var cellDate = tableRow.SelectSingleNode($".//td[4]")?.InnerText;
+                        var cellIsin = tableRow.SelectSingleNode($".//td[5]")?.InnerText;
+                        var cellBid = tableRow.SelectSingleNode($".//td[6]")?.InnerText;
+                        var cellAsk = tableRow.SelectSingleNode($".//td[7]")?.InnerText;
+                        var cellMaturity = tableRow.SelectSingleNode($".//td[8]")?.InnerText;
+                        var cellStatus = tableRow.SelectSingleNode($".//td[9]")?.InnerText;
                         bonds.Add(new BondModel()
                         {
                             Name = cellName,
@@ -177,12 +180,15 @@ public sealed class BondParser(
     {
         const int elementsPage = 50;
         var container = document.GetElementbyId($"c7928-module");
-        var countAllBonds = container.SelectSingleNode($".//*[contains(@class, 'summary')]").ChildNodes
+        var countAllBonds = container?.SelectSingleNode($".//*[contains(@class, 'summary')]")?.ChildNodes
             .Where(x => x.Name == "b").ToArray();
+        if (countAllBonds == null) return -1;
         var cBonds = Convert.ToDouble(AllRemovedCharacters(countAllBonds[0].InnerText)) / elementsPage;
         logger.LogInformation(
             $"Всего страниц с облигациями: {Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds))}");
-        return Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds));
+        return Convert.ToInt32(cBonds >= Math.Truncate(cBonds)
+            ? Math.Truncate(cBonds + 1)
+            : Math.Truncate(cBonds));
     }
 
     private async Task SendToMinIo(string fullLocalPath, string fileName, string contentType, string folderPath,

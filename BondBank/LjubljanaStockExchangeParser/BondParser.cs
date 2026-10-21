@@ -69,22 +69,23 @@ public sealed class BondParser(
         var container = document.GetElementbyId("D");
         if (container != null)
         {
-            var tableBody = document.GetElementbyId("D").SelectNodes($"//tbody//tr[@data-type='DEBT,BOND']")
+            var tableBody = (document.GetElementbyId("D")
+                    ?.SelectNodes($"//tbody//tr[@data-type='DEBT,BOND']")!)
                 .ToArray();
             logger.LogInformation($"Контент получен. Извлечение данных...");
             try
             {
                 foreach (var tableRow in tableBody)
                 {
-                    var cellSymbol = tableRow.SelectSingleNode($".//td[1]").InnerText;
-                    var cellIsin = tableRow.SelectSingleNode($".//td[2]").InnerText;
-                    var cellName = tableRow.SelectSingleNode($".//td[3]").InnerText;
-                    var cellSector = tableRow.SelectSingleNode($".//td[4]").InnerText;
-                    var cellListedQuantity = GetCorrectNumber(tableRow.SelectSingleNode($".//td[5]").InnerText);
-                    var cellNominalValue = GetCorrectNumber(tableRow.SelectSingleNode($".//td[6]").InnerText);
-                    var cellCurrency = GetCurrency(tableRow.SelectSingleNode($".//td[6]").InnerText);
-                    var cellListingDate = tableRow.SelectSingleNode($".//td[7]").InnerText;
-                    var cellDelistingDate = tableRow.SelectSingleNode($".//td[8]").InnerText;
+                    var cellSymbol = tableRow.SelectSingleNode($".//td[1]")?.InnerText;
+                    var cellIsin = tableRow.SelectSingleNode($".//td[2]")?.InnerText;
+                    var cellName = tableRow.SelectSingleNode($".//td[3]")?.InnerText;
+                    var cellSector = tableRow.SelectSingleNode($".//td[4]")?.InnerText;
+                    var cellListedQuantity = GetCorrectNumber(tableRow.SelectSingleNode($".//td[5]")?.InnerText);
+                    var cellNominalValue = GetCorrectNumber(tableRow.SelectSingleNode($".//td[6]")?.InnerText);
+                    var cellCurrency = GetCurrency(tableRow.SelectSingleNode($".//td[6]")?.InnerText);
+                    var cellListingDate = tableRow.SelectSingleNode($".//td[7]")?.InnerText;
+                    var cellDelistingDate = tableRow.SelectSingleNode($".//td[8]")?.InnerText;
 
                     bonds.Add(new BondModel()
                     {
@@ -127,14 +128,14 @@ public sealed class BondParser(
         return bonds;
     }
 
-    private string GetCurrency(string line)
+    private string GetCurrency(string? line)
     {
-        return Regex.Match(line.Trim(), @"[A-Z]{3}$").Value;
+        return Regex.Match(line?.Trim() ?? throw new InvalidOperationException(), @"[A-Z]{3}$").Value;
     }
 
-    private string GetCorrectNumber(string line)
+    private string GetCorrectNumber(string? line)
     {
-        return Regex.Replace(line.Replace('.', ','), @"[^\d.]", "");
+        return Regex.Replace(line?.Replace('.', ',') ?? throw new InvalidOperationException(), @"[^\d.]", "");
     }
 
     private async Task SendToMinIo(string fullLocalPath, string fileName, string contentType, string folderPath,

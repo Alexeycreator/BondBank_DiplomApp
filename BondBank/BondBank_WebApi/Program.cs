@@ -15,9 +15,8 @@ using BondBank_WebApi.Services.DataContext;
 using BondBank_WebApi.Services.Interfaces;
 using BondBank_WebApi.Services.Keycloak;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using NLog.Extensions.Logging;
 using Shared.BotHelpers;
 using Shared.Connection;
@@ -33,23 +32,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 // ==================== 1. НАСТРОЙКА АУТЕНТИФИКАЦИИ ====================
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration["Keycloak:Authority"];
-        options.Audience = builder.Configuration["Keycloak:Audience"];
-        options.RequireHttpsMetadata = false; // Для локальной разработки
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
+// Заменяем ручной AddJwtBearer на метод из библиотеки Keycloak
+builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
 
-// 2. РЕГИСТРАЦИЯ ТРАНСФОРМЕРА РОЛЕЙ (чтобы роли из realm_access попали в ClaimTypes.Role)
+// 2. РЕГИСТРАЦИЯ ТРАНСФОРМЕРА РОЛЕЙ
 builder.Services.AddTransient<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
 
 builder.Services.AddAuthorization(options =>
@@ -75,10 +61,9 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// ==================== 3. НАСТРОЙКА SWAGGER ====================
+// ==================== 3. НАСТРОЙКА SWAGGER (АДАПТАЦИЯ ПОД .NET 10) ====================
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -88,7 +73,6 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API для приложения с авторизацией через Keycloak"
     });
 
-    // Используем AuthorizationCode Flow вместо Password, так как он лучше работает с Keycloak 26 и PKCE
     c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.OAuth2,
@@ -96,11 +80,11 @@ builder.Services.AddSwaggerGen(c =>
         {
             AuthorizationCode = new OpenApiOAuthFlow
             {
-                // URL для авторизации (куда перекинет пользователя)
                 AuthorizationUrl =
-                    new Uri($"{builder.Configuration["Keycloak:Authority"]}/protocol/openid-connect/auth"),
-                // URL для получения токена
-                TokenUrl = new Uri($"{builder.Configuration["Keycloak:Authority"]}/protocol/openid-connect/token"),
+                    new Uri(
+                        $"{builder.Configuration["Keycloak:auth-server-url"]}/realms/{builder.Configuration["Keycloak:realm"]}/protocol/openid-connect/auth"),
+                TokenUrl = new Uri(
+                    $"{builder.Configuration["Keycloak:auth-server-url"]}/realms/{builder.Configuration["Keycloak:realm"]}/protocol/openid-connect/token"),
                 Scopes = new Dictionary<string, string>
                 {
                     { "openid", "OpenID Connect scope" },
@@ -111,22 +95,14 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    // ИСПРАВЛЕНИЕ ДЛЯ .NET 10: Используем лямбда-выражение (Func), как требует новый Microsoft.OpenApi
+    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "oauth2"
-                }
-            },
-            new[] { "openid" }
-        }
+        [new OpenApiSecuritySchemeReference("oauth2", document)] = new List<string>()
     });
 });
 
+// ==================== 4. ИНИЦИАЛИЗАЦИЯ КОНТЕЙНЕРОВ (ВКЛЮЧЕНИЕ ЗАВИСИМОСТЕЙ) ====================
 builder.Services.AddLogging();
 builder.Services.AddNLog();
 
@@ -168,7 +144,6 @@ builder.Services.AddScoped<ISnilsControllerService, SnilsControllerService>();
 builder.Services.AddScoped<IPortfoliosControllerService, PortfoliosControllerService>();
 builder.Services.AddScoped<IUsersControllerService, UsersControllerService>();
 
-// Регистрация HttpClient для KeycloakUserSyncService
 builder.Services.AddHttpClient<KeycloakUserSyncService>();
 
 var minioConfig = new MinioConfig
@@ -186,7 +161,6 @@ builder.Services.AddHostedService<ParserFilesBackgroundService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -197,11 +171,11 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "BondBank API V1");
         c.RoutePrefix = string.Empty;
         c.DisplayRequestDuration();
-        c.OAuthClientId(builder.Configuration["Keycloak:ClientId"]);
-        c.OAuthRealm("bondbank");
+        c.OAuthClientId(builder.Configuration["Keycloak:resource"]); // В библиотеке это resource
+        c.OAuthRealm(builder.Configuration["Keycloak:realm"]);
         c.OAuthAppName("BondBank Swagger");
         c.OAuthScopeSeparator(" ");
-        c.OAuthUsePkce(); // Обязательно для Authorization Code Flow
+        c.OAuthUsePkce();
     });
 }
 else
@@ -210,29 +184,41 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); // Оставляем закомментированным, раз работаем по HTTP
 app.UseRouting();
 
 app.UseCors(FrontendCorsPolicy);
 
-app.UseAuthentication(); // Обязательно перед UseAuthorization
-app.UseAuthorization();
+app.UseAuthentication();
 
-// Middleware для синхронизации пользователя
+// Middleware для синхронизации (оставляем после аутентификации)
 app.Use(async (context, next) =>
 {
-    var keycloakUserId = context.User.FindFirst("sub")?.Value;
-    var email = context.User.FindFirst("email")?.Value;
-    var name = context.User.FindFirst("name")?.Value;
-
-    if (!string.IsNullOrEmpty(keycloakUserId) && !string.IsNullOrEmpty(email))
+    if (context.User.Identity?.IsAuthenticated == true)
     {
-        var usersService = context.RequestServices.GetRequiredService<IUsersControllerService>();
-        await usersService.EnsureUserExistsAsync(keycloakUserId, email, name ?? string.Empty);
+        var keycloakUserId = context.User.FindFirst("sub")?.Value;
+        var email = context.User.FindFirst("email")?.Value;
+        var name = context.User.FindFirst("name")?.Value ?? context.User.FindFirst("given_name")?.Value;
+
+        if (!string.IsNullOrEmpty(keycloakUserId) && !string.IsNullOrEmpty(email))
+        {
+            try
+            {
+                var usersService = context.RequestServices.GetRequiredService<IUsersControllerService>();
+                await usersService.EnsureUserExistsAsync(keycloakUserId, email, name ?? string.Empty);
+            }
+            catch (Exception ex)
+            {
+                var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "Ошибка при синхронизации пользователя из Keycloak в БД");
+            }
+        }
     }
 
     await next();
 });
+
+app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapControllerRoute(
