@@ -1,181 +1,350 @@
 /* ==================== ОСНОВНОЙ КОНТЕЙНЕР ==================== */
 .mainPage {
-    padding: 20px 0;
+  padding: 20px 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* ==================== ГЕРО-БАННЕР ==================== */
-.hero {
-    text-align: center;
-    padding: 60px 20px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #2a2a4e 100%);
-    border-radius: 16px;
-    margin-bottom: 40px;
-    color: #ffffff;
+/* ==================== КАРУСЕЛЬ ==================== */
+.carouselSection {
+  margin-bottom: 40px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.heroTitle {
-    font-size: 40px;
-    margin-bottom: 16px;
+.carouselSlide {
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
 }
 
-.highlight {
-    color: #4fc3f7;
+.slide1Bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+.slide2Bg {
+  background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  padding: 40px;
+}
+.slide3Bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  padding: 40px;
 }
 
-.heroSubtitle {
-    font-size: 18px;
-    opacity: 0.8;
-    margin-bottom: 24px;
+.slideTitle {
+  font-size: 48px;
+  color: #4fc3f7;
+  margin-bottom: 16px;
+  font-weight: bold;
 }
 
-.heroButton {
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    padding: 14px 40px;
-    font-size: 16px;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+.slideSubtitle {
+  font-size: 20px;
+  color: #a0aabf;
+  max-width: 800px;
+  line-height: 1.6;
 }
 
-.heroButton:hover {
-    background-color: #38b0e8;
+/* Макеты внутри карусели */
+.mockupWindow {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 900px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid #334155;
+  text-align: left;
+}
+
+.mockupHeader {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.mockupGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.mockupCard {
+  background: #0f172a;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 60px;
+  margin-top: 12px;
+}
+
+.bar {
+  flex: 1;
+  background: #2ecc71;
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.pieChart {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(#4fc3f7 0% 40%, #2ecc71 40% 70%, #8b5cf6 70% 100%);
+  box-shadow: 0 0 15px rgba(79, 195, 247, 0.3);
 }
 
 /* ==================== СТАТИСТИКА ==================== */
 .statsSection {
-    margin-bottom: 40px;
+  margin-bottom: 40px;
 }
 
 .sectionTitle {
-    font-size: 28px;
-    margin-bottom: 24px;
-    color: #1a1a2e;
-    text-align: center;
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: #ffffff;
+  text-align: center;
 }
 
-/* ✅ 3 карточки в ряд, блок по центру */
 .statsGrid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
-    max-width: 900px;
-    margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.statCard {
-    background-color: #ffffff;
-    padding: 24px;
-    text-align: center;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e8e8e8;
-    transition: transform 0.2s;
+.statCardNew {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
 }
 
-.statCard:hover {
-    transform: translateY(-4px);
+.statCardNew:hover {
+  transform: translateY(-5px);
 }
 
-.statValue {
-    font-size: 32px;
-    font-weight: bold;
-    color: #4fc3f7;
+.statIcon {
+  font-size: 40px;
+  margin-bottom: 10px;
 }
 
-.statLabel {
-    font-size: 14px;
-    color: #666;
-    margin-top: 8px;
+.statLabelNew {
+  color: #a0aabf;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
 }
 
-/* ==================== ИНФОРМАЦИОННЫЕ КАРТОЧКИ ==================== */
+.statValueNew {
+  color: #4fc3f7;
+  font-size: 36px;
+  font-weight: bold;
+}
+
+/* ==================== С ЧЕГО НАЧАТЬ ==================== */
+.startSection {
+  margin-bottom: 40px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 16px;
+  padding: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.startTitle {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.startSubtitle {
+  text-align: center;
+  color: #cbd5e1;
+  margin-bottom: 40px;
+  font-size: 16px;
+}
+
+.stepsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.stepCard {
+  flex: 1 1 200px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.stepCard:hover {
+  transform: translateY(-5px);
+}
+
+.stepNumber {
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  background: linear-gradient(135deg, #4fc3f7, #0ea5e9);
+  color: #0f172a;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(79, 195, 247, 0.4);
+}
+
+.stepTitle {
+  color: #e2e8f0;
+  margin-top: 10px;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.stepDesc {
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ==================== ВОЗМОЖНОСТИ ==================== */
 .infoSection {
-    margin-bottom: 20px;
+  margin-bottom: 40px;
 }
 
-/* ✅ Ровно 3 карточки в ряд, остальные переносятся на следующую строку */
 .infoGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
 
-.infoCard {
-    background-color: #ffffff;
-    padding: 28px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e8e8e8;
-    transition: transform 0.2s;
+/* ==================== ПЛЮСЫ И МИНУСЫ ==================== */
+.prosConsSection {
+  margin-bottom: 20px;
 }
 
-.infoCard:hover {
-    transform: translateY(-4px);
+.prosConsGrid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.infoIcon {
-    font-size: 40px;
-    margin-bottom: 16px;
+.prosCard {
+  flex: 1 1 400px;
+  background: rgba(46, 204, 113, 0.05);
+  border: 1px solid rgba(46, 204, 113, 0.2);
+  border-radius: 16px;
+  padding: 30px;
 }
 
-.infoTitle {
-    font-size: 18px;
-    color: #1a1a2e;
-    margin-bottom: 10px;
+.consCard {
+  flex: 1 1 400px;
+  background: rgba(231, 76, 60, 0.05);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  border-radius: 16px;
+  padding: 30px;
 }
 
-.infoText {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.6;
+.listTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.listTitlePros {
+  color: #2ecc71;
+}
+.listTitleCons {
+  color: #e74c3c;
+}
+
+.list {
+  color: #e2e8f0;
+  line-height: 1.8;
+  padding-left: 20px;
+  font-size: 15px;
 }
 
 /* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 1024px) {
-    .statsGrid {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 600px;
-    }
-
-    .infoGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .statsGrid,
+  .infoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mockupGrid {
+    grid-template-columns: 1fr; /* Графики встают друг под другом */
+  }
 }
 
 @media (max-width: 768px) {
-    .hero {
-        padding: 40px 16px;
-    }
-
-    .heroTitle {
-        font-size: 28px;
-    }
-
-    .statsGrid {
-        grid-template-columns: repeat(2, 1fr);
-        max-width: 600px;
-    }
-
-    .infoGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .carouselSlide {
+    height: 350px;
+  }
+  .slideTitle {
+    font-size: 32px;
+  }
+  .slideSubtitle {
+    font-size: 16px;
+  }
+  .slide2Bg,
+  .slide3Bg {
+    padding: 15px;
+  }
+  .mockupWindow {
+    padding: 15px;
+  }
+  .startSection {
+    padding: 20px;
+  }
+  .startTitle {
+    font-size: 26px;
+  }
+  .statsGrid,
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+  .prosConsGrid {
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 480px) {
-    .statsGrid {
-        grid-template-columns: 1fr;
-        max-width: 320px;
-    }
-
-    .infoGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .heroTitle {
-        font-size: 22px;
-    }
+  .slideTitle {
+    font-size: 24px;
+  }
+  .barChart {
+    height: 40px;
+  }
+  .pieChart {
+    width: 60px;
+    height: 60px;
+  }
 }

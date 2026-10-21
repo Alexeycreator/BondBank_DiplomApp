@@ -1,54 +1,180 @@
 import React from "react";
-import { Badge } from "react-bootstrap";
+
+export type BadgeVariantType =
+  | "type"
+  | "yield"
+  | "role"
+  | "status"
+  | "capacity"
+  | "confidence";
 
 interface StatusBadgeProps {
-    /** Тип бейджа: 'type' для бирж (LSE, WB), 'yield' для доходности */
-    variantType?: "type" | "yield" | "custom";
-    /** Значение (например, 'lse', '4.2', 'Высокая') */
-    value: string | number;
-    /** Если variantType === 'custom', можно передать свой цвет (Bootstrap-вариант) */
-    customBg?: "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "light" | "dark";
-    /** Текст внутри бейджа (если не задан, будет использован value) */
-    children?: React.ReactNode;
+  variantType: BadgeVariantType;
+  value: string | number | boolean;
+  className?: string;
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ 
-    variantType = "type", 
-    value, 
-    customBg,
-    children 
+export const StatusBadge: React.FC<StatusBadgeProps> = ({
+  variantType,
+  value,
+  className = "",
 }) => {
-    // Функция для подбора цвета биржи
-    const getTypeColor = (type: string) => {
-        switch (type.toLowerCase()) {
-            case "lse": return "primary";
-            case "wb": return "warning";
-            case "sg": return "success";
-            case "me": return "danger";
-            default: return "secondary";
-        }
-    };
+  const baseStyle: React.CSSProperties = {
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: 700, // Сделали жирнее для читаемости
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    whiteSpace: "nowrap",
+  };
 
-    // Функция для подбора цвета доходности
-    const getYieldColor = (yieldVal: number) => {
-        if (yieldVal > 5) return "success"; // Высокая
-        if (yieldVal > 3) return "warning"; // Средняя
-        return "danger"; // Низкая
-    };
+  const getBadgeConfig = () => {
+    const strValue = String(value).toLowerCase();
 
-    let bg: any = "secondary";
-    
-    if (variantType === "type") {
-        bg = getTypeColor(String(value));
-    } else if (variantType === "yield") {
-        bg = getYieldColor(Number(value));
-    } else if (variantType === "custom" && customBg) {
-        bg = customBg;
+    switch (variantType) {
+      case "role":
+        if (strValue === "admin")
+          return {
+            text: "👑 Админ",
+            bg: "rgba(234, 179, 8, 0.2)",
+            color: "#facc15",
+            border: "1px solid rgba(234, 179, 8, 0.4)",
+          };
+        return {
+          text: "👤 Пользователь",
+          bg: "rgba(148, 163, 184, 0.2)",
+          color: "#cbd5e1",
+          border: "1px solid rgba(148, 163, 184, 0.4)",
+        };
+
+      case "status":
+        if (strValue === "active")
+          return {
+            text: "✅ Активен",
+            bg: "rgba(34, 197, 94, 0.2)",
+            color: "#4ade80",
+            border: "1px solid rgba(34, 197, 94, 0.4)",
+          };
+        if (strValue === "blocked")
+          return {
+            text: "🚫 Заблокирован",
+            bg: "rgba(239, 68, 68, 0.2)",
+            color: "#f87171",
+            border: "1px solid rgba(239, 68, 68, 0.4)",
+          };
+        if (strValue === "inactive")
+          return {
+            text: "⚠️ Неактивен",
+            bg: "rgba(249, 115, 22, 0.2)",
+            color: "#fb923c",
+            border: "1px solid rgba(249, 115, 22, 0.4)",
+          };
+        if (strValue === "modified")
+          return {
+            text: "✏️ Изменено",
+            bg: "rgba(56, 189, 248, 0.2)",
+            color: "#38bdf8",
+            border: "1px solid rgba(56, 189, 248, 0.4)",
+          };
+        return {
+          text: String(value),
+          bg: "transparent",
+          color: "inherit",
+          border: "1px solid transparent",
+        };
+
+      case "type":
+        const typeMap: Record<string, { bg: string; color: string }> = {
+          lse: { bg: "#0ea5e9", color: "#fff" },
+          wb: { bg: "#8b5cf6", color: "#fff" },
+          sg: { bg: "#10b981", color: "#fff" },
+          me: { bg: "#f59e0b", color: "#fff" },
+        };
+        const t = typeMap[strValue] || { bg: "#64748b", color: "#fff" };
+        return {
+          text: strValue.toUpperCase(),
+          bg: t.bg,
+          color: t.color,
+          border: "none",
+        };
+
+      case "yield":
+        const num = Number(value);
+        if (num >= 7)
+          return {
+            text: `${num}%`,
+            bg: "rgba(34, 197, 94, 0.2)",
+            color: "#4ade80",
+            border: "1px solid rgba(34, 197, 94, 0.4)",
+          };
+        if (num >= 4)
+          return {
+            text: `${num}%`,
+            bg: "rgba(234, 179, 8, 0.2)",
+            color: "#facc15",
+            border: "1px solid rgba(234, 179, 8, 0.4)",
+          };
+        return {
+          text: `${num}%`,
+          bg: "rgba(239, 68, 68, 0.2)",
+          color: "#f87171",
+          border: "1px solid rgba(239, 68, 68, 0.4)",
+        };
+
+      case "confidence":
+        if (strValue === "высокая")
+          return {
+            text: "Высокая",
+            bg: "rgba(34, 197, 94, 0.15)",
+            color: "#4ade80",
+            border: "1px solid rgba(34, 197, 94, 0.3)",
+          };
+        if (strValue === "средняя")
+          return {
+            text: "Средняя",
+            bg: "rgba(234, 179, 8, 0.15)",
+            color: "#facc15",
+            border: "1px solid rgba(234, 179, 8, 0.3)",
+          };
+        if (strValue === "низкая")
+          return {
+            text: "Низкая",
+            bg: "rgba(239, 68, 68, 0.15)",
+            color: "#f87171",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+          };
+        return {
+          text: String(value),
+          bg: "rgba(148, 163, 184, 0.15)",
+          color: "#cbd5e1",
+          border: "1px solid rgba(148, 163, 184, 0.3)",
+        };
+
+      default:
+        return {
+          text: String(value),
+          bg: "transparent",
+          color: "inherit",
+          border: "1px solid transparent",
+        };
     }
+  };
 
-    return (
-        <Badge bg={bg} pill style={{ fontSize: "0.85em", padding: "0.4em 0.8em" }}>
-            {children || (variantType === "type" ? String(value).toUpperCase() : value)}
-        </Badge>
-    );
+  const config = getBadgeConfig();
+
+  return (
+    <span
+      className={className}
+      style={{
+        ...baseStyle,
+        backgroundColor: config.bg,
+        color: config.color,
+        border: config.border,
+      }}
+    >
+      {config.text}
+    </span>
+  );
 };

@@ -1,81 +1,73 @@
 import React from "react";
-import styles from "./InfoCard.module.css";
 import { StatusBadge } from "./StatusBadge";
+import styles from "./InfoCard.module.css";
 
 export interface ForecastItem {
-    isin: string;
-    name: string;
-    type: string;
-    changePercent: number;
-    currentPrice: number;
-    forecastTomorrow: number;
-    forecastDayAfter: number;
-    confidence: "Высокая" | "Средняя" | "Низкая";
-    history?: number[]; 
+  isin: string;
+  name: string;
+  type: string;
+  currentPrice: number;
+  forecastTomorrow: number;
+  forecastDayAfter: number;
+  changePercent: number;
+  confidence: string;
+  history: number[];
 }
 
 interface ForecastCardProps {
-    forecast: ForecastItem;
-    onClick?: (forecast: ForecastItem) => void;
+  forecast: ForecastItem;
+  onClick?: (forecast: ForecastItem) => void;
 }
 
-export const ForecastCard: React.FC<ForecastCardProps> = ({ forecast, onClick }) => {
-    const isPositive = forecast.changePercent >= 0;
+export const ForecastCard: React.FC<ForecastCardProps> = ({
+  forecast,
+  onClick,
+}) => {
+  return (
+    <div
+      className={styles.card}
+      onClick={() => onClick && onClick(forecast)}
+      style={{ cursor: "pointer" }}
+    >
+      <div className={styles.header}>
+        <span className={styles.isin}>{forecast.isin}</span>
+        {/* ✅ Бейдж изменения цены (зеленый/красный) */}
+        <StatusBadge variantType="yield" value={forecast.changePercent} />
+      </div>
 
-    return (
-        <div 
-            className={styles.card} 
-            onClick={() => onClick && onClick(forecast)}
-            style={{ cursor: onClick ? "pointer" : "default" }}
-        >
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", alignItems: "center" }}>
-                <span className={styles.meta} style={{ margin: 0 }}>{forecast.isin}</span>
-                {/* ✅ Используем StatusBadge для процентов */}
-                <StatusBadge 
-                    variantType="custom"
-                    customBg={isPositive ? "success" : "danger"} 
-                    value={`${isPositive ? "+" : ""}${forecast.changePercent.toFixed(2)}%`} 
-                />
-            </div>
+      <h3 className={styles.title}>{forecast.name}</h3>
 
-            <h3 className={styles.title} style={{ marginBottom: "12px" }}>{forecast.name}</h3>
-            {/* ✅ Используем StatusBadge для типа облигации */}
-            <StatusBadge variantType="type" value={forecast.type} />
+      <div className={styles.typeRow}>
+        {/* ✅ Бейдж типа (LSE, WB, SG, ME) */}
+        <StatusBadge variantType="type" value={forecast.type} />
+      </div>
 
-            <div className={styles.statsRow} style={{ marginTop: "20px" }}>
-                <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Текущая</span>
-                    <span className={styles.statValue}>{forecast.currentPrice.toFixed(2)} ₽</span>
-                </div>
-                <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Завтра</span>
-                    <span className={styles.statValue} style={{ color: "#ff9800" }}>
-                        {forecast.forecastTomorrow.toFixed(2)} ₽
-                    </span>
-                </div>
-                <div className={styles.statItem}>
-                    <span className={styles.statLabel}>Послезавтра</span>
-                    <span className={styles.statValue} style={{ color: "#ff9800" }}>
-                        {forecast.forecastDayAfter.toFixed(2)} ₽
-                    </span>
-                </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
-                <span className={styles.statLabel}>Уверенность:</span>
-                {/* ✅ Используем StatusBadge для уверенности */}
-                <StatusBadge 
-                    variantType="custom"
-                    customBg={
-                        forecast.confidence === "Высокая" ? "success" : 
-                        forecast.confidence === "Средняя" ? "warning" : "danger"
-                    }
-                    value={forecast.confidence}
-                />
-            </div>
-            <button className={styles.actionButton} style={{ marginTop: "16px" }}>
-                Подробнее об облигации →
-            </button>
+      <div className={styles.prices}>
+        <div className={styles.priceItem}>
+          <span className={styles.priceLabel}>Текущая</span>
+          <span className={styles.priceValue}>
+            {forecast.currentPrice.toFixed(2)} ₽
+          </span>
         </div>
-    );
+        <div className={styles.priceItem}>
+          <span className={styles.priceLabel}>Завтра</span>
+          <span className={styles.priceValue} style={{ color: "#ff9800" }}>
+            {forecast.forecastTomorrow.toFixed(2)} ₽
+          </span>
+        </div>
+        <div className={styles.priceItem}>
+          <span className={styles.priceLabel}>Послезавтра</span>
+          <span className={styles.priceValue} style={{ color: "#ff9800" }}>
+            {forecast.forecastDayAfter.toFixed(2)} ₽
+          </span>
+        </div>
+      </div>
+
+      <div className={styles.confidenceRow}>
+        <span className={styles.confidenceLabel}>Уверенность:</span>
+        {/* ✅ Бейдж уверенности (Высокая/Средняя/Низкая) */}
+        <StatusBadge variantType="confidence" value={forecast.confidence} />
+      </div>
+    </div>
+  );
 };
