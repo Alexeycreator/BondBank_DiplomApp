@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace BondBank_WebApi.Controllers.Users;
 
 [ApiController]
-[Route("api/[controller]/users")]
+[Route("api/[controller]")]
 public sealed class UsersController(
     ILogger<UsersController> logger,
     IUsersControllerService usersService) : ControllerBase
