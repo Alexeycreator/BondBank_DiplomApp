@@ -132,7 +132,7 @@ public sealed class UsersControllerService(
         }
     }
 
-    public async Task EnsureUserExistsAsync(string keycloakId, string email, string name)
+    public async Task EnsureUserExistsAsync(string keycloakId, string email, string secondName, string firstName)
     {
         var existingUser = await LoadUserByKeycloakIdAsync(keycloakId);
         if (existingUser == null)
@@ -140,8 +140,8 @@ public sealed class UsersControllerService(
             await CreateUserFromKeycloakAsync(new CreateUserFromKeycloakDto(
                 KeycloakId: keycloakId,
                 EmailAddress: email,
-                FirstName: name,
-                SecondName: string.Empty,
+                FirstName: firstName,
+                SecondName: secondName,
                 Login: email
             ));
         }
@@ -324,6 +324,27 @@ public sealed class UsersControllerService(
         {
             logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
             return null;
+        }
+    }
+    
+    public async Task UpdateLastLoginAsync(string keycloakId)
+    {
+        var user = await LoadUserByKeycloakIdAsync(keycloakId);
+    
+        if (user != null)
+        {
+            // Обновляем время последнего входа только если прошло больше 15 минут
+            // (чтобы не делать лишние SaveChanges при каждом запросе)
+            if (user.LastLoginAt == null || (DateTime.UtcNow - user.LastLoginAt.Value).TotalMinutes > 15)
+            {
+                user.LastLoginAt = DateTime.UtcNow;
+                await dbContext.SaveChangesAsync();
+                logger.LogInformation("Обновлено LastLoginAt для пользователя {UserEmailAddress}", user.EmailAddress);
+            }
+        }
+        else
+        {
+            logger.LogWarning("Пользователь с KeycloakId {KeycloakId} не найден при обновлении времени входа.", keycloakId);
         }
     }
 }

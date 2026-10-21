@@ -33,7 +33,10 @@ builder.Configuration.AddEnvironmentVariables();
 
 // ==================== 1. НАСТРОЙКА АУТЕНТИФИКАЦИИ ====================
 // Заменяем ручной AddJwtBearer на метод из библиотеки Keycloak
-builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
+builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration, options =>
+{
+    options.RequireHttpsMetadata = false; // <--- РАЗРЕШАЕМ HTTP
+});
 
 // 2. РЕГИСТРАЦИЯ ТРАНСФОРМЕРА РОЛЕЙ
 builder.Services.AddTransient<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
@@ -171,7 +174,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "BondBank API V1");
         c.RoutePrefix = string.Empty;
         c.DisplayRequestDuration();
-        c.OAuthClientId(builder.Configuration["Keycloak:resource"]); // В библиотеке это resource
+        c.OAuthClientId(builder.Configuration["Keycloak:resource"]);
         c.OAuthRealm(builder.Configuration["Keycloak:realm"]);
         c.OAuthAppName("BondBank Swagger");
         c.OAuthScopeSeparator(" ");
@@ -192,20 +195,34 @@ app.UseCors(FrontendCorsPolicy);
 app.UseAuthentication();
 
 // Middleware для синхронизации (оставляем после аутентификации)
-app.Use(async (context, next) =>
+app.Use(async (HttpContext context, RequestDelegate next) =>
 {
     if (context.User.Identity?.IsAuthenticated == true)
     {
-        var keycloakUserId = context.User.FindFirst("sub")?.Value;
-        var email = context.User.FindFirst("email")?.Value;
-        var name = context.User.FindFirst("name")?.Value ?? context.User.FindFirst("given_name")?.Value;
+        var keycloakUserId = context.User.FindFirst("sub")?.Value
+                             ?? context.User
+                                 .FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                                 ?.Value;
+
+        var email = context.User.FindFirst("email")?.Value
+                    ?? context.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")
+                        ?.Value;
+
+        var secondName = context.User.FindFirst("family_name")?.Value ??
+                         context.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname")
+                             ?.Value
+                         ?? "";
+        var firstName = context.User.FindFirst("given_name")?.Value
+                        ?? context.User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname")
+                            ?.Value
+                        ?? "";
 
         if (!string.IsNullOrEmpty(keycloakUserId) && !string.IsNullOrEmpty(email))
         {
             try
             {
                 var usersService = context.RequestServices.GetRequiredService<IUsersControllerService>();
-                await usersService.EnsureUserExistsAsync(keycloakUserId, email, name ?? string.Empty);
+                await usersService.EnsureUserExistsAsync(keycloakUserId, email, secondName, firstName);
             }
             catch (Exception ex)
             {
@@ -215,7 +232,7 @@ app.Use(async (context, next) =>
         }
     }
 
-    await next();
+    await next(context);
 });
 
 app.UseAuthorization();

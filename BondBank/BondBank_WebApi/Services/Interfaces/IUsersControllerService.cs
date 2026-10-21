@@ -16,5 +16,6 @@ public interface IUsersControllerService
     Task CreateUserFromKeycloakAsync(CreateUserFromKeycloakDto dto);
     Task UpdateUserFromKeycloakAsync(string keycloakId, UpdateUserFromKeycloakDto dto);
     Task DeleteUserByKeycloakIdAsync(string keycloakId);
-    Task EnsureUserExistsAsync(string keycloakId, string email, string name);
+    Task EnsureUserExistsAsync(string keycloakId, string email, string secondName, string firstName);
+    Task UpdateLastLoginAsync(string keycloakId);
 }
