@@ -1,46 +1,42 @@
-# Getting Started with Create React App
+# BondBank client
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Клиентское приложение на React, TypeScript и Vite. Исходный код организован по основным слоям Feature-Sliced Design (FSD); подробное описание структуры находится в [карте файлов](./КАРТА_ФАЙЛОВ.md).
 
-## Available Scripts
+## Запуск и проверка
 
-In the project directory, you can run:
+```bash
+npm install
+npm run dev
+npm run build
+npx tsc --noEmit
+```
 
-### `npm start`
+Vite запускает приложение локально на `http://localhost:3000`. Адрес API задаётся через `VITE_API_URL_HTTPS` или `VITE_API_URL_HTTP`; при отсутствии переменных используется локальный адрес, настроенный в API-клиенте. Keycloak и API также должны быть доступны для проверки авторизации и запросов.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+В `package.json` пока нет скрипта тестирования.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Маршруты
 
-### `npm test`
+- `/` — главная;
+- `/bonds` — каталог облигаций;
+- `/forecast` — прогнозы;
+- `/portfolios` — портфели;
+- `/profile` — профиль, защищённый авторизацией;
+- `/admin` — панель администратора;
+- `/about`, `/news` — информационные страницы;
+- `/400`, `/500` и неизвестные адреса — страницы ошибок.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Настройка маршрутов и общая оболочка приложения находятся в `src/app`.
 
-### `npm run build`
+## Архитектура
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+В `src` используются основные слои FSD:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `app` — запуск приложения, провайдеры верхнего уровня и маршрутизация;
+- `pages` — страницы маршрутов;
+- `widgets` — крупные самостоятельные блоки интерфейса;
+- `features` — пользовательские действия и сценарии;
+- `entities` — доменные модели и связанный с ними UI;
+- `shared` — инфраструктура, авторизация и общие сервисы.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Страницы, сущности, функции, виджеты и общая инфраструктура размещены по назначению; `src/components` больше не используется как универсальное хранилище. При дальнейшем развитии следует сохранять направление зависимостей от верхних слоёв к нижним и объявлять доменные модели рядом с сущностями. Структура ещё не следует всем соглашениям FSD строго: несколько страниц остаются крупными, а часть доменных типов импортируется напрямую из внутренних модулей слайсов. `src/service/fileService.tsx` пока остаётся неиспользуемой утилитой вне слоёв.

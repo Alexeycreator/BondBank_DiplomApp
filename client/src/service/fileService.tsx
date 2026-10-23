@@ -1,4 +1,4 @@
-import { Bond } from "../components/types/index";
+import { Bond } from "../entities/bond/model/types";
 
 /**
  * Экспорт облигаций в CSV-файл
