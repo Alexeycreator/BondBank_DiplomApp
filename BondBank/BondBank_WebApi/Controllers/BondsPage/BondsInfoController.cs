@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace BondBank_WebApi.Controllers.BondsPage;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/bonds-page")]
 public sealed class BondsInfoController(
     ILogger<BondsInfoController> logger,
     IBondControllerService bondService,
     IBondHistoriesControllerService bondHistoriesService,
     ICurrencyRatesControllerService currencyRatesService) : ControllerBase
 {
-    [HttpGet("get-bonds-info")]
+    [HttpGet("bonds-info")]
     public async Task<IActionResult> GetBondsInfo()
     {
         try
