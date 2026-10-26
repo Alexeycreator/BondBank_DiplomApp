@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using BondBank_WebApi.Models.DTOs.Users;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -18,16 +19,18 @@ public sealed class UsersController(
         try
         {
             var usersData = await usersService.GetAllUsersInfoAsync();
-            if (usersData.Any())
+            var usersModels = usersData.ToList();
+            if (usersModels.Count != 0)
             {
-                return Ok(usersData);
+                return Ok(usersModels.Select(AdminUserResponseDto.From));
             }
 
             return NotFound(new { message = $"Данных о пользователях нет" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении информации о всех пользователях: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении информации о всех пользователях: {ExMessage}",
+                ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -46,14 +49,15 @@ public sealed class UsersController(
             var user = await usersService.GetFullInfoUserByIdAsync(userId);
             if (user != null)
             {
-                return Ok(user);
+                return Ok(UserResponseDto.From(user));
             }
 
             return NotFound(new { message = $"Данных о пользователе нет" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная шибка при получении информации о пользователе ID = {userId}. {ex.Message}");
+            logger.LogError("Неизвестная шибка при получении информации о пользователе ID = {UserId}. {ExMessage}",
+                userId, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -72,7 +76,7 @@ public sealed class UsersController(
             var user = await usersService.GetInfoByEmailAsync(email);
             if (user != null)
             {
-                return Ok(user);
+                return Ok(UserResponseDto.From(user));
             }
 
             return NotFound(new { message = $"Пользователя с email: '{email}' не существует" });
@@ -80,7 +84,8 @@ public sealed class UsersController(
         catch (Exception ex)
         {
             logger.LogError(
-                $"Неизвестная ошибка при получении информации о пользователе с email = '{email}'. {ex.Message}");
+                "Неизвестная ошибка при получении информации о пользователе с email = '{Email}'. {ExMessage}", email,
+                ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -99,7 +104,7 @@ public sealed class UsersController(
             var user = await usersService.GetInfoByLoginAsync(login);
             if (user != null)
             {
-                return Ok(user);
+                return Ok(UserResponseDto.From(user));
             }
 
             return NotFound(new { message = $"Пользователя с логином: '{login}' не существует" });
@@ -107,7 +112,8 @@ public sealed class UsersController(
         catch (Exception ex)
         {
             logger.LogError(
-                $"Неизвестная ошибка при получении информации о пользователе с логином: '{login}'. {ex.Message}");
+                "Неизвестная ошибка при получении информации о пользователе с логином: '{Login}'. {ExMessage}", login,
+                ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -131,7 +137,7 @@ public sealed class UsersController(
                 });
             }
 
-            if (!Int64.TryParse(tin, out var value))
+            if (!long.TryParse(tin, out var value))
             {
                 return BadRequest(new { message = $"ИНН должен содержать только целочисленные значения" });
             }
@@ -139,7 +145,7 @@ public sealed class UsersController(
             var user = await usersService.GetInfoByTinAsync(tin);
             if (user != null)
             {
-                return Ok(user);
+                return Ok(UserResponseDto.From(user));
             }
 
             return NotFound(new { message = $"Пользователя с ИНН: '{tin}' не существует" });
@@ -147,7 +153,8 @@ public sealed class UsersController(
         catch (Exception ex)
         {
             logger.LogError(
-                $"Неизвестная ошибка при получении информации о пользователе с ИНН = '{tin}'. {ex.Message}");
+                "Неизвестная ошибка при получении информации о пользователе с ИНН = '{Tin}'. {ExMessage}", tin,
+                ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -166,7 +173,7 @@ public sealed class UsersController(
             var user = await usersService.GetInfoByFullNameAsync(secondName, firstName, surName);
             if (user != null)
             {
-                return Ok(user);
+                return Ok(UserResponseDto.From(user));
             }
 
             return NotFound(new { message = $"Пользователя с ФИО: {secondName} {firstName} {surName} не существует" });
@@ -174,7 +181,8 @@ public sealed class UsersController(
         catch (Exception ex)
         {
             logger.LogError(
-                $"Неизвестная ошибка при получении информации о пользователе с ФИО: {secondName} {firstName} {surName}. {ex.Message}");
+                "Неизвестная ошибка при получении информации о пользователе с ФИО: {SecondName} {FirstName} {SurName}. {ExMessage}",
+                secondName, firstName, surName, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -203,7 +211,7 @@ public sealed class UsersController(
             var user = await usersService.GetInfoByPhoneNumberAsync(phoneNumber);
             if (user != null)
             {
-                return Ok(user);
+                return Ok(UserResponseDto.From(user));
             }
 
             return NotFound(new { message = $"Пользователя с номером телефона: '{phoneNumber}' не существует" });
@@ -211,13 +219,14 @@ public sealed class UsersController(
         catch (Exception ex)
         {
             logger.LogError(
-                $"Неизвестная ошибка при получении информации о пользователе с номером телефона: '{phoneNumber}'. {ex.Message}");
+                "Неизвестная ошибка при получении информации о пользователе с номером телефона: '{PhoneNumber}'. {ExMessage}",
+                phoneNumber, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
 
     [HttpPost("heartbeat")]
-    [Authorize] // <--- Обязательно должен быть, чтобы токен проверялся
+    [Authorize]
     public async Task<IActionResult> UpdateLoginHeartbeat()
     {
         try
@@ -258,7 +267,6 @@ public sealed class UsersController(
         }
         catch (Exception ex)
         {
-            // Логируем ошибку, если что-то упало при работе с БД
             logger.LogError("Ошибка при обновлении времени входа: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = "Внутренняя ошибка сервера при синхронизации пользователя" });
         }
