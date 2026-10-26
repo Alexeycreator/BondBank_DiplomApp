@@ -25,9 +25,10 @@ public sealed class BondHistoriesController(
         try
         {
             var bondHistoriesData = await bondHistoriesService.GetAllBondHistoriesAsync();
-            if (bondHistoriesData.Any())
+            var bondHistoryModels = bondHistoriesData.ToList();
+            if (bondHistoryModels.Count != 0)
             {
-                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
+                return Ok(bondHistoryModels.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных об истории облигаций нет" });
@@ -61,9 +62,10 @@ public sealed class BondHistoriesController(
             }
 
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByIsinAsync(isin);
-            if (bondHistoriesData.Any())
+            var bondHistoryModels = bondHistoriesData.ToList();
+            if (bondHistoryModels.Count != 0)
             {
-                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
+                return Ok(bondHistoryModels.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных истории об облигация по ISIN: '{isin}' нет" });
@@ -98,9 +100,10 @@ public sealed class BondHistoriesController(
             }
 
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByTypeAsync(normalizedType);
-            if (bondHistoriesData.Any())
+            var bondHistoryModels = bondHistoriesData.ToList();
+            if (bondHistoryModels.Count != 0)
             {
-                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
+                return Ok(bondHistoryModels.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных истории об облигациях типа: '{type}' нет" });
@@ -130,9 +133,10 @@ public sealed class BondHistoriesController(
             }
 
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByRecordedDateAsync(date);
-            if (bondHistoriesData.Any())
+            var bondHistoryModels = bondHistoriesData.ToList();
+            if (bondHistoryModels.Count != 0)
             {
-                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
+                return Ok(bondHistoryModels.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных истории об облигациях за дату: {date} нет" });
