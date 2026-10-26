@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace BondBank_WebApi.Controllers.BondHistories;
 
 [ApiController]
-[Route("api/[controller]/bond-histories")]
+[Route("api/bond-histories")]
 public sealed class BondHistoriesController(
     ILogger<BondHistoriesController> logger,
     IBondHistoriesControllerService bondHistoriesService,
