@@ -1,3 +1,4 @@
+using BondBank_WebApi.Models.DTOs.Bonds;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,9 +16,12 @@ public sealed class BondsController(
         try
         {
             var bonds = await bondService.GetAllBondsAsync();
-            if (bonds.Any())
+            var bondDtos = bonds.ToList();
+            if (bondDtos.Count != 0)
             {
-                return Ok(bonds);
+                return Ok(bondDtos
+                    .Where(bond => bond.Bond is not null && bond.Type is not null)
+                    .Select(BondDtoMapper.ToResponseDto));
             }
 
             logger.LogError($"Облигаций нет в системе");
@@ -36,9 +40,12 @@ public sealed class BondsController(
         try
         {
             var bonds = await bondService.GetBondsByTypeAsync(typeBond);
-            if (bonds.Any())
+            var bondDtos = bonds.ToList();
+            if (bondDtos.Count != 0)
             {
-                return Ok(bonds);
+                return Ok(bondDtos
+                    .Where(bond => bond.Bond is not null && bond.Type is not null)
+                    .Select(BondDtoMapper.ToResponseDto));
             }
 
             logger.LogError($"Облигаций типа: '{typeBond}' нет в системе");
@@ -59,7 +66,7 @@ public sealed class BondsController(
             var bond = await bondService.GetBondByIsinAsync(isin);
             if (bond != null)
             {
-                return Ok(bond);
+                return Ok(BondDtoMapper.ToResponseDto(bond));
             }
 
             logger.LogError($"Облигации с isin: '{isin}' нет в системе");
@@ -78,7 +85,7 @@ public sealed class BondsController(
         try
         {
             var forecastBonds = await bondService.GetForecastBondsAsync();
-            if (forecastBonds.Any())
+            if (forecastBonds.Count != 0)
             {
                 if (!string.IsNullOrEmpty(isin))
                 {

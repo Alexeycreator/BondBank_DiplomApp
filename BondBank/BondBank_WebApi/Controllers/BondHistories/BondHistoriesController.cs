@@ -1,4 +1,5 @@
 using BondBank_WebApi.Services.DataContext;
+using BondBank_WebApi.Models.DTOs.BondHistories;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -26,7 +27,7 @@ public sealed class BondHistoriesController(
             var bondHistoriesData = await bondHistoriesService.GetAllBondHistoriesAsync();
             if (bondHistoriesData.Any())
             {
-                return Ok(bondHistoriesData);
+                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных об истории облигаций нет" });
@@ -62,7 +63,7 @@ public sealed class BondHistoriesController(
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByIsinAsync(isin);
             if (bondHistoriesData.Any())
             {
-                return Ok(bondHistoriesData);
+                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных истории об облигация по ISIN: '{isin}' нет" });
@@ -99,7 +100,7 @@ public sealed class BondHistoriesController(
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByTypeAsync(normalizedType);
             if (bondHistoriesData.Any())
             {
-                return Ok(bondHistoriesData);
+                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных истории об облигациях типа: '{type}' нет" });
@@ -131,7 +132,7 @@ public sealed class BondHistoriesController(
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByRecordedDateAsync(date);
             if (bondHistoriesData.Any())
             {
-                return Ok(bondHistoriesData);
+                return Ok(bondHistoriesData.Select(BondHistoryDto.From));
             }
 
             return NotFound(new { message = $"Данных истории об облигациях за дату: {date} нет" });

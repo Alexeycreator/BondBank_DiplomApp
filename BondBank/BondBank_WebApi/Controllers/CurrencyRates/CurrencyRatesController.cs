@@ -1,4 +1,5 @@
 using BondBank_WebApi.Services.Interfaces;
+using BondBank_WebApi.Models.DTOs.CurrencyRates;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.CurrencyRates;
@@ -17,7 +18,7 @@ public sealed class CurrencyRatesController(
             var currencyRatesData = await currencyRatesService.GetAllCurrencyRatesAsync();
             if (currencyRatesData.Any())
             {
-                return Ok(currencyRatesData);
+                return Ok(currencyRatesData.Select(CurrencyRateDto.From));
             }
 
             return NotFound(new { message = $"Данных о курсах валют в БД нет" });
@@ -44,7 +45,7 @@ public sealed class CurrencyRatesController(
             var currencyRatesData = await currencyRatesService.GetAllCurrencyRatesByDateReceiptAsync(date);
             if (currencyRatesData.Any())
             {
-                return Ok(currencyRatesData);
+                return Ok(currencyRatesData.Select(CurrencyRateDto.From));
             }
 
             return NotFound(new { message = $"Данных о курсах валют за дату: '{date}' нет" });
@@ -75,7 +76,12 @@ public sealed class CurrencyRatesController(
             }
 
             var currencyRatesData = await currencyRatesService.GetCurrencyRateByDateReceiptAsync(date, currency);
-            return Ok(currencyRatesData);
+            if (currencyRatesData.Id <= 0)
+            {
+                return NotFound(new { message = $"Данных о курсе валюты '{currency}' за дату '{date}' нет" });
+            }
+
+            return Ok(CurrencyRateDto.From(currencyRatesData));
         }
         catch (Exception ex)
         {
@@ -98,7 +104,7 @@ public sealed class CurrencyRatesController(
             var currencyRatesData = await currencyRatesService.GetCurrencyRatesByCurrencyAsync(currency);
             if (currencyRatesData.Any())
             {
-                return Ok(currencyRatesData);
+                return Ok(currencyRatesData.Select(CurrencyRateDto.From));
             }
 
             return NotFound(new { message = $"Данных о курсах валюты: '{currency}' нет" });

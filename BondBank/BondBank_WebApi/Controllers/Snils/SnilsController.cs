@@ -1,4 +1,5 @@
 using BondBank_WebApi.Services.Interfaces;
+using BondBank_WebApi.Models.DTOs.Snils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.Snils;
@@ -25,7 +26,7 @@ public sealed class SnilsController(
                 return NotFound(new { message = $"Данных о снилс ID = {snilsId} нет" });
             }
 
-            return Ok(snilsData);
+            return Ok(SnilsDto.From(snilsData));
         }
         catch (Exception ex)
         {

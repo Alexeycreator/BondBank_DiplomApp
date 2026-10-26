@@ -1,4 +1,5 @@
 using BondBank_WebApi.Services.Interfaces;
+using BondBank_WebApi.Models.DTOs.Passports;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.Passports;
@@ -25,7 +26,7 @@ public sealed class PassportsController(
                 return NotFound(new { message = $"Данных о паспорте нет" });
             }
 
-            return Ok(passportData);
+            return Ok(PassportDto.From(passportData));
         }
         catch (Exception ex)
         {

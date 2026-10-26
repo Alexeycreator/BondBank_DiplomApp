@@ -1,6 +1,5 @@
-using BondBank_WebApi.Models.DataBase;
-using BondBank_WebApi.Models.DTOs;
-using BondBank_WebApi.Models.DTOs.BondsPage;
+using BondBank_WebApi.Models.DTOs.Bonds;
+using BondBank_WebApi.Models.DTOs.CurrencyRates;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,19 +20,19 @@ public sealed class BondsInfoController(
         {
             var allBonds = await bondService.GetAllBondsAsync();
             var typeBonds = await bondHistoriesService.GetTypeBondHistoriesAsync();
-            var bondHistories = await bondHistoriesService.GetAllBondHistoriesAsync();
             var currencyRates = await currencyRatesService.GetAllCurrencyRatesAsync();
             
-            var bondsTableList = allBonds?.ToList() ?? new List<BondDto>();
+            var bondsTableList = allBonds?
+                .Where(bond => bond.Bond is not null && bond.Type is not null)
+                .Select(BondDtoMapper.ToResponseDto)
+                .ToList() ?? new List<BondResponseDto>();
             var typesFilterList = typeBonds?.ToList() ?? new List<string>();
-            var bondHistoriesList = bondHistories?.ToList() ?? new List<BondHistoryModel>();
-            var currencyRatesList = currencyRates?.ToList() ?? new List<CurrencyRatesModel>();
+            var currencyRatesList = currencyRates?.Select(CurrencyRateDto.From).ToList() ?? new List<CurrencyRateDto>();
 
             var bondsInfo = new BondsInfoDto()
             {
                 BondsByTable = bondsTableList,
                 TypeBondsByFilter = typesFilterList,
-                BondByChart = bondHistoriesList,
                 CurrencyRates = currencyRatesList
             };
             
@@ -45,4 +44,5 @@ public sealed class BondsInfoController(
             return StatusCode(500, $"Неизвестная ошибка при передачи данных для страницы облигаций: {ex.Message}");
         }
     }
+
 }

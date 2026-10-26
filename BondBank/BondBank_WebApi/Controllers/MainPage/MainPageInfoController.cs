@@ -1,5 +1,5 @@
 using BondBank_WebApi.Models.DataBase;
-using BondBank_WebApi.Models.DTOs;
+using BondBank_WebApi.Models.DTOs.Bonds;
 using BondBank_WebApi.Models.DTOs.MainPage;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
