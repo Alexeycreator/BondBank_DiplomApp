@@ -10,7 +10,8 @@ namespace BondBank_WebApi.Controllers.BondHistories;
 public sealed class BondHistoriesController(
     ILogger<BondHistoriesController> logger,
     IBondHistoriesControllerService bondHistoriesService,
-    BondValidator validator) : ControllerBase
+    BondValidator validator,
+    CommonValidator commonValidator) : ControllerBase
 {
     /// <summary>
     /// Метод получения всех данных из истории облигаций
@@ -102,7 +103,7 @@ public sealed class BondHistoriesController(
     {
         try
         {
-            var validationResult = validator.ValidateDate(date);
+            var validationResult = commonValidator.ValidateDate(date);
             if (validationResult != null)
                 return validationResult;
 
