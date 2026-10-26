@@ -41,8 +41,8 @@ public sealed class BondControllerService(
 
     public async Task<Dictionary<string, double[]>> GetForecastBondsAsync()
     {
-         var result = await analysisData.DataForecastingAsync();
-         return result;
+        var result = await analysisData.DataForecastingAsync();
+        return result;
     }
 
     /// <summary>
@@ -114,27 +114,19 @@ public sealed class BondControllerService(
         {
             var bondLse = await dbContext.LjubljanaStockExchangeBonds.FirstOrDefaultAsync(b => b.Isin == isin);
             if (bondLse != null)
-            {
                 return bondLse;
-            }
 
             var bondMe = await dbContext.MoscowExchangeBonds.FirstOrDefaultAsync(b => b.Isin == isin);
             if (bondMe != null)
-            {
                 return bondMe;
-            }
 
             var bondSg = await dbContext.SixGroupBonds.FirstOrDefaultAsync(b => b.Isin == isin);
             if (bondSg != null)
-            {
                 return bondSg;
-            }
 
             var bondWb = await dbContext.WienerBoerseBonds.FirstOrDefaultAsync(b => b.Isin == isin);
             if (bondWb != null)
-            {
                 return bondWb;
-            }
 
             logger.LogWarning($"В БД нет облигаций");
             return null;
