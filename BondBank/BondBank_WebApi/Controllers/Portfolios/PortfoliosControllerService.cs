@@ -22,6 +22,16 @@ public sealed class PortfoliosControllerService(
         return await LoadPortfoliosAsync(userId);
     }
 
+    public async Task<IEnumerable<HistoryPortfoliosModel>> GetPortfolioHistoryAsync(int portfolioId)
+    {
+        logger.LogInformation("Получение истории портфеля ID = {PortfolioId}", portfolioId);
+        return await dbContext.HistoryPortfolios
+            .AsNoTracking()
+            .Where(history => history.PortfoliosId == portfolioId)
+            .OrderBy(history => history.DateSavePortfolioUser)
+            .ToListAsync();
+    }
+
     private async Task<List<PortfoliosModel>> LoadPortfoliosAsync()
     {
         try
@@ -49,27 +59,14 @@ public sealed class PortfoliosControllerService(
 
     private async Task<List<PortfoliosModel>> LoadPortfoliosAsync(int userId)
     {
-        try
+        var userPortfolios = await dbContext.Portfolios
+            .Where(portfolio => portfolio.UserId == userId)
+            .ToListAsync();
+        if (userPortfolios.Count == 0)
         {
-            var userPortfolios = await dbContext.Portfolios.Where(p => p.UserId == userId).ToListAsync();
-            if (userPortfolios.Any())
-            {
-                return userPortfolios;
-            }
-
             logger.LogWarning($"Данных о портфелях пользователя ID = {userId} нет");
-            return new List<PortfoliosModel>();
         }
-        catch (NpgsqlException ex)
-        {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
-            return new List<PortfoliosModel>();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                $"Неизвестная ошибка при получении информации о пользователе с ID = {userId}. {ex.Message}");
-            return new List<PortfoliosModel>();
-        }
+
+        return userPortfolios;
     }
 }
