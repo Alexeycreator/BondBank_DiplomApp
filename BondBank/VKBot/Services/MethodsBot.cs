@@ -65,7 +65,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                 }
                 catch (LongPollOutdateException ex) when (ex.Ts != 0)
                 {
-                    logger.LogWarning($"Ts устарел, обновляем на {ex.Ts}");
+                    logger.LogWarning("Ts устарел, обновляем на {ExTs}", ex.Ts);
                     longPollServer.Ts = ex.Ts;
                 }
                 catch (LongPollOutdateException ex) when (ex.Ts == 0)
@@ -75,12 +75,12 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                 }
                 catch (LongPollException ex)
                 {
-                    logger.LogError($"Long Poll ошибка: {ex.Message}");
+                    logger.LogError("Long Poll ошибка: {ExMessage}", ex.Message);
                     longPollServer = vkApi.Groups.GetLongPollServer(groupId);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError($"Неизвестная ошибка: {ex.Message}");
+                    logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
                     await Task.Delay(TimeSpan.FromMinutes(30));
                     throw;
                 }
@@ -88,12 +88,12 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         }
         catch (AccessTokenInvalidException ex)
         {
-            logger.LogError($"Неверный токен api: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Неверный токен api: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             throw;
         }
         catch (VkApiException ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             throw;
         }
     }
@@ -129,7 +129,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
             if (config.Bot.UsersId.Count > 0)
             {
                 usersIdListHashSet.UnionWith(config.Bot.UsersId);
-                logger.LogInformation($"Загружено {config.Bot.UsersId.Count} пользователей в коллекцию");
+                logger.LogInformation("Загружено {UsersIdCount} пользователей в коллекцию", config.Bot.UsersId.Count);
             }
 
             logger.LogWarning($"Информации о пользователях еще нет в системе. Ожидаю...");
@@ -147,17 +147,17 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                 return File.ReadAllText(ConfigFilePath);
             }
 
-            logger.LogWarning($"Файл не найден: {ConfigFilePath}");
+            logger.LogWarning("Файл не найден: {ConfigFilePath}", ConfigFilePath);
             return "";
         }
         catch (FileNotFoundException ex)
         {
-            logger.LogError($"Файл не найден: {ex.Message}");
+            logger.LogError("Файл не найден: {ExMessage}", ex.Message);
             return "";
         }
         catch (IOException ex)
         {
-            logger.LogError($"Ошибка при работе с файлом: {ex.Message}");
+            logger.LogError("Ошибка при работе с файлом: {ExMessage}", ex.Message);
             return "";
         }
     }
@@ -192,7 +192,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
                     if (welcomeFromUser.TryGetValue(userId, out _))
                     {
                         logger.LogInformation(
-                            $"Обработка входящего сообщения: '{message}', полученного от пользователя '{userId}'.");
+                            "Обработка входящего сообщения: '{MessageNew}', полученного от пользователя '{UserId}'.", message, userId);
                         CheckTypeMessage(userId, message);
                     }
                 }
@@ -206,7 +206,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
     /// <param name="userId">id пользователя</param>
     private void FillDictionary(long userId)
     {
-        logger.LogInformation($"Добавление id: '{userId}' в словарь.");
+        logger.LogInformation("Добавление id: '{UserId}' в словарь.", userId);
         if (welcomeFromUser.TryAdd(userId, false))
         {
             try
@@ -221,7 +221,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
             {
                 welcomeFromUser.Remove(userId);
                 logger.LogWarning(
-                    $"Не получилось добавить пользователя в словарь. Его id: '{userId}' удален. Пробуем снова... Информация об ошибке: {ex.Message}");
+                    "Не получилось добавить пользователя в словарь. Его id: '{UserId}' удален. Пробуем снова... Информация об ошибке: {ExMessage}", userId, ex.Message);
             }
         }
     }
@@ -249,27 +249,27 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         {
             if (!usersIdListHashSet.Add(userId))
             {
-                logger.LogInformation($"Пользователь '{userId}' уже существует в коллекции");
+                logger.LogInformation("Пользователь '{UserId}' уже существует в коллекции", userId);
                 return;
             }
 
-            logger.LogInformation($"Пользователь '{userId}' добавлен в коллекцию. Добавление в конфигурацию...");
+            logger.LogInformation("Пользователь '{UserId}' добавлен в коллекцию. Добавление в конфигурацию...", userId);
             SaveUsersToConfig(userId);
         }
         catch (InvalidOperationException ex)
         {
-            logger.LogError($"Во время перебора коллекции, что-то пошло не так: {ex.Message}");
+            logger.LogError("Во время перебора коллекции, что-то пошло не так: {ExMessage}", ex.Message);
         }
         catch (NullReferenceException ex)
         {
-            logger.LogError($"Ошибка с инициализацией коллекции: {ex.Message}. Создаю новую...");
+            logger.LogError("Ошибка с инициализацией коллекции: {ExMessage}. Создаю новую...", ex.Message);
             usersIdListHashSet = new HashSet<long>();
             usersIdListHashSet.Add(userId);
-            logger.LogInformation($"Пользователь '{userId}' добавлен после восстановления");
+            logger.LogInformation("Пользователь '{UserId}' добавлен после восстановления", userId);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
 
@@ -299,7 +299,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
 
                     File.WriteAllText(ConfigFilePath, updatedJson);
                     File.WriteAllText(ConfigFileBaseDirectoryPath, updatedJson);
-                    logger.LogInformation($"Конфиг обновлен. Всего пользователей: {config.Bot.UsersId.Count}");
+                    logger.LogInformation("Конфиг обновлен. Всего пользователей: {UsersIdCount}", config.Bot.UsersId.Count);
                 }
 
                 logger.LogInformation($"Конфигурацию обновлять не нужно, данные не обновились.");
@@ -311,7 +311,7 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
         }
         catch (JsonException ex)
         {
-            logger.LogError($"Ошибка парсинга JSON: {ex.Message}");
+            logger.LogError("Ошибка парсинга JSON: {ExMessage}", ex.Message);
         }
     }
 
@@ -483,15 +483,15 @@ public sealed class MethodsBot(ILogger<MethodsBot> logger, VkApi vkApi)
             }
             catch (AccessTokenInvalidException ex)
             {
-                logger.LogError($"Неверный токен api: {ex.Message}. Code: {ex.ErrorCode}");
+                logger.LogError("Неверный токен api: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             }
             catch (VkApiException ex)
             {
-                logger.LogError($"Ошибка библиотеки VkApi: {ex.Message}. Code: {ex.ErrorCode}");
+                logger.LogError("Ошибка библиотеки VkApi: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             }
             catch (Exception ex)
             {
-                logger.LogError($"Неизвестная ошибка: {ex.Message}");
+                logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             }
         }
     }

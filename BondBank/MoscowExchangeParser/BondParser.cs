@@ -82,7 +82,7 @@ public sealed class BondParser(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
@@ -103,7 +103,7 @@ public sealed class BondParser(
             int totalBonds = 0;
             foreach (var urlBonds in urlGettingBonds)
             {
-                logger.LogInformation($"Подключение к данным по адресу: {urlBonds}");
+                logger.LogInformation("Подключение к данным по адресу: {UrlBonds}", urlBonds);
                 var response = await httpClient.GetStringAsync(urlBonds);
                 if (string.IsNullOrEmpty(response))
                 {
@@ -152,34 +152,34 @@ public sealed class BondParser(
                             var filteredBonds = currentBond.Where(b => b.SecurityType == "Биржевая облигация").ToList();
                             bonds.AddRange(filteredBonds);
                             logger.LogInformation(
-                                $"Добавлено {filteredBonds.Count} биржевых облигаций из {totalSecuritiesBonds} других облигаций");
+                                "Добавлено {FilteredBondsCount} биржевых облигаций из {TotalSecuritiesBonds} других облигаций", filteredBonds.Count, totalSecuritiesBonds);
                             countDataBonds = bonds.Count;
                             totalBonds += Convert.ToInt32(totalSecuritiesBonds);
                         }
                         else
                         {
-                            logger.LogError($"Данные {securitiesBonds} не удалось десериализовать");
+                            logger.LogError("Данные {SecuritiesBonds} не удалось десериализовать", securitiesBonds);
                             await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                                 $"Данные {securitiesBonds} не удалось десериализовать");
                         }
                     }
                     else
                     {
-                        logger.LogError($"Выбраны неверные данные json-файла. {securitiesDataBonds}");
+                        logger.LogError("Выбраны неверные данные json-файла. {SecuritiesDataBonds}", securitiesDataBonds);
                         await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                             $"Выбраны неверные данные json-файла. {securitiesDataBonds}");
                     }
                 }
                 else
                 {
-                    logger.LogError($"Данные пустые: {jsonArrayBonds}");
+                    logger.LogError("Данные пустые: {JsonArrayBonds}", jsonArrayBonds);
                     await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                         $"Данные пустые: {jsonArrayBonds}");
                 }
             }
 
             logger.LogInformation(
-                $"Все данные успешно считаны. {countDataBonds} биржевых облигаций из {totalBonds} разных типов облигаций");
+                "Все данные успешно считаны. {CountDataBonds} биржевых облигаций из {TotalBonds} разных типов облигаций", countDataBonds, totalBonds);
             await botService.SendCommandToAllBotsAsync(BotCommand.ExecuteTask,
                 $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество биржевых облигаций: {bonds.Count}" +
                 Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
@@ -189,7 +189,7 @@ public sealed class BondParser(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                 $"Неизвестная ошибка: {ex.Message}");
         }

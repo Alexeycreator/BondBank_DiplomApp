@@ -19,7 +19,7 @@ public sealed class InternetChecker(ILogger<InternetChecker> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"{ex.Message}");
+            logger.LogError("{ExMessage}", ex.Message);
             return false;
         }
     }

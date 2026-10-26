@@ -56,15 +56,15 @@ public sealed class CurrencyRatesPushInDataBase(ILogger<CurrencyRatesPushInDataB
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
+            logger.LogError("Ошибка при сохранении в БД: {ExMessage}", ex.Message);
         }
         catch (DbException ex)
         {
-            logger.LogError($"Не получилось установить соединение с БД: {ex.Message}");
+            logger.LogError("Не получилось установить соединение с БД: {ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
 

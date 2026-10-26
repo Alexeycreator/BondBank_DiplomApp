@@ -62,23 +62,23 @@ public sealed class BotService(ILogger<BotService> logger)
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            logger.LogError($"Port не может быть меньше или равен нулю! {ex.Message}");
+            logger.LogError("Port не может быть меньше или равен нулю! {ExMessage}", ex.Message);
         }
         catch (TaskCanceledException ex)
         {
-            logger.LogWarning($"Задача была отменена принудительно: {ex.Message}");
+            logger.LogWarning("Задача была отменена принудительно: {ExMessage}", ex.Message);
         }
         catch (TimeoutException ex)
         {
-            logger.LogWarning($"Превышен таймаут ожидания: {ex.Message}");
+            logger.LogWarning("Превышен таймаут ожидания: {ExMessage}", ex.Message);
         }
         catch (InvalidOperationException ex)
         {
-            logger.LogError($"Некорректное состояние при отправке: {ex.Message}");
+            logger.LogError("Некорректное состояние при отправке: {ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
 
@@ -92,7 +92,7 @@ public sealed class BotService(ILogger<BotService> logger)
     private async Task SendCommandToBotAsync(string? botAddress, int botPort, Enum command, string message = "")
     {
         string fullCommand = $"{command}|{message}";
-        logger.LogInformation($"Отправляю команду: {fullCommand}");
+        logger.LogInformation("Отправляю команду: {FullCommand}", fullCommand);
 
         try
         {
@@ -116,7 +116,7 @@ public sealed class BotService(ILogger<BotService> logger)
                             {
                                 int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
                                 string response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                                logger.LogInformation($"Ответ от бота: {response}");
+                                logger.LogInformation("Ответ от бота: {Response}", response);
                             }
                             catch (OperationCanceledException)
                             {
@@ -127,17 +127,17 @@ public sealed class BotService(ILogger<BotService> logger)
                 }
                 else
                 {
-                    logger.LogWarning($"Адрес бота неверный или пустой: {botAddress}");
+                    logger.LogWarning("Адрес бота неверный или пустой: {BotAddress}", botAddress);
                 }
             }
         }
         catch (SocketException ex)
         {
-            logger.LogError($"Бот не запущен или недоступен: {ex.Message}");
+            logger.LogError("Бот не запущен или недоступен: {ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
 }

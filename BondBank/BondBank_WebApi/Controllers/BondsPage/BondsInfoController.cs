@@ -40,7 +40,7 @@ public sealed class BondsInfoController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при передачи данных для страницы облигаций: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при передачи данных для страницы облигаций: {ExMessage}", ex.Message);
             return StatusCode(500, $"Неизвестная ошибка при передачи данных для страницы облигаций: {ex.Message}");
         }
     }

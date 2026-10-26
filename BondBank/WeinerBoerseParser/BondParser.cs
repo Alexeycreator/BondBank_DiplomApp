@@ -63,12 +63,12 @@ public sealed class BondParser(
         }
         catch (ArgumentException ex)
         {
-            logger.LogError($"{ex.Message}");
+            logger.LogError("{ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"{ex.Message}");
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
@@ -90,7 +90,7 @@ public sealed class BondParser(
                 ?.ChildNodes
                 .FindFirst($"tbody")
                 ?.ChildNodes.Where(x => x.Name == $"tr").ToArray();
-            logger.LogInformation($"Контент страницы {numberPage} получен");
+            logger.LogInformation("Контент страницы {NumberPage} получен", numberPage);
             logger.LogInformation($"Извлечение данных...");
             var countCells = document.GetElementbyId($"c7928-module-container")!.ChildNodes
                 .FindFirst("tbody")!.SelectSingleNode(".//tr")!.ChildNodes.Count;
@@ -130,13 +130,13 @@ public sealed class BondParser(
                     if (bonds.Count > 0)
                     {
                         logger.LogInformation(
-                            $"Данные со страницы №{numberPage} извлечены. Количество: {bonds.Count}");
+                            "Данные со страницы №{NumberPage} извлечены. Количество: {BondsCount}", numberPage, bonds.Count);
                         csvHelper.WhiteInFileCsv(DirPath, FileName, bonds);
                         await SendToMinIo(DirPath, FileName, "text/csv", $"bonds/wb", logger);
                     }
                     else
                     {
-                        logger.LogError($"Данные со страницы №{numberPage} не удалось извлечь");
+                        logger.LogError("Данные со страницы №{NumberPage} не удалось извлечь", numberPage);
                         await botService.SendCommandToAllBotsAsync(BotCommand.Info,
                             $"Данные со страницы №{numberPage} не удалось извлечь");
                     }
@@ -144,14 +144,14 @@ public sealed class BondParser(
                 else
                 {
                     logger.LogError(
-                        $"Количество столбцов на странице {numberPage} изменилось. Данные не удается получить.");
+                        "Количество столбцов на странице {NumberPage} изменилось. Данные не удается получить.", numberPage);
                     await botService.SendCommandToAllBotsAsync(BotCommand.Info,
                         $"Количество столбцов на странице {numberPage} изменилось. Данные не удается получить.");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError($"{ex.Message}");
+                logger.LogError("{ExMessage}", ex.Message);
                 await botService.SendCommandToAllBotsAsync(BotCommand.Info,
                     $"Неизвестная ошибка: {ex.Message}");
             }
@@ -185,7 +185,7 @@ public sealed class BondParser(
         if (countAllBonds == null) return -1;
         var cBonds = Convert.ToDouble(AllRemovedCharacters(countAllBonds[0].InnerText)) / elementsPage;
         logger.LogInformation(
-            $"Всего страниц с облигациями: {Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds))}");
+            "Всего страниц с облигациями: {ToInt32}", Convert.ToInt32(cBonds >= Math.Truncate(cBonds) ? Math.Truncate(cBonds + 1) : Math.Truncate(cBonds)));
         return Convert.ToInt32(cBonds >= Math.Truncate(cBonds)
             ? Math.Truncate(cBonds + 1)
             : Math.Truncate(cBonds));

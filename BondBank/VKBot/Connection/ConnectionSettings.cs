@@ -42,7 +42,7 @@ public sealed class ConnectionSettings(
             }
             catch (Exception ex)
             {
-                logger.LogError($"Неизвестная ошибка в месте запуска бота: {ex.Message}");
+                logger.LogError("Неизвестная ошибка в месте запуска бота: {ExMessage}", ex.Message);
                 await Task.Delay(TimeSpan.FromMinutes(30), cancellationToken);
             }
         }

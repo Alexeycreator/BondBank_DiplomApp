@@ -20,19 +20,19 @@ public sealed class BondHistoriesControllerService(
 
     public async Task<IEnumerable<BondHistoryModel>> GetBondHistoriesByIsinAsync(string isin)
     {
-        logger.LogInformation($"Процесс получения всей истории облигации с ISIN: '{isin}'");
+        logger.LogInformation("Процесс получения всей истории облигации с ISIN: '{Isin}'", isin);
         return await LoadBondHistoriesByIsin(isin);
     }
 
     public async Task<IEnumerable<BondHistoryModel>> GetBondHistoriesByTypeAsync(string type)
     {
-        logger.LogInformation($"Процесс получения всей истории облигаций типа: '{type}'");
+        logger.LogInformation("Процесс получения всей истории облигаций типа: '{Type}'", type);
         return await LoadBondHistoriesByType(type);
     }
 
     public async Task<IEnumerable<BondHistoryModel>> GetBondHistoriesByRecordedDateAsync(DateOnly date)
     {
-        logger.LogInformation($"Процесс получения всей истории облигаций за дату: {date}");
+        logger.LogInformation("Процесс получения всей истории облигаций за дату: {DateOnly}", date);
         return await LoadBondHistories(date);
     }
 
@@ -63,12 +63,12 @@ public sealed class BondHistoriesControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return new List<BondHistoryModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении историй всех облигаций: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении историй всех облигаций: {ExMessage}", ex.Message);
             return new List<BondHistoryModel>();
         }
     }
@@ -83,17 +83,17 @@ public sealed class BondHistoriesControllerService(
                 return bondHistoriesData;
             }
 
-            logger.LogWarning($"Данных истории об облигациях за дату {date} нет");
+            logger.LogWarning("Данных истории об облигациях за дату {DateOnly} нет", date);
             return new List<BondHistoryModel>();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return new List<BondHistoryModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении истории всех облигаций за дату {date}: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении истории всех облигаций за дату {DateOnly}: {ExMessage}", date, ex.Message);
             return new List<BondHistoryModel>();
         }
     }
@@ -108,17 +108,17 @@ public sealed class BondHistoriesControllerService(
                 return bondHistoriesData;
             }
 
-            logger.LogWarning($"Данных истории об облигациях с ISIN: '{isin}' нет");
+            logger.LogWarning("Данных истории об облигациях с ISIN: '{Isin}' нет", isin);
             return new List<BondHistoryModel>();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return new List<BondHistoryModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении истории облигаций по ISIN: '{isin}'. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении истории облигаций по ISIN: '{Isin}'. {ExMessage}", isin, ex.Message);
             return new List<BondHistoryModel>();
         }
     }
@@ -133,17 +133,17 @@ public sealed class BondHistoriesControllerService(
                 return bondHistoriesData;
             }
 
-            logger.LogWarning($"Данных истории об облигациях типа: '{type}' нет");
+            logger.LogWarning("Данных истории об облигациях типа: '{Type}' нет", type);
             return new List<BondHistoryModel>();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return new List<BondHistoryModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении истории облигаций типа: '{type}'. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении истории облигаций типа: '{Type}'. {ExMessage}", type, ex.Message);
             return new List<BondHistoryModel>();
         }
     }
@@ -163,12 +163,12 @@ public sealed class BondHistoriesControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: '{ex.ErrorCode}'");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
             return new HashSet<string>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении типов облигаций: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении типов облигаций: {ExMessage}", ex.Message);
             return new HashSet<string>();
         }
     }

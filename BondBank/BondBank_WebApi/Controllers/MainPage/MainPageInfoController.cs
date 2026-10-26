@@ -38,7 +38,7 @@ public sealed class MainPageInfoController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении информации для блока статистики: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении информации для блока статистики: {ExMessage}", ex.Message);
             return StatusCode(500, $"Неизвестная ошибка при получении информации для блока статистики: {ex.Message}");
         }
     }

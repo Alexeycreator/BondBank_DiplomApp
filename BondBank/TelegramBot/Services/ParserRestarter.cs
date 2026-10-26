@@ -20,7 +20,7 @@ public sealed class ParserRestarter(
     {
         if (!parserPaths.TryGetValue(parserName, out var parserExe))
         {
-            logger.LogWarning($"Парсер {parserName} не найден в конфигурации");
+            logger.LogWarning("Парсер {ParserName} не найден в конфигурации", parserName);
             return;
         }
 
@@ -32,7 +32,7 @@ public sealed class ParserRestarter(
         }
         else
         {
-            logger.LogError($"Не найден исполняемый файл парсера {parserName} по пути {parserPath}");
+            logger.LogError("Не найден исполняемый файл парсера {ParserName} по пути {ParserPath}", parserName, parserPath);
             bot.SendMessageToUsers($"Ошибка: не найден парсер {parserName}");
         }
     }
@@ -62,7 +62,7 @@ public sealed class ParserRestarter(
         };
 
         Process.Start(psi);
-        logger.LogInformation($"Парсер {parserName} запущен: {parserPath}");
+        logger.LogInformation("Парсер {ParserName} запущен: {ParserPath}", parserName, parserPath);
         bot.SendMessageToUsers($"Парсер {parserName} запущен");
     }
 }

@@ -30,7 +30,7 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при преобразовании данных: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при преобразовании данных: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -54,7 +54,7 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при преобразовании данных: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при преобразовании данных: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -78,7 +78,7 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при преобразовании данных: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при преобразовании данных: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -102,7 +102,7 @@ public sealed class ProcessingData(ILogger<ProcessingData> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при преобразовании данных: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при преобразовании данных: {ExMessage}", ex.Message);
             return null;
         }
     }

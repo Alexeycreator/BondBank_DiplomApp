@@ -52,16 +52,16 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
             int savedCount = await dbContext.SaveChangesAsync();
             logger.LogInformation(
-                $"LjubljanaStockExchange: Добавлено: {countAdded}, Обновлено: {countUpdated}, Сохранено: {savedCount}");
+                "LjubljanaStockExchange: Добавлено: {CountAdded}, Обновлено: {CountUpdated}, Сохранено: {SavedCount}", countAdded, countUpdated, savedCount);
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
+            logger.LogError("Ошибка при сохранении в БД: {ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
             logger.LogError(
-                $"Неизвестная ошибка при добавлении LjubljanaStockExchange данных в базу данных: {ex.Message}");
+                "Неизвестная ошибка при добавлении LjubljanaStockExchange данных в базу данных: {ExMessage}", ex.Message);
         }
     }
 
@@ -110,15 +110,15 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
             int savedCount = await dbContext.SaveChangesAsync();
             logger.LogInformation(
-                $"MoscowExchange: Добавлено: {countAdded}, Обновлено: {countUpdated}, Сохранено: {savedCount}");
+                "MoscowExchange: Добавлено: {CountAdded}, Обновлено: {CountUpdated}, Сохранено: {SavedCount}", countAdded, countUpdated, savedCount);
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
+            logger.LogError("Ошибка при сохранении в БД: {ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при добавлении MoscowExchange данных в базу данных: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при добавлении MoscowExchange данных в базу данных: {ExMessage}", ex.Message);
         }
     }
 
@@ -167,15 +167,15 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
             int savedCount = await dbContext.SaveChangesAsync();
             logger.LogInformation(
-                $"SixGroup: Добавлено: {countAdded}, Обновлено: {countUpdated}, Сохранено: {savedCount}");
+                "SixGroup: Добавлено: {CountAdded}, Обновлено: {CountUpdated}, Сохранено: {SavedCount}", countAdded, countUpdated, savedCount);
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
+            logger.LogError("Ошибка при сохранении в БД: {ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при добавлении SixGroup данных в базу данных: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при добавлении SixGroup данных в базу данных: {ExMessage}", ex.Message);
         }
     }
 
@@ -224,15 +224,15 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
 
             int savedCount = await dbContext.SaveChangesAsync();
             logger.LogInformation(
-                $"WienerBoerse: Добавлено: {countAdded}, Обновлено: {countUpdated}, Сохранено: {savedCount}");
+                "WienerBoerse: Добавлено: {CountAdded}, Обновлено: {CountUpdated}, Сохранено: {SavedCount}", countAdded, countUpdated, savedCount);
         }
         catch (DbUpdateException ex)
         {
-            logger.LogError($"Ошибка при сохранении в БД: {ex.Message}");
+            logger.LogError("Ошибка при сохранении в БД: {ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при добавлении WienerBoerse данных в базу данных: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при добавлении WienerBoerse данных в базу данных: {ExMessage}", ex.Message);
         }
     }
 
@@ -244,7 +244,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
         }
         catch (DbException ex)
         {
-            logger.LogError($"Ошибка при подключении к базе данных: {ex.Message}");
+            logger.LogError("Ошибка при подключении к базе данных: {ExMessage}", ex.Message);
             return false;
         }
     }
@@ -615,7 +615,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
                 c.DateReceipt == DateOnly.FromDateTime(bond.UpdatedAt.Date));
         if (currencyRates == null)
         {
-            logger.LogError($"Не удалось найти курс валюты, который указан в облигации {bond.Isin}");
+            logger.LogError("Не удалось найти курс валюты, который указан в облигации {BondIsin}", bond.Isin);
             return false;
         }
 
@@ -633,7 +633,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
                 c.DateReceipt == DateOnly.FromDateTime(bond.UpdatedAt.Date));
         if (currencyRates == null)
         {
-            logger.LogError($"Не удалось найти курс валюты, который указан в облигации {bond.Isin}");
+            logger.LogError("Не удалось найти курс валюты, который указан в облигации {BondIsin}", bond.Isin);
             return false;
         }
 
@@ -651,7 +651,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
                 c.DateReceipt == DateOnly.FromDateTime(bond.UpdatedAt.Date));
         if (currencyRates == null)
         {
-            logger.LogError($"Не удалось найти курс валюты, который указан в облигации {bond.Isin}");
+            logger.LogError("Не удалось найти курс валюты, который указан в облигации {BondIsin}", bond.Isin);
             return false;
         }
 
@@ -669,7 +669,7 @@ public sealed class PushingInDataBase(ILogger<PushingInDataBase> logger)
                 c.DateReceipt == DateOnly.FromDateTime(bond.UpdatedAt.Date));
         if (currencyRates == null)
         {
-            logger.LogError($"Не удалось найти курс валюты, который указан в облигации {bond.Isin}");
+            logger.LogError("Не удалось найти курс валюты, который указан в облигации {BondIsin}", bond.Isin);
             return false;
         }
 

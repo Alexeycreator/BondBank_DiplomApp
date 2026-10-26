@@ -25,17 +25,17 @@ public sealed class SnilsControllerService(
                 return snilsData;
             }
 
-            logger.LogWarning($"Данных снилс с ID = {snilsId} нет");
+            logger.LogWarning("Данных снилс с ID = {SnilsId} нет", snilsId);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении данных снилс по ID = {snilsId}. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении данных снилс по ID = {SnilsId}. {ExMessage}", snilsId, ex.Message);
             return null;
         }
     }

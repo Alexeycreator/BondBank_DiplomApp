@@ -35,7 +35,7 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка получения курсов валют: {ex.Message}");
+            logger.LogError("Неизвестная ошибка получения курсов валют: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                 $"Неизвестная ошибка получения курсов валют: {ex.Message}");
             return null;
@@ -66,7 +66,7 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
             }
             else
             {
-                logger.LogWarning($"Данные с адреса {urlWebService} пришли пустые");
+                logger.LogWarning("Данные с адреса {UrlWebService} пришли пустые", urlWebService);
                 return null;
             }
         }
@@ -120,22 +120,22 @@ public sealed class CurrencyRatesParser(ILogger<CurrencyRatesParser> logger)
         }
         catch (FormatException ex)
         {
-            logger.LogError($"Ошибка формата данных: {ex.Message}");
+            logger.LogError("Ошибка формата данных: {ExMessage}", ex.Message);
             return null;
         }
         catch (OverflowException ex)
         {
-            logger.LogError($"Числовое переполнение: {ex.Message}");
+            logger.LogError("Числовое переполнение: {ExMessage}", ex.Message);
             return null;
         }
         catch (NullReferenceException ex)
         {
-            logger.LogError($"Не найдена ячейка таблицы: {ex.Message}");
+            logger.LogError("Не найдена ячейка таблицы: {ExMessage}", ex.Message);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             return null;
         }
     }

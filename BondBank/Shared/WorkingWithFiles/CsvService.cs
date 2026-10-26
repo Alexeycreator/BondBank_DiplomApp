@@ -29,7 +29,7 @@ public class CsvService(ILogger<CsvService> logger, HttpClient httpClient)
         {
             if (!File.Exists(csvFilePath))
             {
-                logger.LogWarning($"Файл не найден: {csvFilePath}");
+                logger.LogWarning("Файл не найден: {CsvFilePath}", csvFilePath);
                 return;
             }
 
@@ -68,14 +68,14 @@ public class CsvService(ILogger<CsvService> logger, HttpClient httpClient)
         using var formDataFile = new MultipartFormDataContent();
         await using var fileStream = File.OpenRead(csvFilePath);
         formDataFile.Add(new StreamContent(fileStream), "file", fileName);
-        logger.LogInformation($"Отправка файла {fileName} по адресу: {urlWebService}");
+        logger.LogInformation("Отправка файла {FileName} по адресу: {UrlWebService}", fileName, urlWebService);
 
         try
         {
             var responseFile = await httpClient.PostAsync(urlWebService, formDataFile);
             if (responseFile.IsSuccessStatusCode)
             {
-                logger.LogInformation($"Файл {fileName} успешно отправлен. Ответ: {responseFile.StatusCode}");
+                logger.LogInformation("Файл {FileName} успешно отправлен. Ответ: {ResponseFileStatusCode}", fileName, responseFile.StatusCode);
             }
             else
             {
@@ -87,11 +87,11 @@ public class CsvService(ILogger<CsvService> logger, HttpClient httpClient)
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError($"{ex.Message}");
+            logger.LogError("{ExMessage}", ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
 }

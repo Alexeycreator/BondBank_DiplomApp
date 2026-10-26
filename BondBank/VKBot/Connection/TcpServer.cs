@@ -12,7 +12,7 @@ public sealed class TcpServer(
     {
         using var tcpListener = new TcpListener(IPAddress.Any, port);
         tcpListener.Start();
-        logger.LogInformation($"TCP сервер запущен на порту: {port}. Ожидание команд...");
+        logger.LogInformation("TCP сервер запущен на порту: {Port}. Ожидание команд...", port);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -32,7 +32,7 @@ public sealed class TcpServer(
                 int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
                 string command = System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                logger.LogInformation($"Получена команда: {command}");
+                logger.LogInformation("Получена команда: {Command}", command);
 
                 string? result = await commandHandler.HandleAsync(command, cancellationToken);
 

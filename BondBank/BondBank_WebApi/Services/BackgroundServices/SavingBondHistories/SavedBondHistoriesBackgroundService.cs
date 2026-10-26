@@ -27,7 +27,7 @@ public sealed class SavedBondHistoriesBackgroundService(
             }
             catch (Exception ex)
             {
-                logger.LogError($"Неизвестная ошибка: {ex.Message}");
+                logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
         }

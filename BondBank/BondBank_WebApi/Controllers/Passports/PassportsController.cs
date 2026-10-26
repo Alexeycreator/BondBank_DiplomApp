@@ -30,7 +30,7 @@ public sealed class PassportsController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении данных паспорта с id: '{passportId}'. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении данных паспорта с id: '{PassportId}'. {ExMessage}", passportId, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

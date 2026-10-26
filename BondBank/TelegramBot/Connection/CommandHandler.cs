@@ -44,7 +44,7 @@ public sealed class CommandHandler(
                 await restarter.RestartAsync(parameters);
                 break;
             default:
-                logger.LogError($"Неизвестная команда: {methodName}");
+                logger.LogError("Неизвестная команда: {MethodName}", methodName);
                 break;
         }
 

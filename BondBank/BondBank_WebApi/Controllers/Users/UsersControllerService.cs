@@ -80,11 +80,11 @@ public sealed class UsersControllerService(
 
             dbContext.Users.Add(user);
             await dbContext.SaveChangesAsync();
-            logger.LogInformation($"User {dto.EmailAddress} created in local DB from Keycloak");
+            logger.LogInformation("User {DtoEmailAddress} created in local DB from Keycloak", dto.EmailAddress);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error creating user from Keycloak: {ex.Message}");
+            logger.LogError("Error creating user from Keycloak: {ExMessage}", ex.Message);
             throw;
         }
     }
@@ -103,12 +103,12 @@ public sealed class UsersControllerService(
                 user.TIN = dto.TIN;
 
                 await dbContext.SaveChangesAsync();
-                logger.LogInformation($"User {keycloakId} updated in local DB from Keycloak");
+                logger.LogInformation("User {KeycloakId} updated in local DB from Keycloak", keycloakId);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error updating user from Keycloak: {ex.Message}");
+            logger.LogError("Error updating user from Keycloak: {ExMessage}", ex.Message);
             throw;
         }
     }
@@ -122,12 +122,12 @@ public sealed class UsersControllerService(
             {
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync();
-                logger.LogInformation($"User {keycloakId} deleted from local DB");
+                logger.LogInformation("User {KeycloakId} deleted from local DB", keycloakId);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error deleting user from Keycloak: {ex.Message}");
+            logger.LogError("Error deleting user from Keycloak: {ExMessage}", ex.Message);
             throw;
         }
     }
@@ -162,12 +162,12 @@ public sealed class UsersControllerService(
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.KeycloakId == keycloakId);
             if (user != null) return user;
 
-            logger.LogWarning($"User with Keycloak ID {keycloakId} not found");
+            logger.LogWarning("User with Keycloak ID {KeycloakId} not found", keycloakId);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Error loading user by Keycloak ID: {ex.Message}");
+            logger.LogError("Error loading user by Keycloak ID: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -184,12 +184,12 @@ public sealed class UsersControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return new List<UsersModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех пользователей: {ExMessage}", ex.Message);
             return new List<UsersModel>();
         }
     }
@@ -201,17 +201,17 @@ public sealed class UsersControllerService(
             var user = await dbContext.Users.FindAsync(userId);
             if (user != null) return user;
 
-            logger.LogWarning($"Данных о пользователе ID = {userId} нет");
+            logger.LogWarning("Данных о пользователе ID = {UserId} нет", userId);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех пользователей: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -223,17 +223,17 @@ public sealed class UsersControllerService(
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.EmailAddress == email);
             if (user != null) return user;
 
-            logger.LogWarning($"Данных о пользователе с email: '{email}' нет");
+            logger.LogWarning("Данных о пользователе с email: '{Email}' нет", email);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех пользователей: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -245,17 +245,17 @@ public sealed class UsersControllerService(
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Login == login);
             if (user != null) return user;
 
-            logger.LogWarning($"Данных о пользователе с логином: '{login}' нет");
+            logger.LogWarning("Данных о пользователе с логином: '{Login}' нет", login);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех пользователей: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -267,17 +267,17 @@ public sealed class UsersControllerService(
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.TIN == tin);
             if (user != null) return user;
 
-            logger.LogWarning($"Данных о пользователе с ИНН: '{tin}' нет");
+            logger.LogWarning("Данных о пользователе с ИНН: '{Tin}' нет", tin);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех пользователей: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -290,17 +290,17 @@ public sealed class UsersControllerService(
                 u.SecondName == secondName && u.FirstName == firstName && u.SurName == surName);
             if (user != null) return user;
 
-            logger.LogWarning($"Данных о пользователе с ФИО: '{secondName} {firstName} {surName}' нет");
+            logger.LogWarning("Данных о пользователе с ФИО: '{SecondName} {FirstName} {SurName}' нет", secondName, firstName, surName);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех пользователей: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -312,17 +312,17 @@ public sealed class UsersControllerService(
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (user != null) return user;
 
-            logger.LogWarning($"Данных о пользователе с номером телефона: '{phoneNumber}' нет");
+            logger.LogWarning("Данных о пользователе с номером телефона: '{PhoneNumber}' нет", phoneNumber);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех пользователей: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех пользователей: {ExMessage}", ex.Message);
             return null;
         }
     }

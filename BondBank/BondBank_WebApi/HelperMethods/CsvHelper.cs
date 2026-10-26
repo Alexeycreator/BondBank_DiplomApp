@@ -17,7 +17,7 @@ public sealed class CsvHelper(ILogger<CsvHelper> logger, CsvService csvServiceDl
         }
         catch (IOException ex)
         {
-            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+            logger.LogError("Ошибка при записи в файл: {ExMessage}", ex.Message);
         }
     }
 
@@ -33,7 +33,7 @@ public sealed class CsvHelper(ILogger<CsvHelper> logger, CsvService csvServiceDl
         }
         catch (IOException ex)
         {
-            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+            logger.LogError("Ошибка при записи в файл: {ExMessage}", ex.Message);
         }
     }
 }

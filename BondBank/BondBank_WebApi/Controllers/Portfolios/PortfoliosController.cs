@@ -28,7 +28,7 @@ public sealed class PortfoliosController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении информации о портфелях: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении информации о портфелях: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -54,7 +54,7 @@ public sealed class PortfoliosController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении информации о портфелях пользователя ID = {userId}: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении информации о портфелях пользователя ID = {UserId}: {ExMessage}", userId, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

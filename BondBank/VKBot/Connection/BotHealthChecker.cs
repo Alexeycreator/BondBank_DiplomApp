@@ -20,7 +20,7 @@ public sealed class BotHealthChecker(ILogger<BotHealthChecker> logger)
     {
         if (string.IsNullOrEmpty(accessToken))
         {
-            logger.LogWarning($"Токен доступа к сообществу пустой: {accessToken}");
+            logger.LogWarning("Токен доступа к сообществу пустой: {AccessToken}", accessToken);
             return false;
         }
 
@@ -34,79 +34,79 @@ public sealed class BotHealthChecker(ILogger<BotHealthChecker> logger)
         catch (VkApiException ex) when (ex.ErrorCode == 901)
         {
             // Пользователь не начал диалог с ботом
-            logger.LogError($"Ошибка {ex.ErrorCode}: Пользователь {adminId} не начал диалог с ботом");
+            logger.LogError("Ошибка {ExErrorCode}: Пользователь {AdminId} не начал диалог с ботом", ex.ErrorCode, adminId);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 902)
         {
             // Пользователь запретил отправку сообщений
-            logger.LogError($"Ошибка {ex.ErrorCode}: Пользователь {adminId} запретил отправку сообщений");
+            logger.LogError("Ошибка {ExErrorCode}: Пользователь {AdminId} запретил отправку сообщений", ex.ErrorCode, adminId);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 913)
         {
             // Сообщение слишком длинное
-            logger.LogError($"Ошибка {ex.ErrorCode}: Сообщение слишком длинное");
+            logger.LogError("Ошибка {ExErrorCode}: Сообщение слишком длинное", ex.ErrorCode);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 14)
         {
             // Требуется капча
-            logger.LogError($"Ошибка {ex.ErrorCode}: Требуется капча");
+            logger.LogError("Ошибка {ExErrorCode}: Требуется капча", ex.ErrorCode);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 5)
         {
             // Неверная авторизация
-            logger.LogError($"Ошибка {ex.ErrorCode}: Неверная авторизация. Проверьте токен");
+            logger.LogError("Ошибка {ExErrorCode}: Неверная авторизация. Проверьте токен", ex.ErrorCode);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 6)
         {
             // Слишком много запросов
-            logger.LogError($"Ошибка {ex.ErrorCode}: Слишком много запросов (флуд)");
+            logger.LogError("Ошибка {ExErrorCode}: Слишком много запросов (флуд)", ex.ErrorCode);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 7)
         {
             // Нет прав на выполнение действия
-            logger.LogError($"Ошибка {ex.ErrorCode}: Нет прав на получение Long Poll сервера");
+            logger.LogError("Ошибка {ExErrorCode}: Нет прав на получение Long Poll сервера", ex.ErrorCode);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 9)
         {
             // Слишком много однотипных действий
-            logger.LogError($"Ошибка {ex.ErrorCode}: Слишком много однотипных действий");
+            logger.LogError("Ошибка {ExErrorCode}: Слишком много однотипных действий", ex.ErrorCode);
             return false;
         }
         catch (VkApiException ex) when (ex.ErrorCode == 10)
         {
             // Внутренняя ошибка сервера
-            logger.LogError($"Ошибка {ex.ErrorCode}: Внутренняя ошибка сервера ВК");
+            logger.LogError("Ошибка {ExErrorCode}: Внутренняя ошибка сервера ВК", ex.ErrorCode);
             return false;
         }
         catch (AccessTokenInvalidException ex)
         {
             // Неверный или истекший токен
-            logger.LogError($"Ошибка авторизации: {ex.Message}");
+            logger.LogError("Ошибка авторизации: {ExMessage}", ex.Message);
             return false;
         }
         catch (VkApiException ex)
         {
             // Любая другая ошибка VK API
-            logger.LogError($"Ошибка VK API: {ex.Message} (Код: {ex.ErrorCode})");
+            logger.LogError("Ошибка VK API: {ExMessage} (Код: {ExErrorCode})", ex.Message, ex.ErrorCode);
             return false;
         }
         catch (HttpRequestException ex)
         {
             // Проблемы с интернет-соединением
-            logger.LogError($"Ошибка соединения: {ex.Message}");
+            logger.LogError("Ошибка соединения: {ExMessage}", ex.Message);
             return false;
         }
         catch (TaskCanceledException ex)
         {
             // Таймаут запроса
-            logger.LogError($"Таймаут запроса: {ex.Message}");
+            logger.LogError("Таймаут запроса: {ExMessage}", ex.Message);
             return false;
         }
 
@@ -114,7 +114,7 @@ public sealed class BotHealthChecker(ILogger<BotHealthChecker> logger)
 
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             return false;
         }
     }
@@ -127,7 +127,7 @@ public sealed class BotHealthChecker(ILogger<BotHealthChecker> logger)
             Message = "✅ Бот работает!",
             RandomId = new Random().Next(0, int.MaxValue)
         });
-        logger.LogInformation($"Бот активен. Сообщение отправлено! Id: {result}");
+        logger.LogInformation("Бот активен. Сообщение отправлено! Id: {Result}", result);
         isActiveBot = true;
         return true;
     }

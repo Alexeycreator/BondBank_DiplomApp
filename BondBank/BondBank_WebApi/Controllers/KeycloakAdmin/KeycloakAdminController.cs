@@ -22,7 +22,7 @@ public class KeycloakAdminController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при создании пользователя: {ex.Message}");
+            logger.LogError("Ошибка при создании пользователя: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = ex.Message });
         }
     }
@@ -37,7 +37,7 @@ public class KeycloakAdminController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при обновлении пользователя: {ex.Message}");
+            logger.LogError("Ошибка при обновлении пользователя: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = ex.Message });
         }
     }
@@ -52,7 +52,7 @@ public class KeycloakAdminController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при удалении пользователя: {ex.Message}");
+            logger.LogError("Ошибка при удалении пользователя: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = ex.Message });
         }
     }

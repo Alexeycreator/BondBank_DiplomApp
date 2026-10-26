@@ -8,7 +8,7 @@ public sealed class BondsHistoryDictionary(ILogger<BondsHistoryDictionary> logge
 
     public List<BondHistoryModel> GetBondHistory(string isin)
     {
-        logger.LogInformation($"Получение облигации по ISIN ({isin})");
+        logger.LogInformation("Получение облигации по ISIN ({Isin})", isin);
         return bondsHistory.TryGetValue(isin, out var history)
             ? history
             : new List<BondHistoryModel>();
@@ -18,13 +18,13 @@ public sealed class BondsHistoryDictionary(ILogger<BondsHistoryDictionary> logge
     {
         if (!bondsHistory.ContainsKey(isin))
         {
-            logger.LogInformation($"Данного ISIN ({isin}) нет в словаре");
+            logger.LogInformation("Данного ISIN ({Isin}) нет в словаре", isin);
             bondsHistory[isin] = new List<BondHistoryModel>();
-            logger.LogInformation($"Создана новая коллекция для ISIN ({isin})");
+            logger.LogInformation("Создана новая коллекция для ISIN ({Isin})", isin);
         }
 
         bondsHistory[isin].Add(bond);
-        logger.LogInformation($"Данные для ISIN ({isin}) добавлены в словарь");
+        logger.LogInformation("Данные для ISIN ({Isin}) добавлены в словарь", isin);
     }
 
     public void ClearCache()

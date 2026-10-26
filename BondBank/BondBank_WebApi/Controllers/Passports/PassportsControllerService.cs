@@ -10,7 +10,7 @@ public sealed class PassportsControllerService(ILogger<PassportsControllerServic
 {
     public async Task<PassportsModel?> GetAllInfoByIdAsync(int passportId)
     {
-        logger.LogInformation($"Получение информации о паспорте с id: '{passportId}'");
+        logger.LogInformation("Получение информации о паспорте с id: '{PassportId}'", passportId);
         return await LoadPassportById(passportId);
     }
 
@@ -24,17 +24,17 @@ public sealed class PassportsControllerService(ILogger<PassportsControllerServic
                 return passportData;
             }
 
-            logger.LogWarning($"Нет данных о паспорте с id: '{passportId}'");
+            logger.LogWarning("Нет данных о паспорте с id: '{PassportId}'", passportId);
             return null;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}", ex.Message);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении данных о паспорте с id: '{passportId}'. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении данных о паспорте с id: '{PassportId}'. {ExMessage}", passportId, ex.Message);
             return null;
         }
     }

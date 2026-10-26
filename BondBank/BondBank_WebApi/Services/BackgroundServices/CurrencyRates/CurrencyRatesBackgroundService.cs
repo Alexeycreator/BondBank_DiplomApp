@@ -88,7 +88,7 @@ public sealed class CurrencyRatesBackgroundService(
             }
             catch (Exception ex)
             {
-                logger.LogError($"Неизвестная ошибка в фоновом процессе получения курсов валют: {ex.Message}");
+                logger.LogError("Неизвестная ошибка в фоновом процессе получения курсов валют: {ExMessage}", ex.Message);
             }
 
             await Task.Delay(TimeSpan.FromMinutes(30), stoppingToken);

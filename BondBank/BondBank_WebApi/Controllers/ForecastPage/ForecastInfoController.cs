@@ -57,7 +57,7 @@ public sealed class ForecastInfoController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при передаче данных на страницу прогнозов: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при передаче данных на страницу прогнозов: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

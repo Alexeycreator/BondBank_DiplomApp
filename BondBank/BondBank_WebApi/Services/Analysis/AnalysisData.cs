@@ -42,7 +42,7 @@ public sealed class AnalysisData(ILogger<AnalysisData> logger, IServiceScopeFact
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             return new Dictionary<string, double[]>();
         }
     }
@@ -65,11 +65,11 @@ public sealed class AnalysisData(ILogger<AnalysisData> logger, IServiceScopeFact
                 bondsHistory.AddBondHistory(bond.Isin, bond);
             }
 
-            logger.LogInformation($"Загружено {bondsHistory.bondsHistory.Count} значений в словарь");
+            logger.LogInformation("Загружено {BondsHistoryCount} значений в словарь", bondsHistory.bondsHistory.Count);
         }
         catch (DbException ex)
         {
-            logger.LogError($"Ошибка при работе с БД: {ex.Message}. Code Exception: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе с БД: {ExMessage}. Code Exception: {ExErrorCode}", ex.Message, ex.ErrorCode);
         }
     }
 
@@ -88,7 +88,7 @@ public sealed class AnalysisData(ILogger<AnalysisData> logger, IServiceScopeFact
             var history = bondsHistory.GetBondHistory(isin);
             if (!history.Any())
             {
-                logger.LogWarning($"Нет данных для прогноза по ISIN ({isin})");
+                logger.LogWarning("Нет данных для прогноза по ISIN ({Isin})", isin);
                 return null;
             }
 
@@ -98,7 +98,7 @@ public sealed class AnalysisData(ILogger<AnalysisData> logger, IServiceScopeFact
             if (prices.Length < MinDotsForAnalysis)
             {
                 logger.LogWarning(
-                    $"Недостаточно данных для прогноза по ISIN ({isin}). Нужно минимум {MinDotsForAnalysis} точки(ек)");
+                    "Недостаточно данных для прогноза по ISIN ({Isin}). Нужно минимум {MinDotsForAnalysis} точки(ек)", isin, MinDotsForAnalysis);
                 return null;
             }
 
@@ -119,18 +119,18 @@ public sealed class AnalysisData(ILogger<AnalysisData> logger, IServiceScopeFact
             alglib.ssaforecastlast(ssaModel, forecastSteps, out double[] forecast);
 
             logger.LogInformation(
-                $"Прогноз для {isin} выполнен. История: {prices.Length} точек. Прогноз: {forecast.Length} точек");
+                "Прогноз для {Isin} выполнен. История: {PricesLength} точек. Прогноз: {ForecastLength} точек", isin, prices.Length, forecast.Length);
 
             return forecast;
         }
         catch (IndexOutOfRangeException ex)
         {
-            logger.LogError($"Ошибка при создании массива: {ex.Message}");
+            logger.LogError("Ошибка при создании массива: {ExMessage}", ex.Message);
             return null;
         }
         catch (alglib.alglibexception ex)
         {
-            logger.LogError($"Ошибка ALGLIB: {ex.msg}");
+            logger.LogError("Ошибка ALGLIB: {ExMsg}", ex.msg);
             return null;
         }
     }

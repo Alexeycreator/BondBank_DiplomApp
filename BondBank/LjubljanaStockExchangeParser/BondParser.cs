@@ -52,7 +52,7 @@ public sealed class BondParser(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
@@ -104,7 +104,7 @@ public sealed class BondParser(
 
                 if (bonds.Count > 0)
                 {
-                    logger.LogInformation($"Данные извлечены. Количество: {bonds.Count}");
+                    logger.LogInformation("Данные извлечены. Количество: {BondsCount}", bonds.Count);
 
                     await botService.SendCommandToAllBotsAsync(BotCommand.ExecuteTask,
                         $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}" +
@@ -121,7 +121,7 @@ public sealed class BondParser(
             }
             catch (Exception ex)
             {
-                logger.LogError($"Неизвестная ошибка: {ex.Message}");
+                logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             }
         }
 

@@ -98,12 +98,12 @@ public sealed class BondControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе с БД при получении всех облигаций: {ex.Message}");
+            logger.LogError("Ошибка при работе с БД при получении всех облигаций: {ExMessage}", ex.Message);
             return new List<BondDto>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении всех облигаций: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении всех облигаций: {ExMessage}", ex.Message);
             return new List<BondDto>();
         }
     }
@@ -133,12 +133,12 @@ public sealed class BondControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе с БД при получении облигации по isin: {ex.Message}");
+            logger.LogError("Ошибка при работе с БД при получении облигации по isin: {ExMessage}", ex.Message);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при поиске облигации по isin: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при поиске облигации по isin: {ExMessage}", ex.Message);
             return null;
         }
     }
@@ -209,12 +209,12 @@ public sealed class BondControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе с БД при получении всех облигаций одного типа: {ex.Message}");
+            logger.LogError("Ошибка при работе с БД при получении всех облигаций одного типа: {ExMessage}", ex.Message);
             return new List<BondDto>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при поиске облигаций одного типа: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при поиске облигаций одного типа: {ExMessage}", ex.Message);
             return new List<BondDto>();
         }
     }

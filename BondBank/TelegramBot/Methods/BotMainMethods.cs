@@ -37,19 +37,19 @@ public sealed class BotMainMethods(ILogger<BotMainMethods> logger)
             try
             {
                 var bot = botTelegramClient.GetMe(getBotMeCts.Token);
-                logger.LogInformation($"Бот {bot.Result.FirstName} запущен");
+                logger.LogInformation("Бот {ResultFirstName} запущен", bot.Result.FirstName);
                 SendWelcomeMessage($"{bot.Result.FirstName}");
             }
             catch (OperationCanceledException)
             {
-                logger.LogError($"Бот не отвечает более {timeOutBot} минут. Пересоздайте токен бота.");
+                logger.LogError("Бот не отвечает более {TimeOutBot} минут. Пересоздайте токен бота.", timeOutBot);
             }
 
             Task.Delay(-1, getBotMeCts.Token);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
 
@@ -60,11 +60,11 @@ public sealed class BotMainMethods(ILogger<BotMainMethods> logger)
             try
             {
                 botTelegramClient?.SendMessage(user, message);
-                logger.LogInformation($"Сообщение '{message}' отправлено пользователю '{user}'");
+                logger.LogInformation("Сообщение '{Message}' отправлено пользователю '{User}'", message, user);
             }
             catch (Exception ex)
             {
-                logger.LogInformation($"Ошибка отправки сообщения '{message}' пользователю '{user}': {ex.Message}");
+                logger.LogInformation("Ошибка отправки сообщения '{Message}' пользователю '{User}': {ExMessage}", message, user, ex.Message);
             }
         }
     }
@@ -81,23 +81,23 @@ public sealed class BotMainMethods(ILogger<BotMainMethods> logger)
                           Environment.NewLine + $"Мои команды:" + Environment.NewLine + $"/start" +
                           Environment.NewLine + $"/inline" + Environment.NewLine + $"/help"
                 );
-                logger.LogInformation($"Сообщение отправлено пользователю '{user}'");
+                logger.LogInformation("Сообщение отправлено пользователю '{User}'", user);
             }
             catch (Exception ex)
             {
-                logger.LogInformation($"Ошибка отправки пользователю '{user}': {ex.Message}");
+                logger.LogInformation("Ошибка отправки пользователю '{User}': {ExMessage}", user, ex.Message);
 
                 if (ex.Message.Contains("Forbidden"))
                 {
-                    logger.LogInformation($"Forbidden: Пользователь {user} заблокировал бота или не начинал диалог");
+                    logger.LogInformation("Forbidden: Пользователь {User} заблокировал бота или не начинал диалог", user);
                 }
                 else if (ex.Message.Contains("Bad Request: chat not found"))
                 {
-                    logger.LogInformation($"Bad Request: chat not found. Неверный Chat ID: {user}");
+                    logger.LogInformation("Bad Request: chat not found. Неверный Chat ID: {User}", user);
                 }
                 else if (ex.Message.Contains("bots can't send messages to bots"))
                 {
-                    logger.LogInformation($"bots can't send messages to bots. {user} является ботом");
+                    logger.LogInformation("bots can't send messages to bots. {User} является ботом", user);
                 }
             }
         }
@@ -115,7 +115,7 @@ public sealed class BotMainMethods(ILogger<BotMainMethods> logger)
                     var message = update.Message;
 
                     var user = message?.From;
-                    logger.LogInformation($"{user?.FirstName} ({user?.Id}) написал сообщение: {message?.Text}");
+                    logger.LogInformation("{UserFirstName} ({UserId}) написал сообщение: {MessageText}", user?.FirstName, user?.Id, message?.Text);
                     var chat = message?.Chat;
                     if (chat != null)
                     {
@@ -176,7 +176,7 @@ public sealed class BotMainMethods(ILogger<BotMainMethods> logger)
                 {
                     var callbackQuery = update.CallbackQuery;
                     var user = callbackQuery?.From;
-                    logger.LogInformation($"Пользователь '{user?.Id}' нажал на кнопку {callbackQuery}");
+                    logger.LogInformation("Пользователь '{UserId}' нажал на кнопку {CallbackQuery}", user?.Id, callbackQuery);
                     var chat = callbackQuery?.Message?.Chat;
                     switch (callbackQuery?.Data)
                     {
@@ -203,7 +203,7 @@ public sealed class BotMainMethods(ILogger<BotMainMethods> logger)
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
 

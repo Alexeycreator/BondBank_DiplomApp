@@ -60,7 +60,7 @@ public class KeycloakUserSyncService
             var response = await httpClient.GetAsync($"admin/realms/{realm}/users/{keycloakUserId}");
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning($"User {keycloakUserId} not found in Keycloak");
+                logger.LogWarning("User {KeycloakUserId} not found in Keycloak", keycloakUserId);
                 return;
             }
 
@@ -82,12 +82,12 @@ public class KeycloakUserSyncService
                     Login: username
                 ));
 
-                logger.LogInformation($"Пользователь {email} синхронизирован из Keycloak в локальную базу данных.");
+                logger.LogInformation("Пользователь {Email} синхронизирован из Keycloak в локальную базу данных.", email);
             }
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка синхронизации пользователя из Keycloak: {ex.Message}");
+            logger.LogError("Ошибка синхронизации пользователя из Keycloak: {ExMessage}", ex.Message);
             throw;
         }
     }
@@ -139,7 +139,7 @@ public class KeycloakUserSyncService
                 
                 if (!roleMappingResponse.IsSuccessStatusCode)
                 {
-                    logger.LogWarning($"Не удалось назначить роль {request.Role} пользователю {userId}");
+                    logger.LogWarning("Не удалось назначить роль {RequestRole} пользователю {UserId}", request.Role, userId);
                 }
             }
 
@@ -149,7 +149,7 @@ public class KeycloakUserSyncService
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при создании пользователя в Keycloak: {ex.Message}");
+            logger.LogError("Ошибка при создании пользователя в Keycloak: {ExMessage}", ex.Message);
             throw;
         }
     }
@@ -189,7 +189,7 @@ public class KeycloakUserSyncService
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при обновлении пользователя в Keycloak: {ex.Message}");
+            logger.LogError("Ошибка при обновлении пользователя в Keycloak: {ExMessage}", ex.Message);
             throw;
         }
     }
@@ -213,7 +213,7 @@ public class KeycloakUserSyncService
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при удалении пользователя из Keycloak: {ex.Message}");
+            logger.LogError("Ошибка при удалении пользователя из Keycloak: {ExMessage}", ex.Message);
             throw;
         }
     }

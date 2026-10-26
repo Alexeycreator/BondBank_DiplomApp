@@ -30,7 +30,7 @@ public sealed class SnilsController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении данных снилс ID = {snilsId}. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении данных снилс ID = {SnilsId}. {ExMessage}", snilsId, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

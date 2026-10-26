@@ -28,7 +28,7 @@ public sealed class BondsController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении всех облигаций: {ex.Message}");
+            logger.LogError("Ошибка при получении всех облигаций: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

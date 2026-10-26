@@ -20,19 +20,19 @@ public sealed class CurrencyRatesControllerService(
 
     public async Task<IEnumerable<CurrencyRatesModel>> GetCurrencyRatesByCurrencyAsync(string currency)
     {
-        logger.LogInformation($"Процесс получения значений валюты '{currency}'");
+        logger.LogInformation("Процесс получения значений валюты '{Currency}'", currency);
         return await LoadCurrencyRatesAsync(currency);
     }
 
     public async Task<CurrencyRatesModel> GetCurrencyRateByDateReceiptAsync(DateOnly date, string currency)
     {
-        logger.LogInformation($"Процесс получения курса валюты '{currency}' за дату: {date}");
+        logger.LogInformation("Процесс получения курса валюты '{Currency}' за дату: {DateOnly}", currency, date);
         return await LoadCurrencyRatesAsync(date, currency);
     }
 
     public async Task<IEnumerable<CurrencyRatesModel>> GetAllCurrencyRatesByDateReceiptAsync(DateOnly date)
     {
-        logger.LogInformation($"Процесс получения курсов валют за дату: {date}");
+        logger.LogInformation("Процесс получения курсов валют за дату: {DateOnly}", date);
         return await LoadCurrencyRatesAsync(date);
     }
 
@@ -57,12 +57,12 @@ public sealed class CurrencyRatesControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: '{ex.ErrorCode}'");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
             return new List<CurrencyRatesModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при заполнении данных всех курсов валют: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при заполнении данных всех курсов валют: {ExMessage}", ex.Message);
             return new List<CurrencyRatesModel>();
         }
     }
@@ -77,17 +77,17 @@ public sealed class CurrencyRatesControllerService(
                 return currencyRatesData;
             }
 
-            logger.LogWarning($"Данных о курсах валюты: '{currency}' в БД нет.");
+            logger.LogWarning("Данных о курсах валюты: '{Currency}' в БД нет.", currency);
             return new List<CurrencyRatesModel>();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: '{ex.ErrorCode}'");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
             return new List<CurrencyRatesModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при заполнении данных о курсах валюты: '{currency}'. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при заполнении данных о курсах валюты: '{Currency}'. {ExMessage}", currency, ex.Message);
             return new List<CurrencyRatesModel>();
         }
     }
@@ -103,18 +103,18 @@ public sealed class CurrencyRatesControllerService(
                 return currencyRatesData;
             }
 
-            logger.LogWarning($"Данных о курсах валюты: '{currency}' за дату {date} в БД нет");
+            logger.LogWarning("Данных о курсах валюты: '{Currency}' за дату {DateOnly} в БД нет", currency, date);
             return new CurrencyRatesModel();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: '{ex.ErrorCode}'");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
             return new CurrencyRatesModel();
         }
         catch (Exception ex)
         {
             logger.LogError(
-                $"Неизвестная ошибка при заполнении данных о курсах валюты: '{currency}' за дату: {date}. {ex.Message}");
+                "Неизвестная ошибка при заполнении данных о курсах валюты: '{Currency}' за дату: {DateOnly}. {ExMessage}", currency, date, ex.Message);
             return new CurrencyRatesModel();
         }
     }
@@ -129,17 +129,17 @@ public sealed class CurrencyRatesControllerService(
                 return currencyRatesData;
             }
 
-            logger.LogWarning($"Данных о курсах валют за дату {date} в БД нет");
+            logger.LogWarning("Данных о курсах валют за дату {DateOnly} в БД нет", date);
             return new List<CurrencyRatesModel>();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: '{ex.ErrorCode}'");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
             return new List<CurrencyRatesModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при заполнении данных о курсах валют за дату: {date}. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при заполнении данных о курсах валют за дату: {DateOnly}. {ExMessage}", date, ex.Message);
             return new List<CurrencyRatesModel>();
         }
     }
@@ -155,18 +155,18 @@ public sealed class CurrencyRatesControllerService(
 
             var currencyData = await dbContext.CurrencyRates.Select(c => c.Currency).Distinct().ToListAsync();
             currencies.UnionWith(currencyData);
-            logger.LogInformation($"Загружено валют: {currencies.Count}");
+            logger.LogInformation("Загружено валют: {CurrenciesCount}", currencies.Count);
 
             return currencies;
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе Npgsql: {ex.Message}. Code: '{ex.ErrorCode}'");
+            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
             return new HashSet<string>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при заполнении данных о названиях валют. {ex.Message}");
+            logger.LogError("Неизвестная ошибка при заполнении данных о названиях валют. {ExMessage}", ex.Message);
             return new HashSet<string>();
         }
     }

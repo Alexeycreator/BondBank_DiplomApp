@@ -59,7 +59,7 @@ public sealed class CommandHandler(
             case BotCommand.Restart:
                 break;
             default:
-                logger.LogError($"Неизвестная команда: {methodName}");
+                logger.LogError("Неизвестная команда: {MethodName}", methodName);
                 break;
         }
 

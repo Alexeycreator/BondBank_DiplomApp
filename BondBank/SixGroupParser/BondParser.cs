@@ -52,7 +52,7 @@ public sealed class BondParser(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 
@@ -71,7 +71,7 @@ public sealed class BondParser(
             JObject jsonRespBonds = JObject.Parse(connectionMonitor.ResponseContent());
             int pageItemsBond = GettingPageItemsBond(jsonRespBonds);
             int totalBonds = GettingTotalBonds(jsonRespBonds);
-            logger.LogInformation($"Всего {totalBonds} облигаций");
+            logger.LogInformation("Всего {TotalBonds} облигаций", totalBonds);
             logger.LogInformation($"Обработка облигаций...");
 
             string urlAllBonds = UrlGettingAllBonds(pageItemsBond, totalBonds);
@@ -127,7 +127,7 @@ public sealed class BondParser(
 
             if (bonds.Count > 0)
             {
-                logger.LogInformation($"Данные извлечены. Всего {bonds.Count} из {totalBonds} облигаций");
+                logger.LogInformation("Данные извлечены. Всего {BondsCount} из {TotalBonds} облигаций", bonds.Count, totalBonds);
                 await botService.SendCommandToAllBotsAsync(BotCommand.ExecuteTask,
                     $"Данные парсера {Process.GetCurrentProcess().ProcessName} получены. Количество: {bonds.Count}" +
                     Environment.NewLine + $"Дата получения: {csvServiceDll.GetDate()}");
@@ -138,13 +138,13 @@ public sealed class BondParser(
         }
         catch (InvalidOperationException ex)
         {
-            logger.LogError($"Ошибка операции преобразования бондов: {ex.Message}");
+            logger.LogError("Ошибка операции преобразования бондов: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error,
                 $"Ошибка операции преобразования бондов: {ex.Message}");
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"Неизвестная ошибка: {ex.Message}");
         }
 

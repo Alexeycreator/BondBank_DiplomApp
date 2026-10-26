@@ -35,7 +35,7 @@ public sealed class BondHistoriesController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении истории всех облигаций: {ex.Message}");
+            logger.LogError("Ошибка при получении истории всех облигаций: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -72,7 +72,7 @@ public sealed class BondHistoriesController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении истории облигаций по ISIN: '{isin}'. {ex.Message}");
+            logger.LogError("Ошибка при получении истории облигаций по ISIN: '{Isin}'. {ExMessage}", isin, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -110,7 +110,7 @@ public sealed class BondHistoriesController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении истории облигаций по типу: '{type}'. {ex.Message}");
+            logger.LogError("Ошибка при получении истории облигаций по типу: '{Type}'. {ExMessage}", type, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -128,7 +128,7 @@ public sealed class BondHistoriesController(
             var currentDate = DateTime.UtcNow;
             if (Convert.ToDateTime(date) > currentDate)
             {
-                logger.LogWarning($"Дата '{date}' не может быть позднее текущей '{currentDate}'");
+                logger.LogWarning("Дата '{DateOnly}' не может быть позднее текущей '{CurrentDate}'", date, currentDate);
                 return BadRequest(new { message = $"Дата '{date}' не может быть позднее текущей '{currentDate}'" });
             }
 
@@ -143,7 +143,7 @@ public sealed class BondHistoriesController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении истории облигаций по дате: {date}. {ex.Message}");
+            logger.LogError("Ошибка при получении истории облигаций по дате: {DateOnly}. {ExMessage}", date, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -167,7 +167,7 @@ public sealed class BondHistoriesController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении типов облигаций: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении типов облигаций: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

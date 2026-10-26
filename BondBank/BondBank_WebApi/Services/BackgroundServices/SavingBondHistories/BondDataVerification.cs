@@ -37,11 +37,11 @@ public sealed class BondDataVerification(ILogger<BondDataVerification> logger)
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка PostgreSQL: {ex.Message}. Код: {ex.SqlState}");
+            logger.LogError("Ошибка PostgreSQL: {ExMessage}. Код: {ExSqlState}", ex.Message, ex.SqlState);
         }
         catch (DbException ex)
         {
-            logger.LogError($"Ошибка при работе с БД: {ex.Message}");
+            logger.LogError("Ошибка при работе с БД: {ExMessage}", ex.Message);
         }
     }
 }

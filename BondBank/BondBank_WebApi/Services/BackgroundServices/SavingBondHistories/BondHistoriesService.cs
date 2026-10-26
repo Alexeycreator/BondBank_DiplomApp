@@ -77,7 +77,7 @@ public sealed class BondHistoriesService(
 
             if (!newBonds.Any())
             {
-                logger.LogInformation($"Новых записей для сохранения нет. Сегодня: {today}");
+                logger.LogInformation("Новых записей для сохранения нет. Сегодня: {DateOnly}", today);
                 return;
             }
 
@@ -93,12 +93,12 @@ public sealed class BondHistoriesService(
             
             await dbContext.BondHistories.AddRangeAsync(historyEntries, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
-            logger.LogInformation($"Сохранено {historyEntries.Count} записей в историю бондов");
+            logger.LogInformation("Сохранено {HistoryEntriesCount} записей в историю бондов", historyEntries.Count);
             WriteToCsv(historyEntries);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка: {ex.Message}");
+            logger.LogError("Неизвестная ошибка: {ExMessage}", ex.Message);
         }
     }
     
@@ -130,7 +130,7 @@ public sealed class BondHistoriesService(
         }
         catch (IOException ex)
         {
-            logger.LogError($"Ошибка при записи в файл: {ex.Message}");
+            logger.LogError("Ошибка при записи в файл: {ExMessage}", ex.Message);
         }
     }
 }

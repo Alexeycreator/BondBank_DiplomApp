@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BondBank_WebApi.Controllers.CurrencyRates;
 
 [ApiController]
-[Route("api/[controller]/currency-rates")]
+[Route("api/currency-rates")]
 public sealed class CurrencyRatesController(
     ILogger<CurrencyRatesController> logger,
     ICurrencyRatesControllerService currencyRatesService) : ControllerBase
@@ -16,16 +16,17 @@ public sealed class CurrencyRatesController(
         try
         {
             var currencyRatesData = await currencyRatesService.GetAllCurrencyRatesAsync();
-            if (currencyRatesData.Any())
+            var currencyRatesModels = currencyRatesData.ToList();
+            if (currencyRatesModels.Count != 0)
             {
-                return Ok(currencyRatesData.Select(CurrencyRateDto.From));
+                return Ok(currencyRatesModels.Select(CurrencyRateDto.From));
             }
 
             return NotFound(new { message = $"Данных о курсах валют в БД нет" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении всех курсов валют: {ex.Message}");
+            logger.LogError("Ошибка при получении всех курсов валют: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -38,21 +39,22 @@ public sealed class CurrencyRatesController(
             var currentDate = DateTime.UtcNow;
             if (Convert.ToDateTime(date) > currentDate)
             {
-                logger.LogWarning($"Дата '{date}' не может быть позднее текущей '{currentDate}'");
+                logger.LogWarning("Дата '{DateOnly}' не может быть позднее текущей '{CurrentDate}'", date, currentDate);
                 return BadRequest(new { message = $"Дата '{date}' не может быть позднее текущей '{currentDate}'" });
             }
 
             var currencyRatesData = await currencyRatesService.GetAllCurrencyRatesByDateReceiptAsync(date);
-            if (currencyRatesData.Any())
+            var currencyRatesModels = currencyRatesData.ToList();
+            if (currencyRatesModels.Count != 0)
             {
-                return Ok(currencyRatesData.Select(CurrencyRateDto.From));
+                return Ok(currencyRatesModels.Select(CurrencyRateDto.From));
             }
 
             return NotFound(new { message = $"Данных о курсах валют за дату: '{date}' нет" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении курсов валют за дату: '{date}'. {ex.Message}");
+            logger.LogError("Ошибка при получении курсов валют за дату: '{DateOnly}'. {ExMessage}", date, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -71,7 +73,7 @@ public sealed class CurrencyRatesController(
             var currentDate = DateTime.UtcNow;
             if (Convert.ToDateTime(date) > currentDate)
             {
-                logger.LogWarning($"Дата '{date}' не может быть позднее текущей '{currentDate}'");
+                logger.LogWarning("Дата '{DateOnly}' не может быть позднее текущей '{CurrentDate}'", date, currentDate);
                 return BadRequest(new { message = $"Дата '{date}' не может быть позднее текущей '{currentDate}'" });
             }
 
@@ -85,7 +87,7 @@ public sealed class CurrencyRatesController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении курса валюты: '{currency}' за дату '{date}'. {ex.Message}");
+            logger.LogError("Ошибка при получении курса валюты: '{Currency}' за дату '{DateOnly}'. {ExMessage}", currency, date, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -102,16 +104,17 @@ public sealed class CurrencyRatesController(
             }
 
             var currencyRatesData = await currencyRatesService.GetCurrencyRatesByCurrencyAsync(currency);
-            if (currencyRatesData.Any())
+            var currencyRatesModels = currencyRatesData.ToList();
+            if (currencyRatesModels.Count != 0)
             {
-                return Ok(currencyRatesData.Select(CurrencyRateDto.From));
+                return Ok(currencyRatesModels.Select(CurrencyRateDto.From));
             }
 
             return NotFound(new { message = $"Данных о курсах валюты: '{currency}' нет" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении курсов валюты: '{currency}'. {ex.Message}");
+            logger.LogError("Ошибка при получении курсов валюты: '{Currency}'. {ExMessage}", currency, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -131,7 +134,7 @@ public sealed class CurrencyRatesController(
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении названия валют: {ex.Message}");
+            logger.LogError("Ошибка при получении названия валют: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

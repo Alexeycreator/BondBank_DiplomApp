@@ -50,17 +50,17 @@ services.AddSingleton<VkApi>(provider =>
     catch (AccessTokenInvalidException ex)
     {
         logger.LogError(
-            $"Вы либо забыли авторизоваться, либо закончился срок действия ключа авторизации: {ex.Message}");
+            "Вы либо забыли авторизоваться, либо закончился срок действия ключа авторизации: {ExMessage}", ex.Message);
         throw;
     }
     catch (VkApiException ex)
     {
-        logger.LogError($"Неизвестная ошибка авторизации: {ex.Message}");
+        logger.LogError("Неизвестная ошибка авторизации: {ExMessage}", ex.Message);
         throw;
     }
     catch (Exception ex)
     {
-        logger.LogError($"Неизвестная ошибка авторизации бота: {ex.Message}");
+        logger.LogError("Неизвестная ошибка авторизации бота: {ExMessage}", ex.Message);
         throw;
     }
 });

@@ -18,7 +18,7 @@ public sealed class PortfoliosControllerService(
 
     public async Task<IEnumerable<PortfoliosModel>> GetAllPortfoliosByUserAsync(int userId)
     {
-        logger.LogInformation($"Процесс получения портфеля пользователя с ID = {userId}");
+        logger.LogInformation("Процесс получения портфеля пользователя с ID = {UserId}", userId);
         return await LoadPortfoliosAsync(userId);
     }
 
@@ -47,12 +47,12 @@ public sealed class PortfoliosControllerService(
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError($"Ошибка при работе с Npgsql: {ex.Message}. Code: {ex.ErrorCode}");
+            logger.LogError("Ошибка при работе с Npgsql: {ExMessage}. Code: {ExErrorCode}", ex.Message, ex.ErrorCode);
             return new List<PortfoliosModel>();
         }
         catch (Exception ex)
         {
-            logger.LogError($"Неизвестная ошибка при получении информации о пользователях: {ex.Message}");
+            logger.LogError("Неизвестная ошибка при получении информации о пользователях: {ExMessage}", ex.Message);
             return new List<PortfoliosModel>();
         }
     }
@@ -64,7 +64,7 @@ public sealed class PortfoliosControllerService(
             .ToListAsync();
         if (userPortfolios.Count == 0)
         {
-            logger.LogWarning($"Данных о портфелях пользователя ID = {userId} нет");
+            logger.LogWarning("Данных о портфелях пользователя ID = {UserId} нет", userId);
         }
 
         return userPortfolios;

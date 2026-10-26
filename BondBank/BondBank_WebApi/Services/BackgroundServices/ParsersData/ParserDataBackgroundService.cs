@@ -93,11 +93,11 @@ public sealed class ParserDataBackgroundService(
             }
             catch (Exception ex)
             {
-                logger.LogError($"Неизвестная ошибка фонового процесса обработки данных парсера: {ex.Message}");
+                logger.LogError("Неизвестная ошибка фонового процесса обработки данных парсера: {ExMessage}", ex.Message);
             }
 
             var nextIteration = TimeSpan.FromMinutes(10);
-            logger.LogInformation($"Следующая итерация через {nextIteration.Minutes} минут");
+            logger.LogInformation("Следующая итерация через {NextIterationMinutes} минут", nextIteration.Minutes);
             await Task.Delay(nextIteration, stoppingToken);
         }
     }
@@ -189,7 +189,7 @@ public sealed class ParserDataBackgroundService(
                 if (!Directory.Exists(directoryCurrencyRates))
                 {
                     logger.LogWarning(
-                        $"Каталог {directoryCurrencyRates} не существует. Попытка {attempt + 1}/{maxAttempts}");
+                        "Каталог {DirectoryCurrencyRates} не существует. Попытка {Attempt}/{MaxAttempts}", directoryCurrencyRates, attempt + 1, maxAttempts);
                     await Task.Delay(nextTry, cancellationToken);
                     continue;
                 }
@@ -198,7 +198,7 @@ public sealed class ParserDataBackgroundService(
                 if (files.Length == 0)
                 {
                     logger.LogWarning(
-                        $"В каталоге {directoryCurrencyRates} нет файлов. Попытка {attempt + 1}/{maxAttempts}");
+                        "В каталоге {DirectoryCurrencyRates} нет файлов. Попытка {Attempt}/{MaxAttempts}", directoryCurrencyRates, attempt + 1, maxAttempts);
                     await Task.Delay(nextTry, cancellationToken);
                     continue;
                 }
@@ -206,7 +206,7 @@ public sealed class ParserDataBackgroundService(
                 string filePath = files.Last();
                 if (!File.Exists(filePath))
                 {
-                    logger.LogWarning($"Файл {filePath} не найден. Попытка {attempt + 1}/{maxAttempts}");
+                    logger.LogWarning("Файл {FilePath} не найден. Попытка {Attempt}/{MaxAttempts}", filePath, attempt + 1, maxAttempts);
                     await Task.Delay(nextTry, cancellationToken);
                     continue;
                 }
@@ -218,25 +218,25 @@ public sealed class ParserDataBackgroundService(
                     await using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                     if (stream.ReadByte() != -1)
                     {
-                        logger.LogInformation($"Курсы валют за сегодняшнюю дату ({fileName}). Продолжаем процесс.");
+                        logger.LogInformation("Курсы валют за сегодняшнюю дату ({FileName}). Продолжаем процесс.", fileName);
                         return true;
                     }
 
-                    logger.LogWarning($"Файл за сегодняшнюю дату есть ({fileName}), но в нем нет данных");
+                    logger.LogWarning("Файл за сегодняшнюю дату есть ({FileName}), но в нем нет данных", fileName);
                     return false;
                 }
 
-                logger.LogWarning($"Файл {fileName} не за сегодняшнюю дату. Попытка {attempt + 1}/{maxAttempts}");
+                logger.LogWarning("Файл {FileName} не за сегодняшнюю дату. Попытка {Attempt}/{MaxAttempts}", fileName, attempt + 1, maxAttempts);
                 await Task.Delay(nextTry, cancellationToken);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Ошибка при проверке файла курсов валют. Попытка {attempt + 1}/{maxAttempts}");
+                logger.LogError(ex, "Ошибка при проверке файла курсов валют. Попытка {Attempt}/{MaxAttempts}", attempt + 1, maxAttempts);
                 await Task.Delay(nextTry, cancellationToken);
             }
         }
 
-        logger.LogError($"Не удалось дождаться файла с курсами валют за сегодня после {maxAttempts} попыток");
+        logger.LogError("Не удалось дождаться файла с курсами валют за сегодня после {MaxAttempts} попыток", maxAttempts);
         return false;
     }
 
@@ -245,7 +245,7 @@ public sealed class ParserDataBackgroundService(
         var datePart = fileName.Split('_')[1].Split('.')[0];
         if (!DateOnly.TryParse(datePart, out var fileDate))
         {
-            logger.LogWarning($"Не получилось считать дату из названия файла {fileName}");
+            logger.LogWarning("Не получилось считать дату из названия файла {FileName}", fileName);
             return false;
         }
 

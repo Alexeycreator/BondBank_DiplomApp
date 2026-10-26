@@ -51,14 +51,14 @@ public class ConnectionMonitor(
 
         try
         {
-            logger.LogInformation($"Подключение к данным по адресу: {urlWebService}");
+            logger.LogInformation("Подключение к данным по адресу: {UrlWebService}", urlWebService);
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, urlWebService);
 
             var response = await httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode)
             {
-                logger.LogInformation($"Подключение установлено. {response.StatusCode}");
+                logger.LogInformation("Подключение установлено. {ResponseStatusCode}", response.StatusCode);
                 statusCode = HttpStatusCode.OK;
 
                 var content = await response.Content.ReadAsStringAsync();
@@ -78,7 +78,7 @@ public class ConnectionMonitor(
         }
         catch (HttpRequestException ex)
         {
-            logger.LogWarning($"{ex.Message} - запуск мониторинга подключения");
+            logger.LogWarning("{ExMessage} - запуск мониторинга подключения", ex.Message);
             await botService.SendCommandToAllBotsAsync(BotCommand.Error, $"{ex.Message}");
             await StartMonitoringAsync(true, urlWebService);
             return false;
@@ -177,7 +177,7 @@ public class ConnectionMonitor(
     private async Task OnMaxAttemptsReachedAsync()
     {
         var processName = Process.GetCurrentProcess().ProcessName;
-        logger.LogError($"Количество попыток равно максимуму. Парсер {processName} будет перезапущен");
+        logger.LogError("Количество попыток равно максимуму. Парсер {ProcessName} будет перезапущен", processName);
         await botService.SendCommandToAllBotsAsync(BotCommand.Info,
             $"Количество попыток равно максимуму. " + Environment.NewLine + $"Парсер {processName} будет перезапущен.");
         await botService.SendCommandToAllBotsAsync(BotCommand.Restart, $"{processName}");

@@ -29,7 +29,7 @@ public sealed class ExportImportFilesController(ILogger<ExportImportFilesControl
     [HttpPost("import-bonds")]
     public async Task<IActionResult> ImportBonds(IFormFile file, [FromQuery] string typeFile)
     {
-        logger.LogInformation($"Получен запрос на импорт: {typeFile}. Файл: {file.FileName}");
+        logger.LogInformation("Получен запрос на импорт: {TypeFile}. Файл: {FileFileName}", typeFile, file.FileName);
         if (file.Length == 0)
         {
             return BadRequest(new { message = $"Файла не существует!" });
