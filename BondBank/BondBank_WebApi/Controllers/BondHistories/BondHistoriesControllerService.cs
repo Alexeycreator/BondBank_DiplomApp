@@ -45,7 +45,7 @@ public sealed class BondHistoriesControllerService(
     public async Task<IEnumerable<BondHistoryModel>> GetByFilterAsync(string? isin, string? type, DateOnly? date)
     {
         logger.LogInformation($"Процесс получения истории облигаций по фильтру");
-        return await SearchByFilter(isin, type, date);
+        return await SearchByFilterAsync(isin, type, date);
     }
 
     private async Task<List<BondHistoryModel>> LoadBondHistories()
@@ -173,7 +173,7 @@ public sealed class BondHistoriesControllerService(
         }
     }
 
-    private async Task<IEnumerable<BondHistoryModel>> SearchByFilter(string? isin, string? type, DateOnly? date)
+    private async Task<IEnumerable<BondHistoryModel>> SearchByFilterAsync(string? isin, string? type, DateOnly? date)
     {
         var query = dbContext.BondHistories.AsNoTracking().AsQueryable();
 
