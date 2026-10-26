@@ -18,9 +18,7 @@ public sealed class CurrencyRatesController(
             var currencyRatesData = await currencyRatesService.GetAllCurrencyRatesAsync();
             var currencyRatesModels = currencyRatesData.ToList();
             if (currencyRatesModels.Count != 0)
-            {
                 return Ok(currencyRatesModels.Select(CurrencyRateDto.From));
-            }
 
             return NotFound(new { message = $"Данных о курсах валют в БД нет" });
         }
@@ -87,7 +85,8 @@ public sealed class CurrencyRatesController(
         }
         catch (Exception ex)
         {
-            logger.LogError("Ошибка при получении курса валюты: '{Currency}' за дату '{DateOnly}'. {ExMessage}", currency, date, ex.Message);
+            logger.LogError("Ошибка при получении курса валюты: '{Currency}' за дату '{DateOnly}'. {ExMessage}",
+                currency, date, ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -106,9 +105,7 @@ public sealed class CurrencyRatesController(
             var currencyRatesData = await currencyRatesService.GetCurrencyRatesByCurrencyAsync(currency);
             var currencyRatesModels = currencyRatesData.ToList();
             if (currencyRatesModels.Count != 0)
-            {
                 return Ok(currencyRatesModels.Select(CurrencyRateDto.From));
-            }
 
             return NotFound(new { message = $"Данных о курсах валюты: '{currency}' нет" });
         }
@@ -126,9 +123,7 @@ public sealed class CurrencyRatesController(
         {
             var currencyData = await currencyRatesService.GetCurrencyAsync();
             if (currencyData.Any())
-            {
                 return Ok(currencyData);
-            }
 
             return NotFound(new { message = $"Данных о названиях валют нет" });
         }
