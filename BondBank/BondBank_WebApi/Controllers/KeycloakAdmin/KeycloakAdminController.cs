@@ -6,7 +6,7 @@ using BondBank_WebApi.Models.DTOs.Users;
 namespace BondBank_WebApi.Controllers.KeycloakAdmin;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/keycloak-admin")]
 [Authorize(Roles = "admin")]
 public class KeycloakAdminController(
     KeycloakUserSyncService keycloakService,
