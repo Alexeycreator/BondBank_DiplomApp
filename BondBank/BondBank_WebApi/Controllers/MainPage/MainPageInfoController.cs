@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace BondBank_WebApi.Controllers.MainPage;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/main-page")]
 public sealed class MainPageInfoController(
     ILogger<MainPageInfoController> logger,
     IBondControllerService bondService,
     IUsersControllerService usersService,
     IBondHistoriesControllerService bondHistoryService) : ControllerBase
 {
-    [HttpGet("get-info-statistics-block")]
+    [HttpGet("statistics-block")]
     public async Task<IActionResult> GetInfoStatisticsBlock()
     {
         try
