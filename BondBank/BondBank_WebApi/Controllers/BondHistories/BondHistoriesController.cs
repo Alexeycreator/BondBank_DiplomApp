@@ -1,8 +1,7 @@
-using BondBank_WebApi.Services.DataContext;
+using BondBank_WebApi.HelperMethods.Validators;
 using BondBank_WebApi.Models.DTOs.BondHistories;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace BondBank_WebApi.Controllers.BondHistories;
 
@@ -11,10 +10,8 @@ namespace BondBank_WebApi.Controllers.BondHistories;
 public sealed class BondHistoriesController(
     ILogger<BondHistoriesController> logger,
     IBondHistoriesControllerService bondHistoriesService,
-    IOptions<AppSettings> appSettings) : ControllerBase
+    BondValidator validator) : ControllerBase
 {
-    private readonly AppSettings valueAppSettings = appSettings.Value;
-
     /// <summary>
     /// Метод получения всех данных из истории облигаций
     /// </summary>
@@ -27,9 +24,7 @@ public sealed class BondHistoriesController(
             var bondHistoriesData = await bondHistoriesService.GetAllBondHistoriesAsync();
             var bondHistoryModels = bondHistoriesData.ToList();
             if (bondHistoryModels.Count != 0)
-            {
                 return Ok(bondHistoryModels.Select(BondHistoryDto.From));
-            }
 
             return NotFound(new { message = $"Данных об истории облигаций нет" });
         }
@@ -50,23 +45,14 @@ public sealed class BondHistoriesController(
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(isin))
-            {
-                return BadRequest(new { message = $"Введенный ISIN пустой или содержит пробелы" });
-            }
-
-            if (isin.Length != 12)
-            {
-                return BadRequest(new
-                    { message = $"ISIN должен содержать ровно 12 символов, получено: {isin.Length}" });
-            }
+            var validationResult = validator.ValidateIsin(isin);
+            if (validationResult != null)
+                return validationResult;
 
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByIsinAsync(isin);
             var bondHistoryModels = bondHistoriesData.ToList();
             if (bondHistoryModels.Count != 0)
-            {
                 return Ok(bondHistoryModels.Select(BondHistoryDto.From));
-            }
 
             return NotFound(new { message = $"Данных истории об облигация по ISIN: '{isin}' нет" });
         }
@@ -87,24 +73,15 @@ public sealed class BondHistoriesController(
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(type))
-            {
-                return BadRequest(new { message = $"Тип облигации пустой или содержит пробелы" });
-            }
+            var validationResult = validator.ValidateType(type);
+            if (validationResult != null)
+                return validationResult;
 
             var normalizedType = type.ToLowerInvariant();
-            var validBondsType = valueAppSettings.ValidBondTypes;
-            if (!validBondsType.Contains(normalizedType))
-            {
-                return BadRequest(new { message = $"Такого типа: '{type}' облигаций нет в системе" });
-            }
-
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByTypeAsync(normalizedType);
             var bondHistoryModels = bondHistoriesData.ToList();
             if (bondHistoryModels.Count != 0)
-            {
                 return Ok(bondHistoryModels.Select(BondHistoryDto.From));
-            }
 
             return NotFound(new { message = $"Данных истории об облигациях типа: '{type}' нет" });
         }
@@ -125,25 +102,21 @@ public sealed class BondHistoriesController(
     {
         try
         {
-            var currentDate = DateTime.UtcNow;
-            if (Convert.ToDateTime(date) > currentDate)
-            {
-                logger.LogWarning("Дата '{DateOnly}' не может быть позднее текущей '{CurrentDate}'", date, currentDate);
-                return BadRequest(new { message = $"Дата '{date}' не может быть позднее текущей '{currentDate}'" });
-            }
+            var validationResult = validator.ValidateDate(date);
+            if (validationResult != null)
+                return validationResult;
 
             var bondHistoriesData = await bondHistoriesService.GetBondHistoriesByRecordedDateAsync(date);
             var bondHistoryModels = bondHistoriesData.ToList();
             if (bondHistoryModels.Count != 0)
-            {
                 return Ok(bondHistoryModels.Select(BondHistoryDto.From));
-            }
 
             return NotFound(new { message = $"Данных истории об облигациях за дату: {date} нет" });
         }
         catch (Exception ex)
         {
-            logger.LogError("Ошибка при получении истории облигаций по дате: {DateOnly}. {ExMessage}", date, ex.Message);
+            logger.LogError("Ошибка при получении истории облигаций по дате: {DateOnly}. {ExMessage}", date,
+                ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
@@ -159,9 +132,7 @@ public sealed class BondHistoriesController(
         {
             var namesTypeData = await bondHistoriesService.GetTypeBondHistoriesAsync();
             if (namesTypeData.Any())
-            {
                 return Ok(namesTypeData);
-            }
 
             return NotFound(new { message = $"Данных о типах облигаций нет" });
         }
@@ -178,7 +149,6 @@ public sealed class BondHistoriesController(
     {
         try
         {
-            // Если не передали ни один параметр, возвращаем всё (или можно вернуть BadRequest)
             if (string.IsNullOrWhiteSpace(type) && !date.HasValue)
                 return BadRequest();
 

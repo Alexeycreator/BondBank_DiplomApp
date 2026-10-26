@@ -1,3 +1,4 @@
+using BondBank_WebApi.HelperMethods.Validators;
 using BondBank_WebApi.Models.DTOs.Bonds;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,8 @@ namespace BondBank_WebApi.Controllers.Bonds;
 [Route("api/bonds")]
 public sealed class BondsController(
     ILogger<BondsController> logger,
-    IBondControllerService bondService) : ControllerBase
+    IBondControllerService bondService,
+    BondValidator validator) : ControllerBase
 {
     [HttpGet("all")]
     public async Task<IActionResult> GetAllBondsAsync()
@@ -38,13 +40,18 @@ public sealed class BondsController(
     {
         try
         {
+            var validationResult = validator.ValidateType(type);
+            if (validationResult != null)
+                return validationResult;
+
             var bonds = await bondService.GetBondsByTypeAsync(type);
             var bondDtos = bonds.ToList();
             if (bondDtos.Count != 0)
+            {
                 return Ok(bondDtos.Where(bond => bond.Bond is not null && bond.Type is not null)
                     .Select(BondDtoMapper.ToResponseDto));
+            }
 
-            logger.LogWarning("Облигаций типа: '{Type}' нет в системе", type);
             return NotFound(new { message = $"Облигаций типа: '{type}' нет в системе" });
         }
         catch (Exception ex)
@@ -59,11 +66,14 @@ public sealed class BondsController(
     {
         try
         {
+            var validationResult = validator.ValidateIsin(isin);
+            if (validationResult != null)
+                return validationResult;
+            
             var bond = await bondService.GetBondByIsinAsync(isin);
             if (bond != null)
                 return Ok(BondDtoMapper.ToResponseDto(bond));
 
-            logger.LogWarning("Облигации с isin: '{Isin}' нет в системе", isin);
             return NotFound(new { message = $"Облигации с isin: '{isin}' нет в системе" });
         }
         catch (Exception ex)
@@ -96,12 +106,10 @@ public sealed class BondsController(
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(isin))
-                return BadRequest(new { message = "ISIN не может быть пустым" });
-
-            if (isin.Length != 12)
-                return BadRequest(new { message = "ISIN должен содержать 12 символов" });
-
+            var validationResult = validator.ValidateIsin(isin);
+            if (validationResult != null)
+                return validationResult;
+            
             var forecastBonds = await bondService.GetForecastBondsAsync();
 
             if (forecastBonds.TryGetValue(isin, out var forecast))

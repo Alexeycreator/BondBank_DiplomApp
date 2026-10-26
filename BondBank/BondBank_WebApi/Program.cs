@@ -6,6 +6,7 @@ using BondBank_WebApi.Controllers.Portfolios;
 using BondBank_WebApi.Controllers.Snils;
 using BondBank_WebApi.Controllers.Users;
 using BondBank_WebApi.HelperMethods;
+using BondBank_WebApi.HelperMethods.Validators;
 using BondBank_WebApi.Services.Analysis;
 using BondBank_WebApi.Services.BackgroundServices.CurrencyRates;
 using BondBank_WebApi.Services.BackgroundServices.MinIO;
@@ -150,6 +151,8 @@ builder.Services.AddScoped<IPortfoliosControllerService, PortfoliosControllerSer
 builder.Services.AddScoped<IUsersControllerService, UsersControllerService>();
 
 builder.Services.AddHttpClient<KeycloakUserSyncService>();
+
+builder.Services.AddSingleton<BondValidator>();
 
 var minioConfig = new MinioConfig
 {
