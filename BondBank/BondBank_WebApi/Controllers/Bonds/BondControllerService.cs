@@ -45,6 +45,12 @@ public sealed class BondControllerService(
         return result;
     }
 
+    public async Task<IEnumerable<BondDto>> GetBondsByFilterAsync(string? isin, string? type)
+    {
+        logger.LogInformation($"Процесс получения облигаций по фильтру");
+        return await SearchByFilterAsync(isin, type);
+    }
+
     /// <summary>
     /// Объединяем бонды в общий список, для отправки
     /// </summary>
@@ -58,52 +64,25 @@ public sealed class BondControllerService(
             var bondsSg = await dbContext.SixGroupBonds.ToListAsync();
             var bondsWb = await dbContext.WienerBoerseBonds.ToListAsync();
 
-            var allBonds = new List<BondDto>();
-            allBonds.AddRange(bondsLse.Select(b => new BondDto()
-            {
-                Type = "lse",
-                Bond = b,
-                SpecificData = new
-                    { b.Sector, b.Symbol, b.ListedQuantity, b.NominalValue, b.Currency, b.ListingDate, b.DelistingDate }
-            }));
-            allBonds.AddRange(bondsMe.Select(b => new BondDto()
-            {
-                Type = "me",
-                Bond = b,
-                SpecificData = new
-                {
-                    b.SecurityType, b.SecurityTypeId, b.Type, b.SecId, b.ShortName, b.RegNumber, b.IsTraded,
-                    b.PrimaryBoardId, b.Market, b.Engine, b.FaceValue, b.FaceUnit
-                }
-            }));
-            allBonds.AddRange(bondsSg.Select(b => new BondDto()
-            {
-                Type = "sg",
-                Bond = b,
-                SpecificData = new
-                {
-                    b.ValorId, b.TradingBaseCurrency, b.CouponRate, b.MaturityDate, b.ClosingPrice, b.ClosingPerfomance,
-                    b.BidPrice, b.AskPrice, b.MarketTime, b.MarketDate, b.IssuerNameFull, b.ProductLine,
-                    b.IndustrySectorCode, b.SecTypeCode, b.AmountInIssue, b.YieldToWorst
-                }
-            }));
-            allBonds.AddRange(bondsWb.Select(b => new BondDto()
-            {
-                Type = "wb",
-                Bond = b,
-                SpecificData = new { b.Last, b.Chg, b.Date, b.Bid, b.Ask, b.Maturity, b.Status, b.Currency }
-            }));
+            var allBonds = new List<BondsBaseModel>();
+            allBonds.AddRange(bondsLse);
+            allBonds.AddRange(bondsMe);
+            allBonds.AddRange(bondsSg);
+            allBonds.AddRange(bondsWb);
 
-            return allBonds;
+            return allBonds
+                .Select(MapToDto)
+                .OfType<BondDto>()
+                .ToList();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError("Ошибка при работе с БД при получении всех облигаций: {ExMessage}", ex.Message);
+            logger.LogError("Ошибка при работе с БД при получении облигации: {ExMessage}", ex.Message);
             return new List<BondDto>();
         }
         catch (Exception ex)
         {
-            logger.LogError("Неизвестная ошибка при получении всех облигаций: {ExMessage}", ex.Message);
+            logger.LogError("Ошибка при получении всех облигаций: {ExMessage}", ex.Message);
             return new List<BondDto>();
         }
     }
@@ -143,79 +122,108 @@ public sealed class BondControllerService(
         }
     }
 
-    private async Task<List<BondDto>> FindBondsByTypeAsync(string typeBond)
+    private async Task<List<BondDto>> FindBondsByTypeAsync(string type)
     {
         try
         {
-            var resultBonds = new List<BondDto>();
-            switch (typeBond)
+            List<BondsBaseModel> bonds = type switch
             {
-                case "lse":
-                    var bondLse = await dbContext.LjubljanaStockExchangeBonds.ToListAsync();
-                    resultBonds.AddRange(bondLse.Select(b => new BondDto()
-                    {
-                        Type = "lse",
-                        Bond = b,
-                        SpecificData = new
-                        {
-                            b.Sector, b.Symbol, b.ListedQuantity, b.NominalValue, b.Currency, b.ListingDate,
-                            b.DelistingDate
-                        }
-                    }));
-                    break;
-                case "me":
-                    var bondMe = await dbContext.MoscowExchangeBonds.ToListAsync();
-                    resultBonds.AddRange(bondMe.Select(b => new BondDto()
-                    {
-                        Type = "me",
-                        Bond = b,
-                        SpecificData = new
-                        {
-                            b.SecurityType, b.SecurityTypeId, b.Type, b.SecId, b.ShortName, b.RegNumber, b.IsTraded,
-                            b.PrimaryBoardId, b.Market, b.Engine, b.FaceValue, b.FaceUnit
-                        }
-                    }));
-                    break;
-                case "sg":
-                    var bondSg = await dbContext.SixGroupBonds.ToListAsync();
-                    resultBonds.AddRange(bondSg.Select(b => new BondDto()
-                    {
-                        Type = "sg",
-                        Bond = b,
-                        SpecificData = new
-                        {
-                            b.ValorId, b.TradingBaseCurrency, b.CouponRate, b.MaturityDate, b.ClosingPrice,
-                            b.ClosingPerfomance,
-                            b.BidPrice, b.AskPrice, b.MarketTime, b.MarketDate, b.IssuerNameFull, b.ProductLine,
-                            b.IndustrySectorCode, b.SecTypeCode, b.AmountInIssue, b.YieldToWorst
-                        }
-                    }));
-                    break;
-                case "wb":
-                    var bondWb = await dbContext.WienerBoerseBonds.ToListAsync();
-                    resultBonds.AddRange(bondWb.Select(b => new BondDto()
-                    {
-                        Type = "wb",
-                        Bond = b,
-                        SpecificData = new { b.Last, b.Chg, b.Date, b.Bid, b.Ask, b.Maturity, b.Status, b.Currency }
-                    }));
-                    break;
-                default:
-                    logger.LogWarning($"Данного типа облигаций нет в системе");
-                    break;
-            }
+                "lse" => await dbContext.LjubljanaStockExchangeBonds.ToListAsync<BondsBaseModel>(),
+                "me" => await dbContext.MoscowExchangeBonds.ToListAsync<BondsBaseModel>(),
+                "sg" => await dbContext.SixGroupBonds.ToListAsync<BondsBaseModel>(),
+                "wb" => await dbContext.WienerBoerseBonds.ToListAsync<BondsBaseModel>(),
+                _ => new List<BondsBaseModel>()
+            };
 
-            return resultBonds;
+            return bonds
+                .Select(MapToDto)
+                .OfType<BondDto>()
+                .ToList();
         }
         catch (NpgsqlException ex)
         {
-            logger.LogError("Ошибка при работе с БД при получении всех облигаций одного типа: {ExMessage}", ex.Message);
+            logger.LogError("Ошибка при работе с БД при получении облигации по типу '{Type}': {ExMessage}", type,
+                ex.Message);
             return new List<BondDto>();
         }
         catch (Exception ex)
         {
-            logger.LogError("Неизвестная ошибка при поиске облигаций одного типа: {ExMessage}", ex.Message);
+            logger.LogError("Ошибка при поиске облигаций типа {Type}: {ExMessage}", type, ex.Message);
             return new List<BondDto>();
         }
+    }
+
+    private async Task<IEnumerable<BondDto>> SearchByFilterAsync(string? isin, string? type)
+    {
+        if (!string.IsNullOrWhiteSpace(isin) && string.IsNullOrWhiteSpace(type))
+        {
+            var bond = await FindBondByIsinAsync(isin);
+            if (bond == null)
+                return new List<BondDto>();
+
+            var dto = MapToDto(bond);
+            return dto == null ? new List<BondDto>() : new List<BondDto> { dto };
+        }
+
+        if (!string.IsNullOrWhiteSpace(type) && string.IsNullOrWhiteSpace(isin))
+            return await FindBondsByTypeAsync(type);
+
+        if (!string.IsNullOrWhiteSpace(type) && !string.IsNullOrWhiteSpace(isin))
+        {
+            var bond = await FindBondByIsinAsync(isin);
+            if (bond == null) 
+                return new List<BondDto>();
+
+            var dto = MapToDto(bond);
+            if (dto is { Type: not null } && dto.Type.Equals(type, StringComparison.InvariantCultureIgnoreCase))
+                return new List<BondDto> { dto };
+        }
+
+        return new List<BondDto>();
+    }
+
+    private BondDto? MapToDto(BondsBaseModel bond)
+    {
+        return bond switch
+        {
+            LjubljanaStockExchangeBondsModel lse => new BondDto()
+            {
+                Type = "lse",
+                Bond = lse,
+                SpecificData = new
+                {
+                    lse.Sector, lse.Symbol, lse.ListedQuantity, lse.NominalValue, lse.Currency, lse.ListingDate,
+                    lse.DelistingDate
+                }
+            },
+            MoscowExchangeBondsModel me => new BondDto()
+            {
+                Type = "me",
+                Bond = me,
+                SpecificData = new
+                {
+                    me.SecurityType, me.SecurityTypeId, me.Type, me.SecId, me.ShortName, me.RegNumber, me.IsTraded,
+                    me.PrimaryBoardId, me.Market, me.Engine, me.FaceValue, me.FaceUnit
+                }
+            },
+            SixGroupBondsModel sg => new BondDto()
+            {
+                Type = "sg",
+                Bond = sg,
+                SpecificData = new
+                {
+                    sg.ValorId, sg.TradingBaseCurrency, sg.CouponRate, sg.MaturityDate, sg.ClosingPrice,
+                    sg.ClosingPerfomance, sg.BidPrice, sg.AskPrice, sg.MarketTime, sg.MarketDate, sg.IssuerNameFull,
+                    sg.ProductLine, sg.IndustrySectorCode, sg.SecTypeCode, sg.AmountInIssue, sg.YieldToWorst
+                }
+            },
+            WienerBoerseBondsModel wb => new BondDto()
+            {
+                Type = "wb",
+                Bond = wb,
+                SpecificData = new { wb.Last, wb.Chg, wb.Date, wb.Bid, wb.Ask, wb.Maturity, wb.Status, wb.Currency }
+            },
+            _ => null
+        };
     }
 }

@@ -69,7 +69,7 @@ public sealed class BondsController(
             var validationResult = validator.ValidateIsin(isin);
             if (validationResult != null)
                 return validationResult;
-            
+
             var bond = await bondService.GetBondByIsinAsync(isin);
             if (bond != null)
                 return Ok(BondDtoMapper.ToResponseDto(bond));
@@ -109,7 +109,7 @@ public sealed class BondsController(
             var validationResult = validator.ValidateIsin(isin);
             if (validationResult != null)
                 return validationResult;
-            
+
             var forecastBonds = await bondService.GetForecastBondsAsync();
 
             if (forecastBonds.TryGetValue(isin, out var forecast))
@@ -120,6 +120,43 @@ public sealed class BondsController(
         catch (Exception ex)
         {
             logger.LogError("Ошибка при получении прогноза по ISIN: {ExMessage}", ex.Message);
+            return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
+        }
+    }
+
+    [HttpGet("filter")]
+    public async Task<IActionResult> GetBondsByFilterAsync(
+        [FromQuery] string? type,
+        [FromQuery] string? isin)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(type) && string.IsNullOrWhiteSpace(isin))
+                return BadRequest(new { message = "Укажите хотя бы один параметр для фильтрации" });
+
+            var typeValidation = validator.ValidateType(type);
+            if (typeValidation != null)
+                return typeValidation;
+
+            var isinValidation = validator.ValidateIsin(isin);
+            if (isinValidation != null)
+                return isinValidation;
+
+            var bonds = await bondService.GetBondsByFilterAsync(type, isin);
+            var bondDtos = bonds.ToList();
+
+            if (bondDtos.Count != 0)
+            {
+                return Ok(bondDtos
+                    .Where(bond => bond.Bond is not null && bond.Type is not null)
+                    .Select(BondDtoMapper.ToResponseDto));
+            }
+
+            return NotFound(new { message = "По заданным фильтрам облигации не найдены" });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Ошибка при фильтрации облигаций: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }

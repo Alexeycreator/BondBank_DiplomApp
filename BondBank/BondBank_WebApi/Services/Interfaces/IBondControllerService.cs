@@ -12,4 +12,5 @@ public interface IBondControllerService
     Task<BondsBaseModel?> GetBondByIsinAsync(string isin);
     Task<IEnumerable<BondDto>> GetBondsByTypeAsync(string typeBond);
     Task<Dictionary<string, double[]>> GetForecastBondsAsync();
+    Task<IEnumerable<BondDto>> GetBondsByFilterAsync(string? type, string? isin);
 }

@@ -11,7 +11,7 @@ public sealed class BondValidator(
     private readonly AppSettings valueAppSettings = appSettings.Value;
     private readonly HashSet<string> validBondTypes = appSettings.Value.ValidBondTypes;
 
-    public IActionResult? ValidateType(string type)
+    public IActionResult? ValidateType(string? type)
     {
         if (validBondTypes.Count == 0)
         {
@@ -36,7 +36,7 @@ public sealed class BondValidator(
         return null;
     }
 
-    public IActionResult? ValidateIsin(string isin)
+    public IActionResult? ValidateIsin(string? isin)
     {
         if (string.IsNullOrWhiteSpace(isin))
         {
@@ -49,19 +49,6 @@ public sealed class BondValidator(
             logger.LogWarning("ISIN должен содержать 12 символов");
             return new BadRequestObjectResult(new { message = "ISIN должен содержать 12 символов" });
         }
-        return null;
-    }
-
-    public IActionResult? ValidateDate(DateOnly date)
-    {
-        var currentDate = DateTime.UtcNow;
-        if (Convert.ToDateTime(date) > currentDate)
-        {
-            logger.LogWarning("Дата '{DateOnly}' не может быть позднее текущей '{CurrentDate}'", date, currentDate);
-            return new BadRequestObjectResult(new
-                { message = $"Дата '{date}' не может быть позднее текущей '{currentDate}'" });
-        }
-
         return null;
     }
 }
