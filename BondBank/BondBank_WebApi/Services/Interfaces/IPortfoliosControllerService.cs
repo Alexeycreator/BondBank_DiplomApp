@@ -6,4 +6,5 @@ public interface IPortfoliosControllerService
 {
     Task<IEnumerable<PortfoliosModel>> GetAllPortfoliosAsync();
     Task<IEnumerable<PortfoliosModel>> GetAllPortfoliosByUserAsync(int userId);
+    Task<IEnumerable<HistoryPortfoliosModel>> GetPortfolioHistoryAsync(int portfolioId);
 }

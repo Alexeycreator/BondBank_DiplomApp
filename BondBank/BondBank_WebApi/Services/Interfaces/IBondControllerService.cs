@@ -1,5 +1,5 @@
 using BondBank_WebApi.Models.DataBase;
-using BondBank_WebApi.Models.DTOs;
+using BondBank_WebApi.Models.DTOs.Bonds;
 
 namespace BondBank_WebApi.Services.Interfaces;
 
