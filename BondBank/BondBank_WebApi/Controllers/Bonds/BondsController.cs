@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace BondBank_WebApi.Controllers.Bonds;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/bonds")]
 public sealed class BondsController(
     ILogger<BondsController> logger,
     IBondControllerService bondService) : ControllerBase
 {
-    [HttpGet("get-all-bonds")]
+    [HttpGet("all")]
     public async Task<IActionResult> GetAllBondsAsync()
     {
         try
@@ -24,7 +24,7 @@ public sealed class BondsController(
                     .Select(BondDtoMapper.ToResponseDto));
             }
 
-            logger.LogError($"Облигаций нет в системе");
+            logger.LogWarning($"Облигаций нет в системе");
             return NotFound(new { message = $"Облигаций нет в системе" });
         }
         catch (Exception ex)
@@ -34,12 +34,12 @@ public sealed class BondsController(
         }
     }
 
-    [HttpGet("get-bonds-by-type")]
-    public async Task<IActionResult> GetBondsByTypeAsync(string typeBond)
+    [HttpGet("type/{type}")]
+    public async Task<IActionResult> GetBondsByTypeAsync(string type)
     {
         try
         {
-            var bonds = await bondService.GetBondsByTypeAsync(typeBond);
+            var bonds = await bondService.GetBondsByTypeAsync(type);
             var bondDtos = bonds.ToList();
             if (bondDtos.Count != 0)
             {
@@ -48,17 +48,17 @@ public sealed class BondsController(
                     .Select(BondDtoMapper.ToResponseDto));
             }
 
-            logger.LogError($"Облигаций типа: '{typeBond}' нет в системе");
-            return NotFound(new { message = $"Облигаций типа: '{typeBond}' нет в системе" });
+            logger.LogWarning("Облигаций типа: '{Type}' нет в системе", type);
+            return NotFound(new { message = $"Облигаций типа: '{type}' нет в системе" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении облигации по ее типу: {ex.Message}");
+            logger.LogError("Ошибка при получении облигации по ее типу: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
 
-    [HttpGet("get-bond-by-isin")]
+    [HttpGet("isin/{isin}")]
     public async Task<IActionResult> GetBondByIsinAsync(string isin)
     {
         try
@@ -69,55 +69,58 @@ public sealed class BondsController(
                 return Ok(BondDtoMapper.ToResponseDto(bond));
             }
 
-            logger.LogError($"Облигации с isin: '{isin}' нет в системе");
+            logger.LogWarning("Облигации с isin: '{Isin}' нет в системе", isin);
             return NotFound(new { message = $"Облигации с isin: '{isin}' нет в системе" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении облигации по ISIN: {ex.Message}");
+            logger.LogError("Ошибка при получении облигации по ISIN: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
-
-    [HttpGet("get-forecast-all-bonds-or-by-isin")]
-    public async Task<IActionResult> GetForecastBondsAsync(string? isin)
+    
+    [HttpGet("forecast")]
+    public async Task<IActionResult> GetAllForecastsAsync()
     {
         try
         {
             var forecastBonds = await bondService.GetForecastBondsAsync();
             if (forecastBonds.Count != 0)
             {
-                if (!string.IsNullOrEmpty(isin))
-                {
-                    if (string.IsNullOrWhiteSpace(isin))
-                    {
-                        return BadRequest(new { message = "ISIN не может состоять только из пробелов" });
-                    }
-
-                    if (isin.Length != 12)
-                    {
-                        return BadRequest(new { message = "ISIN должен содержать 12 символов" });
-                    }
-
-                    if (forecastBonds.TryGetValue(isin, out var forecast))
-                    {
-                        return Ok(new { isin, forecast });
-                    }
-
-                    return NotFound(new { message = $"ISIN: '{isin}' не найден в системе" });
-                }
-
-                logger.LogInformation(
-                    $"Пользователь не указал ISIN или он пустой, возвращаю целый список бондов с прогнозом");
                 return Ok(forecastBonds);
             }
-
-            logger.LogWarning($"Данных для прогнозирования нет");
-            return NotFound(new { message = $"Данных для прогнозирования нет" });
+            return NotFound(new { message = "Данных для прогнозирования нет" });
         }
         catch (Exception ex)
         {
-            logger.LogError($"Ошибка при получении прогнозов: {ex.Message}");
+            logger.LogError("Ошибка при получении прогнозов: {ExMessage}", ex.Message);
+            return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
+        }
+    }
+    
+    [HttpGet("forecast/{isin}")]
+    public async Task<IActionResult> GetForecastByIsinAsync(string isin)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(isin))
+                return BadRequest(new { message = "ISIN не может быть пустым" });
+            
+            if (isin.Length != 12)
+                return BadRequest(new { message = "ISIN должен содержать 12 символов" });
+
+            var forecastBonds = await bondService.GetForecastBondsAsync();
+        
+            if (forecastBonds.TryGetValue(isin, out var forecast))
+            {
+                return Ok(new { isin, forecast });
+            }
+
+            return NotFound(new { message = $"ISIN: '{isin}' не найден в системе" });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Ошибка при получении прогноза по ISIN: {ExMessage}", ex.Message);
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
