@@ -18,28 +18,22 @@ public sealed class CurrencyRatesControllerService(
         return await LoadCurrencyRatesAsync();
     }
 
-    public async Task<IEnumerable<CurrencyRatesModel>> GetCurrencyRatesByCurrencyAsync(string currency)
-    {
-        logger.LogInformation("Процесс получения значений валюты '{Currency}'", currency);
-        return await LoadCurrencyRatesAsync(currency);
-    }
-
     public async Task<CurrencyRatesModel> GetCurrencyRateByDateReceiptAsync(DateOnly date, string currency)
     {
         logger.LogInformation("Процесс получения курса валюты '{Currency}' за дату: {DateOnly}", currency, date);
         return await LoadCurrencyRatesAsync(date, currency);
     }
 
-    public async Task<IEnumerable<CurrencyRatesModel>> GetAllCurrencyRatesByDateReceiptAsync(DateOnly date)
-    {
-        logger.LogInformation("Процесс получения курсов валют за дату: {DateOnly}", date);
-        return await LoadCurrencyRatesAsync(date);
-    }
-
     public async Task<IEnumerable<string>> GetCurrencyAsync()
     {
         logger.LogInformation($"Процесс получения названия валют");
         return await GetCurrencyNamesAsync();
+    }
+
+    public async Task<IEnumerable<CurrencyRatesModel>> GetCurrencyRatesByFilterAsync(string? currency, DateOnly? date)
+    {
+        logger.LogInformation("Процесс получения курсов валют по фильтру");
+        return await SearchByFilter(currency, date);
     }
 
     private async Task<List<CurrencyRatesModel>> LoadCurrencyRatesAsync()
@@ -65,29 +59,6 @@ public sealed class CurrencyRatesControllerService(
         }
     }
 
-    private async Task<List<CurrencyRatesModel>> LoadCurrencyRatesAsync(string currency)
-    {
-        try
-        {
-            var currencyRatesData = await dbContext.CurrencyRates.Where(c => c.Currency == currency).ToListAsync();
-            if (currencyRatesData.Count != 0)
-                return currencyRatesData;
-
-            logger.LogWarning("Данных о курсах валюты: '{Currency}' в БД нет.", currency);
-            return new List<CurrencyRatesModel>();
-        }
-        catch (NpgsqlException ex)
-        {
-            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
-            return new List<CurrencyRatesModel>();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Неизвестная ошибка при заполнении данных о курсах валюты: '{Currency}'. {ExMessage}", currency, ex.Message);
-            return new List<CurrencyRatesModel>();
-        }
-    }
-
     private async Task<CurrencyRatesModel> LoadCurrencyRatesAsync(DateOnly date, string currency)
     {
         try
@@ -108,31 +79,9 @@ public sealed class CurrencyRatesControllerService(
         catch (Exception ex)
         {
             logger.LogError(
-                "Неизвестная ошибка при заполнении данных о курсах валюты: '{Currency}' за дату: {DateOnly}. {ExMessage}", currency, date, ex.Message);
+                "Неизвестная ошибка при заполнении данных о курсах валюты: '{Currency}' за дату: {DateOnly}. {ExMessage}",
+                currency, date, ex.Message);
             return new CurrencyRatesModel();
-        }
-    }
-
-    private async Task<List<CurrencyRatesModel>> LoadCurrencyRatesAsync(DateOnly date)
-    {
-        try
-        {
-            var currencyRatesData = await dbContext.CurrencyRates.Where(c => c.DateReceipt == date).ToListAsync();
-            if (currencyRatesData.Count != 0)
-                return currencyRatesData;
-
-            logger.LogWarning("Данных о курсах валют за дату {DateOnly} в БД нет", date);
-            return new List<CurrencyRatesModel>();
-        }
-        catch (NpgsqlException ex)
-        {
-            logger.LogError("Ошибка при работе Npgsql: {ExMessage}. Code: '{ExErrorCode}'", ex.Message, ex.ErrorCode);
-            return new List<CurrencyRatesModel>();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Неизвестная ошибка при заполнении данных о курсах валют за дату: {DateOnly}. {ExMessage}", date, ex.Message);
-            return new List<CurrencyRatesModel>();
         }
     }
 
@@ -158,6 +107,30 @@ public sealed class CurrencyRatesControllerService(
         {
             logger.LogError("Неизвестная ошибка при заполнении данных о названиях валют. {ExMessage}", ex.Message);
             return new HashSet<string>();
+        }
+    }
+
+    private async Task<List<CurrencyRatesModel>> SearchByFilter(string? currency, DateOnly? date)
+    {
+        try
+        {
+            var query = dbContext.CurrencyRates.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(currency))
+            {
+                var normalizedCurrency = currency.ToUpperInvariant();
+                query = query.Where(c => c.LetterCode == normalizedCurrency);
+            }
+
+            if (date.HasValue)
+                query = query.Where(c => c.DateReceipt == date.Value);
+
+            return await query.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Ошибка при фильтрации курсов валют: {ExMessage}", ex.Message);
+            return new List<CurrencyRatesModel>();
         }
     }
 }

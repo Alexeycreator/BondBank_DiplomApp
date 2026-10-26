@@ -1,3 +1,5 @@
+using BondBank_WebApi.HelperMethods.Validators;
+using BondBank_WebApi.Models.DataBase;
 using BondBank_WebApi.Models.DTOs.Bonds;
 using BondBank_WebApi.Models.DTOs.CurrencyRates;
 using BondBank_WebApi.Models.DTOs.Forecasts;
@@ -7,20 +9,33 @@ using Microsoft.AspNetCore.Mvc;
 namespace BondBank_WebApi.Controllers.ForecastPage;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/forecast")]
 public sealed class ForecastInfoController(
     ILogger<ForecastInfoController> logger,
     IBondHistoriesControllerService bondHistoriesService,
     IBondControllerService bondService,
-    ICurrencyRatesControllerService currencyRatesService) : ControllerBase
+    ICurrencyRatesControllerService currencyRatesService,
+    CommonValidator commonValidator,
+    CurrencyRateValidator validator) : ControllerBase
 {
-    [HttpGet("get-forecast-info")]
+    [HttpGet("info")]
     public async Task<IActionResult> GetForecastInfoAsync([FromQuery] DateOnly date, [FromQuery] string currency)
     {
         try
         {
+            var dateValidationResult = commonValidator.ValidateDate(date);
+            if (dateValidationResult != null)
+                return dateValidationResult;
+
+            var currencyValidationResult = validator.ValidateCurrency(currency);
+            if (currencyValidationResult != null)
+                return currencyValidationResult;
+
             var allBonds = await bondService.GetAllBondsAsync();
-            var currencyRate = await currencyRatesService.GetCurrencyRateByDateReceiptAsync(date, currency);
+            var currencyRatesData = await currencyRatesService.GetCurrencyRatesByFilterAsync(currency, date);
+            var currencyRateList = currencyRatesData?.ToList() ?? new List<CurrencyRatesModel>();
+            var currencyRate = currencyRateList.FirstOrDefault();
+
             var typeBonds = await bondHistoriesService.GetTypeBondHistoriesAsync();
             var bondsForecast = await bondService.GetForecastBondsAsync();
 
@@ -45,14 +60,11 @@ public sealed class ForecastInfoController(
                 TotalBonds = bondsList.Count,
                 TypeBonds = typeBondsList,
                 BondsForForecast = bondsForForecast,
-                CurrencyRates = currencyRate.Id > 0
-                    ? new List<CurrencyRateDto>
-                    {
-                        CurrencyRateDto.From(currencyRate)
-                    }
+                CurrencyRates = currencyRate != null
+                    ? new List<CurrencyRateDto> { CurrencyRateDto.From(currencyRate) }
                     : new List<CurrencyRateDto>()
             };
-            
+
             return Ok(resultForecastPage);
         }
         catch (Exception ex)
