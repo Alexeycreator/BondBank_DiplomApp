@@ -42,6 +42,12 @@ public sealed class BondHistoriesControllerService(
         return await GetNamesTypeAsync();
     }
 
+    public async Task<IEnumerable<BondHistoryModel>> GetByFilterAsync(string? isin, string? type, DateOnly? date)
+    {
+        logger.LogInformation($"Процесс получения истории облигаций по фильтру");
+        return await SearchByFilter(isin, type, date);
+    }
+
     private async Task<List<BondHistoryModel>> LoadBondHistories()
     {
         try
@@ -146,13 +152,13 @@ public sealed class BondHistoriesControllerService(
     {
         try
         {
-            if (namesTypeBondHistories.Any())
+            if (namesTypeBondHistories.Count != 0)
             {
                 return namesTypeBondHistories;
             }
 
             var namesTypeData = await dbContext.BondHistories.Select(b => b.BondType).Distinct().ToListAsync();
-            namesTypeBondHistories.UnionWith(namesTypeData);
+            namesTypeBondHistories.UnionWith(namesTypeData!);
             return namesTypeBondHistories;
         }
         catch (NpgsqlException ex)
@@ -165,5 +171,27 @@ public sealed class BondHistoriesControllerService(
             logger.LogError($"Неизвестная ошибка при получении типов облигаций: {ex.Message}");
             return new HashSet<string>();
         }
+    }
+
+    public async Task<IEnumerable<BondHistoryModel>> SearchByFilter(string? isin, string? type, DateOnly? date)
+    {
+        var query = dbContext.BondHistories.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(isin))
+        {
+            query = query.Where(h => h.Isin == isin);
+        }
+
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            query = query.Where(h => h.BondType == type);
+        }
+
+        if (date.HasValue)
+        {
+            query = query.Where(h => h.RecordedDate == date.Value);
+        }
+
+        return await query.ToListAsync();
     }
 }

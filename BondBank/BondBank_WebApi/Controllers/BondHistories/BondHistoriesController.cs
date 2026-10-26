@@ -19,7 +19,7 @@ public sealed class BondHistoriesController(
     /// Метод получения всех данных из истории облигаций
     /// </summary>
     /// <returns>Возвращает список со всеми данными в таблице</returns>
-    [HttpGet("get-all")]
+    [HttpGet("all")]
     public async Task<IActionResult> GetAllBondHistoriesAsync()
     {
         try
@@ -44,7 +44,7 @@ public sealed class BondHistoriesController(
     /// </summary>
     /// <param name="isin">ISIN облигации</param>
     /// <returns>Возвращает список данных облигации указанного ISIN</returns>
-    [HttpGet("get-by-isin")]
+    [HttpGet("isin/{isin}")]
     public async Task<IActionResult> GetBondHistoriesByIsinAsync(string isin)
     {
         try
@@ -80,7 +80,7 @@ public sealed class BondHistoriesController(
     /// </summary>
     /// <param name="type">Тип облигации</param>
     /// <returns>Возвращает список облигаций указанного типа</returns>
-    [HttpGet("get-by-type")]
+    [HttpGet("type/{type}")]
     public async Task<IActionResult> GetBondHistoriesByTypeAsync(string type)
     {
         try
@@ -117,7 +117,7 @@ public sealed class BondHistoriesController(
     /// </summary>
     /// <param name="date">Интересующая дата истории</param>
     /// <returns>Возвращает список истории облигации за дату</returns>
-    [HttpGet("get-by-date")]
+    [HttpGet("date/{date}")]
     public async Task<IActionResult> GetBondHistoriesByRecordedDateAsync(DateOnly date)
     {
         try
@@ -148,7 +148,7 @@ public sealed class BondHistoriesController(
     /// Получение всех типов облигаций
     /// </summary>
     /// <returns>Возвращает список типов облигаций</returns>
-    [HttpGet("get-names-type")]
+    [HttpGet("names-type")]
     public async Task<IActionResult> GetNamesTypeAsync()
     {
         try
@@ -165,6 +165,26 @@ public sealed class BondHistoriesController(
         {
             logger.LogError($"Неизвестная ошибка при получении типов облигаций: {ex.Message}");
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
+        }
+    }
+
+    [HttpGet("filter")]
+    public async Task<IActionResult> GetByFilter([FromQuery] string? isin, [FromQuery] string? type,
+        [FromQuery] DateOnly? date)
+    {
+        try
+        {
+            // Если не передали ни один параметр, возвращаем всё (или можно вернуть BadRequest)
+            if (string.IsNullOrWhiteSpace(type) && !date.HasValue)
+                return BadRequest();
+
+            var result = await bondHistoriesService.GetByFilterAsync(isin, type, date);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при фильтрации истории");
+            return StatusCode(500, new { error = ex.Message });
         }
     }
 }
