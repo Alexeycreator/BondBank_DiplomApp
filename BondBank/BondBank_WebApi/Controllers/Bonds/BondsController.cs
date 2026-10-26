@@ -1,6 +1,7 @@
 using BondBank_WebApi.HelperMethods.Validators;
 using BondBank_WebApi.Models.DTOs.Bonds;
 using BondBank_WebApi.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.Bonds;
@@ -13,6 +14,7 @@ public sealed class BondsController(
     BondValidator validator) : ControllerBase
 {
     [HttpGet("all")]
+    [Authorize]
     public async Task<IActionResult> GetAllBondsAsync()
     {
         try
@@ -36,6 +38,7 @@ public sealed class BondsController(
     }
 
     [HttpGet("type/{type}")]
+    [Authorize]
     public async Task<IActionResult> GetBondsByTypeAsync(string type)
     {
         try
@@ -62,6 +65,7 @@ public sealed class BondsController(
     }
 
     [HttpGet("isin/{isin}")]
+    [Authorize]
     public async Task<IActionResult> GetBondByIsinAsync(string isin)
     {
         try
@@ -84,6 +88,7 @@ public sealed class BondsController(
     }
 
     [HttpGet("forecast")]
+    [Authorize]
     public async Task<IActionResult> GetAllForecastsAsync()
     {
         try
@@ -102,6 +107,7 @@ public sealed class BondsController(
     }
 
     [HttpGet("forecast/{isin}")]
+    [Authorize]
     public async Task<IActionResult> GetForecastByIsinAsync(string isin)
     {
         try
@@ -125,6 +131,7 @@ public sealed class BondsController(
     }
 
     [HttpGet("filter")]
+    [Authorize]
     public async Task<IActionResult> GetBondsByFilterAsync(
         [FromQuery] string? type,
         [FromQuery] string? isin)

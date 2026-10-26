@@ -4,6 +4,7 @@ using BondBank_WebApi.Models.DTOs.Bonds;
 using BondBank_WebApi.Models.DTOs.CurrencyRates;
 using BondBank_WebApi.Models.DTOs.Forecasts;
 using BondBank_WebApi.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.ForecastPage;
@@ -19,6 +20,7 @@ public sealed class ForecastInfoController(
     CurrencyRateValidator validator) : ControllerBase
 {
     [HttpGet("info")]
+    [Authorize]
     public async Task<IActionResult> GetForecastInfoAsync([FromQuery] DateOnly date, [FromQuery] string currency)
     {
         try

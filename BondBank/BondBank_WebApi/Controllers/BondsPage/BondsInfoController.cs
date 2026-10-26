@@ -1,6 +1,7 @@
 using BondBank_WebApi.Models.DTOs.Bonds;
 using BondBank_WebApi.Models.DTOs.CurrencyRates;
 using BondBank_WebApi.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.BondsPage;
@@ -14,6 +15,7 @@ public sealed class BondsInfoController(
     ICurrencyRatesControllerService currencyRatesService) : ControllerBase
 {
     [HttpGet("bonds-info")]
+    [Authorize]
     public async Task<IActionResult> GetBondsInfo()
     {
         try

@@ -13,6 +13,7 @@ public class KeycloakAdminController(
     ILogger<KeycloakAdminController> logger) : ControllerBase
 {
     [HttpPost("create-user")]
+    [Authorize]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto request)
     {
         try
@@ -28,6 +29,7 @@ public class KeycloakAdminController(
     }
 
     [HttpPut("update-user")]
+    [Authorize]
     public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequestDto request)
     {
         try
@@ -43,6 +45,7 @@ public class KeycloakAdminController(
     }
 
     [HttpDelete("delete-user/{keycloakUserId}")]
+    [Authorize]
     public async Task<IActionResult> DeleteUser(string keycloakUserId)
     {
         try

@@ -14,6 +14,7 @@ public sealed class PassportsController(
     CommonValidator commonValidator) : ControllerBase
 {
     [HttpGet("info")]
+    [Authorize]
     public async Task<IActionResult> GetAllInfoByIdAsync([FromQuery] int passportId)
     {
         try

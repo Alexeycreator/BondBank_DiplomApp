@@ -15,6 +15,7 @@ public sealed class PortfoliosController(
     CommonValidator commonValidator) : ControllerBase
 {
     [HttpGet("all")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetAllPortfoliosAsync()
     {
         try
@@ -34,6 +35,7 @@ public sealed class PortfoliosController(
     }
 
     [HttpGet("user")]
+    [Authorize]
     public async Task<IActionResult> GetAllPortfoliosByUserAsync([FromQuery] int userId)
     {
         try
@@ -58,8 +60,8 @@ public sealed class PortfoliosController(
         }
     }
 
-    [Authorize]
     [HttpGet("history")]
+    [Authorize]
     public async Task<IActionResult> GetPortfolioHistoryAsync([FromQuery] int portfolioId)
     {
         try

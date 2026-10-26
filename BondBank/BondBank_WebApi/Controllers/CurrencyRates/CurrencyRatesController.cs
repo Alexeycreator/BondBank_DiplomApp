@@ -1,6 +1,7 @@
 using BondBank_WebApi.HelperMethods.Validators;
 using BondBank_WebApi.Services.Interfaces;
 using BondBank_WebApi.Models.DTOs.CurrencyRates;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.CurrencyRates;
@@ -17,6 +18,7 @@ public sealed class CurrencyRatesController(
     /// Получить все курсы валют
     /// </summary>
     [HttpGet("all")]
+    [Authorize]
     public async Task<IActionResult> GetAllCurrencyRatesAsync()
     {
         try
@@ -41,6 +43,7 @@ public sealed class CurrencyRatesController(
     /// Получить список доступных названий валют (например, для выпадающего списка)
     /// </summary>
     [HttpGet("names-currency")]
+    [Authorize]
     public async Task<IActionResult> GetCurrencyNamesAsync()
     {
         try
@@ -65,6 +68,7 @@ public sealed class CurrencyRatesController(
     /// <param name="currency">Код валюты (например, EUR, USD)</param>
     /// <param name="date">Дата курса</param>
     [HttpGet("filter")]
+    [Authorize]
     public async Task<IActionResult> GetCurrencyRatesByFilterAsync(
         [FromQuery] string? currency,
         [FromQuery] DateOnly? date)

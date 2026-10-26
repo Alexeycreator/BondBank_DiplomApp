@@ -1,6 +1,7 @@
 using BondBank_WebApi.HelperMethods.Validators;
 using BondBank_WebApi.Models.DTOs.BondHistories;
 using BondBank_WebApi.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BondBank_WebApi.Controllers.BondHistories;
@@ -18,6 +19,7 @@ public sealed class BondHistoriesController(
     /// </summary>
     /// <returns>Возвращает список со всеми данными в таблице</returns>
     [HttpGet("all")]
+    [Authorize]
     public async Task<IActionResult> GetAllBondHistoriesAsync()
     {
         try
@@ -42,6 +44,7 @@ public sealed class BondHistoriesController(
     /// <param name="isin">ISIN облигации</param>
     /// <returns>Возвращает список данных облигации указанного ISIN</returns>
     [HttpGet("isin/{isin}")]
+    [Authorize]
     public async Task<IActionResult> GetBondHistoriesByIsinAsync(string isin)
     {
         try
@@ -70,6 +73,7 @@ public sealed class BondHistoriesController(
     /// <param name="type">Тип облигации</param>
     /// <returns>Возвращает список облигаций указанного типа</returns>
     [HttpGet("type/{type}")]
+    [Authorize]
     public async Task<IActionResult> GetBondHistoriesByTypeAsync(string type)
     {
         try
@@ -99,6 +103,7 @@ public sealed class BondHistoriesController(
     /// <param name="date">Интересующая дата истории</param>
     /// <returns>Возвращает список истории облигации за дату</returns>
     [HttpGet("date/{date}")]
+    [Authorize]
     public async Task<IActionResult> GetBondHistoriesByRecordedDateAsync(DateOnly date)
     {
         try
@@ -127,6 +132,7 @@ public sealed class BondHistoriesController(
     /// </summary>
     /// <returns>Возвращает список типов облигаций</returns>
     [HttpGet("names-type")]
+    [Authorize]
     public async Task<IActionResult> GetNamesTypeAsync()
     {
         try
