@@ -1,3 +1,4 @@
+using BondBank_WebApi.HelperMethods.Validators;
 using BondBank_WebApi.Services.Interfaces;
 using BondBank_WebApi.Models.DTOs.Snils;
 using Microsoft.AspNetCore.Mvc;
@@ -5,26 +6,24 @@ using Microsoft.AspNetCore.Mvc;
 namespace BondBank_WebApi.Controllers.Snils;
 
 [ApiController]
-[Route("api/[controller]/snils")]
+[Route("api/snils")]
 public sealed class SnilsController(
     ILogger<SnilsController> logger,
-    ISnilsControllerService snilsService) : ControllerBase
+    ISnilsControllerService snilsService,
+    CommonValidator commonValidator) : ControllerBase
 {
-    [HttpGet("get-by-id")]
-    public async Task<IActionResult> GetAllInfoByIdAsync(int snilsId)
+    [HttpGet("info")]
+    public async Task<IActionResult> GetAllInfoByIdAsync([FromQuery] int snilsId)
     {
         try
         {
-            if (snilsId < 1)
-            {
-                return BadRequest(new { message = $"Снилс с ID = {snilsId} не может существовать" });
-            }
+            var validationResult = commonValidator.ValidateId(snilsId);
+            if (validationResult != null)
+                return validationResult;
 
             var snilsData = await snilsService.GetAllInfoByIdAsync(snilsId);
             if (snilsData == null)
-            {
                 return NotFound(new { message = $"Данных о снилс ID = {snilsId} нет" });
-            }
 
             return Ok(SnilsDto.From(snilsData));
         }

@@ -20,9 +20,7 @@ public sealed class PassportsControllerService(ILogger<PassportsControllerServic
         {
             var passportData = await dbContext.Passports.FindAsync(passportId);
             if (passportData != null)
-            {
                 return passportData;
-            }
 
             logger.LogWarning("Нет данных о паспорте с id: '{PassportId}'", passportId);
             return null;

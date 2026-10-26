@@ -37,10 +37,8 @@ public sealed class PortfoliosControllerService(
         try
         {
             var portfoliosData = await dbContext.Portfolios.ToListAsync();
-            if (portfoliosData.Any())
-            {
+            if (portfoliosData.Count != 0)
                 return portfoliosData;
-            }
 
             logger.LogWarning($"Данных о портфелях нет");
             return new List<PortfoliosModel>();
@@ -63,9 +61,7 @@ public sealed class PortfoliosControllerService(
             .Where(portfolio => portfolio.UserId == userId)
             .ToListAsync();
         if (userPortfolios.Count == 0)
-        {
             logger.LogWarning("Данных о портфелях пользователя ID = {UserId} нет", userId);
-        }
 
         return userPortfolios;
     }

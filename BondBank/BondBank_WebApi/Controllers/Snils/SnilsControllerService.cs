@@ -21,9 +21,7 @@ public sealed class SnilsControllerService(
         {
             var snilsData = await dbContext.Snils.FindAsync(snilsId);
             if (snilsData != null)
-            {
                 return snilsData;
-            }
 
             logger.LogWarning("Данных снилс с ID = {SnilsId} нет", snilsId);
             return null;
