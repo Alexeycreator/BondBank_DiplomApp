@@ -91,4 +91,60 @@ public sealed class PortfoliosController(
             return StatusCode(500, new { message = "Не удалось загрузить историю портфеля." });
         }
     }
+    
+    [HttpPost("save")]
+    [Authorize]
+    public async Task<IActionResult> SavePortfolioAsync([FromQuery] int? portfolioId, [FromBody] PortfolioRequestDto dto)
+    {
+        try
+        {
+            var keycloakId = User.FindFirst("sub")?.Value
+                             ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            if (string.IsNullOrEmpty(keycloakId))
+                return Unauthorized(new { message = "В токене отсутствует идентификатор пользователя" });
+
+            var savedId = await portfoliosService.SavePortfolioAsync(keycloakId, portfolioId, dto);
+            
+            if (savedId > 0)
+                return Ok(new { id = savedId, message = "Портфель успешно сохранен" });
+
+            return BadRequest(new { message = "Не удалось сохранить портфель. Проверьте права доступа." });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Ошибка при сохранении портфеля: {ExMessage}", ex.Message);
+            return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
+        }
+    }
+    
+    [HttpDelete("{portfolioId}")]
+    [Authorize]
+    public async Task<IActionResult> DeletePortfolioAsync([FromRoute] int portfolioId)
+    {
+        try
+        {
+            var validationResult = commonValidator.ValidateId(portfolioId);
+            if (validationResult != null)
+                return validationResult;
+
+            var keycloakId = User.FindFirst("sub")?.Value
+                             ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            if (string.IsNullOrEmpty(keycloakId))
+                return Unauthorized(new { message = "В токене отсутствует идентификатор пользователя" });
+
+            var success = await portfoliosService.DeletePortfolioAsync(keycloakId, portfolioId);
+            
+            if (success)
+                return Ok(new { message = "Портфель успешно удален" });
+
+            return NotFound(new { message = "Портфель не найден или у вас нет прав на его удаление" });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Ошибка при удалении портфеля: {ExMessage}", ex.Message);
+            return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
+        }
+    }
 }

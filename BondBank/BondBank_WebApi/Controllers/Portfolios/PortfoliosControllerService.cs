@@ -1,4 +1,5 @@
 using BondBank_WebApi.Models.DataBase;
+using BondBank_WebApi.Models.DTOs.Portfolios;
 using BondBank_WebApi.Services.DataContext;
 using BondBank_WebApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,88 @@ public sealed class PortfoliosControllerService(
             .Where(history => history.PortfoliosId == portfolioId)
             .OrderBy(history => history.DateSavePortfolioUser)
             .ToListAsync();
+    }
+
+    public async Task<int> SavePortfolioAsync(string keycloakId, int? portfolioId, PortfolioRequestDto dto)
+    {
+        try
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.KeycloakId == keycloakId);
+            if (user == null)
+                return 0;
+
+            PortfoliosModel? portfolio;
+
+            if (portfolioId is > 0)
+            {
+                portfolio = await dbContext.Portfolios.FirstOrDefaultAsync(p => p.Id == portfolioId.Value);
+
+                if (portfolio == null || portfolio.UserId != user.Id)
+                {
+                    logger.LogWarning("Попытка обновить чужой портфель ID={PortfolioId} пользователем {Email}",
+                        portfolioId, user.EmailAddress);
+                    return 0;
+                }
+            }
+            else
+            {
+                portfolio = new PortfoliosModel
+                {
+                    UserId = user.Id
+                };
+                await dbContext.Portfolios.AddAsync(portfolio);
+            }
+
+            portfolio.Name = dto.Name;
+
+            await dbContext.SaveChangesAsync();
+            logger.LogInformation("Портфель ID={Id} успешно сохранен для {Email}", portfolio.Id, user.EmailAddress);
+            return portfolio.Id;
+        }
+        catch (NpgsqlException ex)
+        {
+            logger.LogError("Ошибка БД при сохранении портфеля: {ExMessage}. Код: {ExErrorCode}", ex.Message,
+                ex.ErrorCode);
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Неизвестная ошибка при сохранении портфеля: {ExMessage}", ex.Message);
+            return 0;
+        }
+    }
+
+    public async Task<bool> DeletePortfolioAsync(string keycloakId, int portfolioId)
+    {
+        try
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.KeycloakId == keycloakId);
+            if (user == null)
+                return false;
+
+            var portfolio = await dbContext.Portfolios.FirstOrDefaultAsync(p => p.Id == portfolioId);
+
+            if (portfolio == null || portfolio.UserId != user.Id)
+                return false;
+
+            dbContext.Portfolios.Remove(portfolio);
+            await dbContext.SaveChangesAsync();
+
+            logger.LogInformation("Портфель ID={PortfolioId} удален пользователем {Email}", portfolioId,
+                user.EmailAddress);
+            return true;
+        }
+        catch (NpgsqlException ex)
+        {
+            logger.LogError("Ошибка БД при удалении портфеля: {ExMessage}. Код: {ExErrorCode}", ex.Message,
+                ex.ErrorCode);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Неизвестная ошибка при удалении портфеля: {ExMessage}", ex.Message);
+            return false;
+        }
     }
 
     private async Task<List<PortfoliosModel>> LoadPortfoliosAsync()
