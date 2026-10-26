@@ -173,7 +173,7 @@ public sealed class BondHistoriesControllerService(
         }
     }
 
-    public async Task<IEnumerable<BondHistoryModel>> SearchByFilter(string? isin, string? type, DateOnly? date)
+    private async Task<IEnumerable<BondHistoryModel>> SearchByFilter(string? isin, string? type, DateOnly? date)
     {
         var query = dbContext.BondHistories.AsNoTracking().AsQueryable();
 
