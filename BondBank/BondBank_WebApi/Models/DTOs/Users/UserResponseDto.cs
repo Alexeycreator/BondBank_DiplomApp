@@ -1,16 +1,31 @@
+using BondBank_WebApi.Models.DataBase;
+
 namespace BondBank_WebApi.Models.DTOs.Users;
 
-public record UserResponseDto(
+public sealed record UserResponseDto(
     int Id,
     string SecondName,
     string FirstName,
     string SurName,
     string EmailAddress,
-    string PhoneNumber,
-    string TIN,
+    string? PhoneNumber,
+    string? TIN,
     string Login,
-    int PassportId,
+    int? PassportId,
     int? SnilsId,
-    string? KeycloakId,
-    DateTime? LastLoginAt
-);
+    DateTime? LastLoginAt)
+{
+    public static UserResponseDto From(UsersModel model) =>
+        new(
+            model.Id,
+            model.SecondName,
+            model.FirstName,
+            model.SurName,
+            model.EmailAddress,
+            model.PhoneNumber,
+            model.TIN,
+            model.Login,
+            model.PassportId,
+            model.SnilsId,
+            model.LastLoginAt);
+}
