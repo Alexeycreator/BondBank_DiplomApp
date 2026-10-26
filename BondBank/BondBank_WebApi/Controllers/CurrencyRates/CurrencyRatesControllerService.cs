@@ -47,10 +47,8 @@ public sealed class CurrencyRatesControllerService(
         try
         {
             var currencyRatesData = await dbContext.CurrencyRates.ToListAsync();
-            if (currencyRatesData.Any())
-            {
+            if (currencyRatesData.Count != 0)
                 return currencyRatesData;
-            }
 
             logger.LogWarning($"Данных о курсах валют в БД нет.");
             return new List<CurrencyRatesModel>();
@@ -72,10 +70,8 @@ public sealed class CurrencyRatesControllerService(
         try
         {
             var currencyRatesData = await dbContext.CurrencyRates.Where(c => c.Currency == currency).ToListAsync();
-            if (currencyRatesData.Any())
-            {
+            if (currencyRatesData.Count != 0)
                 return currencyRatesData;
-            }
 
             logger.LogWarning("Данных о курсах валюты: '{Currency}' в БД нет.", currency);
             return new List<CurrencyRatesModel>();
@@ -99,9 +95,7 @@ public sealed class CurrencyRatesControllerService(
             var currencyRatesData = await dbContext.CurrencyRates
                 .FirstOrDefaultAsync(c => c.DateReceipt == date && c.Currency == currency);
             if (currencyRatesData != null)
-            {
                 return currencyRatesData;
-            }
 
             logger.LogWarning("Данных о курсах валюты: '{Currency}' за дату {DateOnly} в БД нет", currency, date);
             return new CurrencyRatesModel();
@@ -124,10 +118,8 @@ public sealed class CurrencyRatesControllerService(
         try
         {
             var currencyRatesData = await dbContext.CurrencyRates.Where(c => c.DateReceipt == date).ToListAsync();
-            if (currencyRatesData.Any())
-            {
+            if (currencyRatesData.Count != 0)
                 return currencyRatesData;
-            }
 
             logger.LogWarning("Данных о курсах валют за дату {DateOnly} в БД нет", date);
             return new List<CurrencyRatesModel>();
@@ -148,10 +140,8 @@ public sealed class CurrencyRatesControllerService(
     {
         try
         {
-            if (currencies.Any())
-            {
+            if (currencies.Count != 0)
                 return currencies;
-            }
 
             var currencyData = await dbContext.CurrencyRates.Select(c => c.Currency).Distinct().ToListAsync();
             currencies.UnionWith(currencyData);
