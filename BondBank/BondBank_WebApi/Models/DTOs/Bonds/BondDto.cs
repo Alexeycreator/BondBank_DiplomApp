@@ -1,6 +1,6 @@
 using BondBank_WebApi.Models.DataBase;
 
-namespace BondBank_WebApi.Models.DTOs;
+namespace BondBank_WebApi.Models.DTOs.Bonds;
 
 /// <summary>
 /// Предназначен для отправления бондов клиенту
