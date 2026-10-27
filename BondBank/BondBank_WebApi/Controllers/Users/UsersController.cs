@@ -79,7 +79,7 @@ public sealed class UsersController(
         {
             /*
              * если поменяются параметры в Keycloak
-             * раскоментировать строку и проверить какие параметры приходят
+             * раскомментировать строку и проверить какие параметры приходят
              */
             //var allClaims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
             var keycloakId = User.FindFirst("sub")?.Value
