@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace BondBank_WebApi.Models.DataBase;
 
-[Table("Portfolio")]
+[Table("Portfolios")]
 public class PortfoliosModel : DataBaseModel
 {
     [Required] [MaxLength(100)] public string Name { get; set; } = "DefaultName";

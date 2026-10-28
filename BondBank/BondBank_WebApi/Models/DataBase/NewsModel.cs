@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BondBank_WebApi.Models.DataBase;
 
+[Table("News")]
 public sealed class NewsModel : DataBaseModel
 {
     [Required] [MaxLength(50)] public string Category { get; set; }

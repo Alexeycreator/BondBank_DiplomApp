@@ -287,6 +287,40 @@ namespace BondBank_WebApi.Migrations
                     b.ToTable("MoscowExchangeBonds");
                 });
 
+            modelBuilder.Entity("BondBank_WebApi.Models.DataBase.NewsModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Image")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("News");
+                });
+
             modelBuilder.Entity("BondBank_WebApi.Models.DataBase.PassportsModel", b =>
                 {
                     b.Property<int>("Id")
@@ -376,7 +410,7 @@ namespace BondBank_WebApi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Portfolio");
+                    b.ToTable("Portfolios");
                 });
 
             modelBuilder.Entity("BondBank_WebApi.Models.DataBase.SixGroupBondsModel", b =>

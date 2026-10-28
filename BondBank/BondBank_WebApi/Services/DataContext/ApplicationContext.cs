@@ -21,6 +21,7 @@ public sealed class ApplicationContext(DbContextOptions<ApplicationContext> opti
     public DbSet<PortfoliosModel> Portfolios { get; set; }
     public DbSet<BondHistoryModel> BondHistories { get; set; }
     public DbSet<StoredFileModel> StoredFile { get; set; }
+    public DbSet<NewsModel> News { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
