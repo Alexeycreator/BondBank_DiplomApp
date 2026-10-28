@@ -37,6 +37,8 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration, options =>
 {
     options.RequireHttpsMetadata = false; // <--- РАЗРЕШАЕМ HTTP
+    options.TokenValidationParameters.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
+    options.TokenValidationParameters.NameClaimType = "preferred_username";
 });
 
 // 2. РЕГИСТРАЦИЯ ТРАНСФОРМЕРА РОЛЕЙ
