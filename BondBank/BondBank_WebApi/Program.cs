@@ -153,6 +153,9 @@ builder.Services.AddScoped<IUsersControllerService, UsersControllerService>();
 builder.Services.AddHttpClient<KeycloakUserSyncService>();
 
 builder.Services.AddSingleton<BondValidator>();
+builder.Services.AddSingleton<CommonValidator>();
+builder.Services.AddSingleton<CurrencyRateValidator>();
+builder.Services.AddSingleton<UserValidator>();
 
 var minioConfig = new MinioConfig
 {
