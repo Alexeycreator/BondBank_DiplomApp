@@ -1,6 +1,7 @@
 using BondBank_WebApi.Controllers.BondHistories;
 using BondBank_WebApi.Controllers.Bonds;
 using BondBank_WebApi.Controllers.CurrencyRates;
+using BondBank_WebApi.Controllers.News;
 using BondBank_WebApi.Controllers.Passports;
 using BondBank_WebApi.Controllers.Portfolios;
 using BondBank_WebApi.Controllers.Snils;
@@ -23,9 +24,9 @@ using Shared.BotHelpers;
 using Shared.Connection;
 using Shared.Services;
 using Shared.WorkingWithFiles;
-using DotNetEnv;
 using Shared.Config.MinIO;
 using Shared.Services.MinIO;
+using DotNetEnv;
 
 Env.Load();
 
@@ -151,6 +152,7 @@ builder.Services.AddScoped<IPassportsControllerService, PassportsControllerServi
 builder.Services.AddScoped<ISnilsControllerService, SnilsControllerService>();
 builder.Services.AddScoped<IPortfoliosControllerService, PortfoliosControllerService>();
 builder.Services.AddScoped<IUsersControllerService, UsersControllerService>();
+builder.Services.AddScoped<INewsControllerService, NewsControllerService>();
 
 builder.Services.AddHttpClient<KeycloakUserSyncService>();
 
