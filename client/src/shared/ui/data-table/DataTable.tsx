@@ -35,7 +35,7 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
     return (
         <div className={styles.tableWrapper}>
-            <Table variant="dark" hover responsive className={styles.customTable}>
+            <Table hover responsive className={styles.customTable}>
                 <thead>
                     <tr>
                         {columns.map((col, index) => (

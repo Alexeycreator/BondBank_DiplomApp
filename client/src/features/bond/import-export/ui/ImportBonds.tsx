@@ -1,7 +1,8 @@
 import React, { useRef, useState } from "react";
-import axios from "axios";
 import styles from "./ImportExport.module.css";
 import { useToast } from "../../../../shared/notifications/ToastContext";
+import { importBondsFile } from "../../../../service/filesApi";
+import { ApiRequestError } from "../../../../shared/api/client";
 
 export interface ImportBondsProps {
     onImport: () => void | Promise<void>;
@@ -10,6 +11,7 @@ export interface ImportBondsProps {
 const ImportBonds: React.FC<ImportBondsProps> = ({ onImport }) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [typeFile, setTypeFile] = useState("MoscowExchange");
     const { showToast } = useToast();
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,22 +20,14 @@ const ImportBonds: React.FC<ImportBondsProps> = ({ onImport }) => {
 
         try {
             setIsUploading(true);
-            const formData = new FormData();
-            formData.append("file", file);
-
-            await axios.post(
-                `${import.meta.env.VITE_API_URL_HTTPS}/Bonds/import-bonds`,
-                formData,
-                { headers: { "Content-Type": "multipart/form-data" } }
-            );
+            await importBondsFile(file, typeFile);
 
             await onImport();
             showToast("Успешно", "Данные успешно импортированы", "success");
         } catch (err: unknown) {
-            const responseMessage = axios.isAxiosError<{ message?: string }>(err)
-                ? err.response?.data?.message
-                : undefined;
-            const msg = responseMessage || (err instanceof Error ? err.message : "") || "Не удалось импортировать файл";
+            const msg = err instanceof ApiRequestError
+                ? err.serverMessage || err.message
+                : err instanceof Error ? err.message : "Не удалось импортировать файл";
             console.error("Ошибка импорта:", err);
             showToast("Ошибка", msg, "danger");
         } finally {
@@ -44,7 +38,28 @@ const ImportBonds: React.FC<ImportBondsProps> = ({ onImport }) => {
 
     return (
         <div className={styles.importBonds}>
-            <input ref={inputRef} type="file" accept=".csv" onChange={handleFileChange} style={{ display: "none" }} id="import-bonds-input" />
+            <label className={styles.exchangeSelectLabel} htmlFor="import-bonds-type">Биржа</label>
+            <select
+                id="import-bonds-type"
+                className={styles.exchangeSelect}
+                value={typeFile}
+                onChange={(event) => setTypeFile(event.target.value)}
+                disabled={isUploading}
+            >
+                <option value="MoscowExchange">Московская</option>
+                <option value="LjubljanaStockExchange">Люблянская</option>
+                <option value="WienerBoerse">Венская</option>
+                <option value="SixGroup">Швейцарская</option>
+            </select>
+            <input
+                ref={inputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className={styles.hiddenInput}
+                id="import-bonds-input"
+                disabled={isUploading}
+            />
             <label htmlFor="import-bonds-input" className={styles.importButton}>
                 {isUploading ? "Загрузка…" : "📥 Импорт CSV"}
             </label>

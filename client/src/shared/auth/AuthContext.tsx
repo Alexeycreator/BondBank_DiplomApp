@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { KeycloakTokenParsed } from "keycloak-js";
 import keycloak from "../../keycloak";
-import { api } from "../api/client";
+import { usersApi } from "../../entities/user/api/usersApi";
 
 export type AuthUser = KeycloakTokenParsed & {
     sub?: string;
@@ -36,7 +36,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         if (keycloak.authenticated) {
-            api.post("/Users/heartbeat").catch(console.error);
+            usersApi.updateLoginHeartbeat().catch((error: unknown) => {
+                console.error("Ошибка синхронизации пользователя:", error);
+            });
         }
 
         keycloak.onAuthSuccess = () => {
@@ -44,7 +46,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(tokenUser || null);
             setIsAuthenticated(true);
             setIsAdmin(tokenUser?.realm_access?.roles?.includes("admin") || false);
-            api.post("/Users/heartbeat").catch(console.error);
+            usersApi.updateLoginHeartbeat().catch((error: unknown) => {
+                console.error("Ошибка синхронизации пользователя:", error);
+            });
         };
 
         keycloak.onAuthLogout = () => {

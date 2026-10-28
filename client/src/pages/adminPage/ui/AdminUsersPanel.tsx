@@ -1,58 +1,66 @@
-import { User } from "../../../entities/user/model/types";
+import { useMemo } from "react";
+import { AdminUserResponseDto } from "../../../entities/user/model/types";
 import { DataTable, TableColumn } from "../../../shared/ui/data-table/DataTable";
 import styles from "../AdminPage.module.css";
 
 interface AdminUsersPanelProps {
-    users: User[];
-    filteredUsers: User[];
-    columns: TableColumn<User>[];
+    users: AdminUserResponseDto[];
     isLoading: boolean;
+    error: string | null;
     search: string;
     onSearchChange: (value: string) => void;
-    inactiveDays: number;
-    onInactiveDaysChange: (value: number) => void;
-    onDeleteInactive: () => void;
-    isInactive: (lastSeen: string, days: number) => boolean;
 }
+
+const formatDate = (date: string | null): string =>
+    date ? new Date(date).toLocaleString("ru-RU") : "—";
 
 export function AdminUsersPanel({
     users,
-    filteredUsers,
-    columns,
     isLoading,
+    error,
     search,
     onSearchChange,
-    inactiveDays,
-    onInactiveDaysChange,
-    onDeleteInactive,
-    isInactive,
 }: AdminUsersPanelProps) {
+    const filteredUsers = useMemo(() => {
+        const query = search.trim().toLocaleLowerCase();
+        if (!query) return users;
+        return users.filter((user) =>
+            [
+                user.login,
+                user.emailAddress,
+                user.phoneNumber ?? "",
+                user.secondName,
+                user.firstName,
+                user.surName,
+            ].some((value) => value.toLocaleLowerCase().includes(query)),
+        );
+    }, [users, search]);
+
+    const columns: TableColumn<AdminUserResponseDto>[] = [
+        { key: "id", title: "ID" },
+        {
+            key: "fullName",
+            title: "ФИО",
+            render: (user) => `${user.secondName} ${user.firstName} ${user.surName}`.trim(),
+        },
+        { key: "login", title: "Логин" },
+        { key: "emailAddress", title: "Email" },
+        { key: "phoneNumber", title: "Телефон", render: (user) => user.phoneNumber || "—" },
+        { key: "lastLoginAt", title: "Последний вход", render: (user) => formatDate(user.lastLoginAt) },
+    ];
+
     return (
         <section className={styles.section}>
             <div className={styles.controls}>
                 <input
                     type="text"
-                    placeholder="🔍 Поиск по ФИО, логину, email..."
+                    placeholder="Поиск по ФИО, логину, email..."
                     value={search}
                     onChange={(event) => onSearchChange(event.target.value)}
                     className={styles.searchInput}
                 />
-                <div className={styles.inactiveControl}>
-                    <label>Неактивны более:</label>
-                    <input
-                        type="number"
-                        min="1"
-                        value={inactiveDays}
-                        onChange={(event) => onInactiveDaysChange(Number(event.target.value))}
-                        className={styles.daysInput}
-                    />
-                    <span>дней</span>
-                    <button className={styles.dangerButton} onClick={onDeleteInactive}>
-                        🗑️ Удалить неактивных
-                    </button>
-                </div>
             </div>
-
+            {error && <div role="alert" className={styles.noData}>{error}</div>}
             <DataTable
                 data={filteredUsers}
                 columns={columns}
@@ -60,29 +68,10 @@ export function AdminUsersPanel({
                 emptyMessage="Пользователи не найдены"
                 isLoading={isLoading}
             />
-
             <div className={styles.stats}>
                 <div className={styles.statItem}>
                     <span className={styles.statValue}>{users.length}</span>
-                    <span className={styles.statLabel}>Всего (без вас)</span>
-                </div>
-                <div className={styles.statItem}>
-                    <span className={styles.statValue}>
-                        {users.filter((user) => user.role === "admin").length}
-                    </span>
-                    <span className={styles.statLabel}>Админов</span>
-                </div>
-                <div className={styles.statItem}>
-                    <span className={styles.statValue}>
-                        {users.filter((user) => isInactive(user.lastSeen, inactiveDays)).length}
-                    </span>
-                    <span className={styles.statLabel}>Неактивных</span>
-                </div>
-                <div className={styles.statItem}>
-                    <span className={styles.statValue}>
-                        {users.filter((user) => user.isBlocked).length}
-                    </span>
-                    <span className={styles.statLabel}>Заблокировано</span>
+                    <span className={styles.statLabel}>Пользователей в ответе API</span>
                 </div>
             </div>
         </section>

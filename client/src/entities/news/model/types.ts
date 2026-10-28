@@ -1,8 +1,21 @@
 export interface News {
     id: number;
-    title: string;
-    content: string;
-    author: string;
-    date: string;
     category: string;
+    date: string;
+    title: string;
+    image: string | null;
+    body: string;
+}
+
+export interface NewsRequestDto {
+    category: string;
+    title: string;
+    image: string | null;
+    body: string;
+    date: string | null;
+}
+
+export interface SaveNewsResponseDto {
+    id: number;
+    message: string;
 }

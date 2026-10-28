@@ -1,6 +1,5 @@
-import { DataBaseModel } from "./common";
-
-export interface BondHistoryModel extends DataBaseModel {
+export interface BondHistoryModel {
+    id: number;
     isin: string | null;
     recordedDate: string;
     currencyRate: number;

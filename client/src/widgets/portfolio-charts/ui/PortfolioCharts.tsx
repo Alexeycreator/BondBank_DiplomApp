@@ -4,9 +4,10 @@ import styles from "./PortfolioCharts.module.css";
 import { LineChart } from "../../../shared/ui/charts/LineChart";
 import { DoughnutChart } from "../../../shared/ui/charts/DoughnutChart";
 import { Portfolio, PortfolioHistory } from "../../../entities/portfolio/model/types";
+import { useTheme } from "../../../shared/theme/ThemeContext";
 
 interface PortfolioChartsProps {
-    selectedPortfolio: Portfolio;
+    selectedPortfolio: Pick<Portfolio, "id">;
     portfolioHistory: Record<number, PortfolioHistory[]>;
     selectedDate: string;
     isHistoricalView: boolean;
@@ -22,6 +23,9 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
     onDateChange,
     getTypeDistribution,
 }) => {
+    const { theme } = useTheme();
+    const chartTextColor = theme === "dark" ? "#ffffff" : "#172033";
+    const chartMutedColor = theme === "dark" ? "#a0aabf" : "#5f6b7c";
     const history = portfolioHistory[selectedPortfolio.id] || [];
 
     // Данные для графика стоимости
@@ -74,22 +78,25 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
                         labels={valueLabels}
                         datasets={valueDatasets}
                         options={{
-                            onClick: (_event: ChartEvent, elements: ActiveElement[]) => {
-                                if (elements.length > 0) {
-                                    const index = elements[0].index;
-                                    if (history[index]) onDateChange(history[index].date);
-                                }
-                            },
                             plugins: {
+                                legend: { labels: { color: chartMutedColor } },
                                 tooltip: {
                                     callbacks: {
                                         label: (context: TooltipItem<"line">) => `Стоимость: ${Number(context.raw).toLocaleString("ru-RU")} ₽`,
                                     },
                                 },
                             },
+                            onClick: (_event: ChartEvent, elements: ActiveElement[]) => {
+                                if (elements.length > 0) {
+                                    const index = elements[0].index;
+                                    if (history[index]) onDateChange(history[index].date);
+                                }
+                            },
                             scales: {
+                                x: { ticks: { color: chartMutedColor } },
                                 y: {
                                     ticks: {
+                                        color: chartMutedColor,
                                         callback: (value: string | number) => `${Number(value).toLocaleString("ru-RU")} ₽`,
                                     },
                                 },
@@ -102,9 +109,14 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
                         labels={valueLabels}
                         datasets={yieldDatasets}
                         options={{
+                            plugins: {
+                                legend: { labels: { color: chartMutedColor } },
+                            },
                             scales: {
+                                x: { ticks: { color: chartMutedColor } },
                                 y: {
                                     ticks: {
+                                        color: chartMutedColor,
                                         callback: (value: string | number) => `${value}%`,
                                     },
                                 },
@@ -123,9 +135,10 @@ export const PortfolioCharts: React.FC<PortfolioChartsProps> = ({
                                 title: {
                                     display: true,
                                     text: "Распределение по типам облигаций",
-                                    color: "#ffffff",
+                                    color: chartTextColor,
                                     font: { size: 14 },
                                 },
+                                legend: { labels: { color: chartMutedColor } },
                             },
                         }}
                     />

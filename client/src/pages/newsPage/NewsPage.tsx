@@ -1,233 +1,107 @@
-import { useState } from "react";
-import { useAuth } from "../../shared/auth/AuthContext";
-import { MOCK_NEWS } from "../../entities/news/model/mock-data";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ApiRequestError } from "../../shared/api/client";
+import { getAllNews } from "../../entities/news/api/newsApi";
 import { News } from "../../entities/news/model/types";
+import NewsCard from "./ui/NewsCard";
 import styles from "./NewsPage.module.css";
-import { NewsCard } from "./ui/NewsCard";
 
 const NewsPage = () => {
-  const { isAdmin } = useAuth();
-  const [news, setNews] = useState<News[]>(MOCK_NEWS);
-  const [editingNews, setEditingNews] = useState<News | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
-  const [filterCategory, setFilterCategory] = useState<string>("");
+  const [news, setNews] = useState<News[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("Все");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const categories = ["Все", "Биржи", "Облигации", "Аналитика"];
+  const loadNews = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      setNews(await getAllNews());
+    } catch (requestError: unknown) {
+      if (requestError instanceof ApiRequestError && requestError.statusCode === 404) {
+        setNews([]);
+        return;
+      }
+      setError(
+        requestError instanceof ApiRequestError
+          ? requestError.serverMessage || requestError.message
+          : requestError instanceof Error
+            ? requestError.message
+            : "Не удалось загрузить новости",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const filteredNews =
-    filterCategory === "" || filterCategory === "Все"
+  useEffect(() => {
+    void loadNews();
+  }, [loadNews]);
+
+  const categories = useMemo(
+    () => ["Все", ...new Set(news.map((item) => item.category).filter(Boolean))],
+    [news],
+  );
+  const visibleNews = useMemo(
+    () => selectedCategory === "Все"
       ? news
-      : news.filter((n) => n.category === filterCategory);
-
-  const handleCreateNews = () => {
-    setEditingNews({
-      id: news.length > 0 ? Math.max(...news.map((n) => n.id)) + 1 : 1,
-      title: "",
-      content: "",
-      author: "admin",
-      date: new Date().toISOString().split("T")[0],
-      category: "Биржи",
-    });
-    setShowEditor(true);
-  };
-
-  const handleEditNews = (item: News) => {
-    setEditingNews({ ...item });
-    setShowEditor(true);
-  };
-
-  const handleSaveNews = () => {
-    if (!editingNews) return;
-
-    const exists = news.find((n) => n.id === editingNews.id);
-    if (exists) {
-      setNews(news.map((n) => (n.id === editingNews.id ? editingNews : n)));
-    } else {
-      setNews([editingNews, ...news]);
-    }
-    setShowEditor(false);
-    setEditingNews(null);
-  };
-
-  const handleDeleteNews = (id: number) => {
-    if (window.confirm("Удалить новость?")) {
-      setNews(news.filter((n) => n.id !== id));
-    }
-  };
+      : news.filter((item) => item.category === selectedCategory),
+    [news, selectedCategory],
+  );
 
   return (
-    <div className={styles.newsPage}>
-      <div className={styles.pageHeader}>
+    <section className={styles.newsPage}>
+      <header className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>📰 Новости</h1>
+          <span className={styles.eyebrow}>BondBank · Обзор рынка</span>
+          <h1 className={styles.pageTitle}>Новости рынка</h1>
+          <p className={styles.pageDescription}>
+            Актуальные публикации об облигациях, биржах и финансовых рынках.
+          </p>
         </div>
-        {isAdmin && (
-          <button className={styles.createButton} onClick={handleCreateNews}>
-            + Создать новость
-          </button>
-        )}
-      </div>
+        <span className={styles.newsCount} aria-live="polite">
+          {isLoading ? "Загрузка…" : `${visibleNews.length} публикаций`}
+        </span>
+      </header>
 
-      {/* Фильтр по категориям */}
-      <div className={styles.categories}>
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className={`${styles.categoryBtn} ${
-              (cat === "Все" && filterCategory === "") || filterCategory === cat
-                ? styles.activeCategory
-                : ""
-            }`}
-            onClick={() => setFilterCategory(cat === "Все" ? "" : cat)}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Список новостей */}
-      <div className={styles.newsGrid}>
-        {filteredNews.length > 0 ? (
-          filteredNews.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                background: "rgba(255, 255, 255, 0.03)", // Легкий фон для всей карточки
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "1px solid rgba(255, 255, 255, 0.05)",
-              }}
+      {news.length > 0 && (
+        <nav className={styles.categories} aria-label="Фильтр новостей по категории">
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              className={`${styles.categoryBtn} ${selectedCategory === category ? styles.activeCategory : ""}`}
+              aria-pressed={selectedCategory === category}
+              onClick={() => setSelectedCategory(category)}
             >
-              {/* Сама карточка новости */}
-              <div style={{ flexGrow: 1, padding: "4px" }}>
-                <NewsCard news={item} />
-              </div>
+              {category}
+            </button>
+          ))}
+        </nav>
+      )}
 
-              {/* Панель управления для админа (внизу) */}
-              {isAdmin && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: "8px",
-                    padding: "12px 16px",
-                    background: "rgba(0, 0, 0, 0.2)",
-                    borderTop: "1px solid rgba(255,255,255,0.1)",
-                  }}
-                >
-                  <button
-                    className={styles.editButton}
-                    onClick={() => handleEditNews(item)}
-                    style={{
-                      background: "rgba(79, 195, 247, 0.15)",
-                      border: "none",
-                      color: "#4fc3f7",
-                      cursor: "pointer",
-                      borderRadius: "6px",
-                      padding: "6px 12px",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      transition: "background 0.2s",
-                    }}
-                    title="Редактировать"
-                  >
-                    ✏️ Изменить
-                  </button>
-                  <button
-                    className={styles.deleteButton}
-                    onClick={() => handleDeleteNews(item.id)}
-                    style={{
-                      background: "rgba(231, 76, 60, 0.15)",
-                      border: "none",
-                      color: "#e74c3c",
-                      cursor: "pointer",
-                      borderRadius: "6px",
-                      padding: "6px 12px",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      transition: "background 0.2s",
-                    }}
-                    title="Удалить"
-                  >
-                    🗑️ Удалить
-                  </button>
-                </div>
-              )}
-            </div>
-          ))
-        ) : (
-          <div className={styles.noNews}>Новостей нет</div>
-        )}
-      </div>
-
-      {/* РЕДАКТОР НОВОСТИ */}
-      {showEditor && editingNews && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setShowEditor(false)}
-        >
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 className={styles.modalTitle}>
-              {news.find((n) => n.id === editingNews.id)
-                ? "Редактирование"
-                : "Новая новость"}
-            </h2>
-
-            <div className={styles.formGroup}>
-              <label>Заголовок</label>
-              <input
-                value={editingNews.title}
-                onChange={(e) =>
-                  setEditingNews({ ...editingNews, title: e.target.value })
-                }
-                placeholder="Введите заголовок"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Категория</label>
-              <select
-                value={editingNews.category}
-                onChange={(e) =>
-                  setEditingNews({ ...editingNews, category: e.target.value })
-                }
-              >
-                <option value="Биржи">Биржи</option>
-                <option value="Облигации">Облигации</option>
-                <option value="Аналитика">Аналитика</option>
-              </select>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Содержание</label>
-              <textarea
-                value={editingNews.content}
-                onChange={(e) =>
-                  setEditingNews({ ...editingNews, content: e.target.value })
-                }
-                rows={6}
-                placeholder="Введите текст новости"
-              />
-            </div>
-
-            <div className={styles.modalActions}>
-              <button
-                className={styles.cancelButton}
-                onClick={() => setShowEditor(false)}
-              >
-                Отмена
-              </button>
-              <button className={styles.saveButton} onClick={handleSaveNews}>
-                Сохранить
-              </button>
-            </div>
-          </div>
+      {error && (
+        <div className={styles.stateCard} role="alert">
+          <p>{error}</p>
+          <button type="button" className={styles.retryButton} onClick={() => void loadNews()}>
+            Повторить загрузку
+          </button>
         </div>
       )}
-    </div>
+
+      {isLoading && <div className={styles.stateCard} role="status">Загружаем публикации…</div>}
+
+      {!isLoading && !error && visibleNews.length > 0 && (
+        <div className={styles.newsGrid}>
+          {visibleNews.map((item) => <NewsCard key={item.id} news={item} />)}
+        </div>
+      )}
+
+      {!isLoading && !error && visibleNews.length === 0 && (
+        <div className={styles.stateCard} role="status">
+          {news.length === 0 ? "Публикаций пока нет." : "В этой категории пока нет публикаций."}
+        </div>
+      )}
+    </section>
   );
 };
 

@@ -1,10 +1,8 @@
 import { BondDto } from "./bonds";
-import { BondHistoryModel } from "./bond-history";
-import { CurrencyRatesModel } from "./currency-rates";
+import { CurrencyRateDto } from "../../currency/model/types";
 
 export interface BondsInfo {
     bondsByTable: BondDto[];
     typeBondsByFilter: string[];
-    bondByChart: BondHistoryModel[];
-    currencyRates: CurrencyRatesModel[];
+    currencyRates: CurrencyRateDto[];
 }

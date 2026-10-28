@@ -1,6 +1,7 @@
 import React from "react";
 import { Line } from "react-chartjs-2";
 import { ChartDataset, ChartOptions } from "chart.js";
+import { useTheme } from "../../theme/ThemeContext";
 
 interface LineChartProps {
     labels: string[];
@@ -10,6 +11,11 @@ interface LineChartProps {
 }
 
 export const LineChart: React.FC<LineChartProps> = ({ labels, datasets, options, height = 300 }) => {
+    const { theme } = useTheme();
+    const textColor = theme === "dark" ? "#a0aabf" : "#5f6b7c";
+    const tooltipBackground = theme === "dark" ? "rgba(26, 26, 46, 0.95)" : "rgba(255, 255, 255, 0.97)";
+    const tooltipText = theme === "dark" ? "#ffffff" : "#172033";
+    const gridColor = theme === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(23, 32, 51, 0.1)";
     // Базовые опции, которые применяются ко всем линейным графикам
     const defaultOptions: ChartOptions<"line"> = {
         responsive: true,
@@ -17,21 +23,21 @@ export const LineChart: React.FC<LineChartProps> = ({ labels, datasets, options,
         plugins: {
             legend: { display: true, position: "top" as const },
             tooltip: {
-                backgroundColor: "rgba(26, 26, 46, 0.9)",
-                titleColor: "#ffffff",
-                bodyColor: "#e0e0e0",
-                borderColor: "#4fc3f7",
+                backgroundColor: tooltipBackground,
+                titleColor: tooltipText,
+                bodyColor: textColor,
+                borderColor: theme === "dark" ? "#4fc3f7" : "#087eae",
                 borderWidth: 1,
             },
         },
         scales: {
             x: {
-                grid: { color: "rgba(255, 255, 255, 0.05)" }, // Темная сетка
-                ticks: { color: "#a0aabf" }, // Светлые подписи
+                grid: { color: gridColor },
+                ticks: { color: textColor },
             },
             y: {
-                grid: { color: "rgba(255, 255, 255, 0.05)" },
-                ticks: { color: "#a0aabf" },
+                grid: { color: gridColor },
+                ticks: { color: textColor },
                 beginAtZero: false,
             },
         },

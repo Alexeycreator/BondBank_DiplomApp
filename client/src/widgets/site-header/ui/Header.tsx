@@ -1,12 +1,14 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
 import { useAuth } from "../../../shared/auth/AuthContext";
+import { useTheme } from "../../../shared/theme/ThemeContext";
 import styles from "./Header.module.css";
 
 const Header = () => {
     const navigate = useNavigate();
     const { isAuthenticated, user, isAdmin, logout, login } = useAuth();
+    const { theme, toggleTheme } = useTheme();
 
     const handleLogout = () => {
         logout();
@@ -31,27 +33,38 @@ const Header = () => {
                 <nav className={styles.nav}>
                     <ul className={styles.navList}>
                         <li className={styles.navItem}>
-                            <Link to="/bonds" className={styles.navLink}>Облигации</Link>
+                            <NavLink to="/bonds" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeNavLink : ""}`}>Облигации</NavLink>
                         </li>
                         <li className={styles.navItem}>
-                            <Link to="/forecast" className={styles.navLink}>Прогнозы</Link>
+                            <NavLink to="/forecast" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeNavLink : ""}`}>Прогнозы</NavLink>
                         </li>
                         <li className={styles.navItem}>
-                            <Link to="/portfolios" className={styles.navLink}>Портфели</Link>
+                            <NavLink to="/portfolios" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeNavLink : ""}`}>Портфели</NavLink>
                         </li>
                         <li className={styles.navItem}>
-                            <Link to="/news" className={styles.navLink}>Новости</Link>
+                            <NavLink to="/news" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeNavLink : ""}`}>Новости</NavLink>
                         </li>
                         <li className={styles.navItem}>
-                            <Link to="/about" className={styles.navLink}>О нас</Link>
+                            <NavLink to="/about" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeNavLink : ""}`}>О нас</NavLink>
                         </li>
                     </ul>
                 </nav>
 
                 {/* ==================== ПРАВАЯ ЧАСТЬ (АВТОРИЗАЦИЯ) ==================== */}
                 <div className={styles.actions}>
+                    <button
+                        type="button"
+                        className={styles.themeToggle}
+                        onClick={toggleTheme}
+                        aria-label={`Включить ${theme === "dark" ? "светлую" : "тёмную"} тему`}
+                        aria-pressed={theme === "light"}
+                        title={`Тема: ${theme === "dark" ? "тёмная" : "светлая"}`}
+                    >
+                        <span aria-hidden="true">{theme === "dark" ? "☀️" : "🌙"}</span>
+                        <span>{theme === "dark" ? "Светлая тема" : "Тёмная тема"}</span>
+                    </button>
                     {isAuthenticated ? (
-                        <Dropdown align="end" data-bs-theme="dark">
+                        <Dropdown align="end" data-bs-theme={theme}>
                             <Dropdown.Toggle
                                 variant="link"
                                 id="dropdown-user"

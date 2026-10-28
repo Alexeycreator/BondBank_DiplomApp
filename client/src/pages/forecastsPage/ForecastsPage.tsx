@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import styles from "./ForecastsPage.module.css";
 import { ForecastCard } from "./ui/ForecastCard";
 import ForecastChart from "./ui/ForecastChart";
 import { SearchFilters } from "../../shared/ui/search-filters/SearchFilters";
-import { MOCK_FORECASTS } from "./model/mock-data";
 import { ForecastItem } from "./model/types";
+import { useForecasts } from "./model/useForecasts";
 
 const AVAILABLE_TYPES = [
   { value: "lse", label: "LSE (Любляна)" },
@@ -18,10 +20,12 @@ const ForecastsPage = () => {
   const [searchIsin, setSearchIsin] = useState("");
   const [selectedForecast, setSelectedForecast] =
     useState<ForecastItem | null>(null);
+  const navigate = useNavigate();
+  const { forecasts, isLoading, error } = useForecasts();
 
   const filteredForecasts = useMemo(
     () =>
-      MOCK_FORECASTS.filter((forecast) => {
+      forecasts.filter((forecast) => {
         const matchesType =
           searchType === "" ||
           forecast.type.toLowerCase() === searchType.toLowerCase();
@@ -30,7 +34,7 @@ const ForecastsPage = () => {
           forecast.isin.toLowerCase().includes(searchIsin.toLowerCase());
         return matchesType && matchesIsin;
       }),
-    [searchType, searchIsin],
+    [forecasts, searchType, searchIsin],
   );
 
   return (
@@ -52,10 +56,48 @@ const ForecastsPage = () => {
         availableTypes={AVAILABLE_TYPES}
       />
 
-      {selectedForecast && <ForecastChart forecast={selectedForecast} />}
+      <Modal
+        show={selectedForecast !== null}
+        onHide={() => setSelectedForecast(null)}
+        centered
+        size="xl"
+        scrollable
+        contentClassName={styles.forecastModal}
+      >
+        {selectedForecast && (
+          <>
+            <Modal.Header closeButton>
+              <Modal.Title>
+                Прогноз: {selectedForecast.name} ({selectedForecast.isin})
+              </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <ForecastChart forecast={selectedForecast} />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="outline-secondary"
+                onClick={() => setSelectedForecast(null)}
+              >
+                Закрыть
+              </Button>
+              <Button
+                variant="info"
+                onClick={() => navigate(`/bonds?isin=${encodeURIComponent(selectedForecast.isin)}`)}
+              >
+                Перейти к облигации
+              </Button>
+            </Modal.Footer>
+          </>
+        )}
+      </Modal>
 
       <div className={styles.forecastGrid}>
-        {filteredForecasts.length > 0 ? (
+        {isLoading ? (
+          <div className={styles.noData}>Загрузка прогнозов…</div>
+        ) : error ? (
+          <div className={styles.noData} role="alert">{error}</div>
+        ) : filteredForecasts.length > 0 ? (
           filteredForecasts.map((forecast) => (
             <ForecastCard
               key={forecast.isin}

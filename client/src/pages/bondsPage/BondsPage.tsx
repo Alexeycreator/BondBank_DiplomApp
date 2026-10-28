@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { Modal, Tabs, Tab, Dropdown, Toast, ToastContainer } from "react-bootstrap";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
+import { Modal, Tabs, Tab, Dropdown, Toast, ToastContainer, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip as ChartTooltip, Legend } from "chart.js";
 import styles from "./BondsPage.module.css";
 import NotFoundPage from "../errorPages/NotFoundPage";
 import BadRequestPage from "../errorPages/BadRequestPage";
@@ -9,7 +9,8 @@ import ExportBonds from "../../features/bond/import-export/ui/ExportBonds";
 import ErrorCard from "../../shared/ui/error-card/ErrorCard";
 import { useAuth } from "../../shared/auth/AuthContext";
 import { ApiRequestError } from "../../shared/api/client";
-import { getBondsInfo } from "../../entities/bond/api/bondsApi";
+import { getBondsInfo, getBondsByFilter } from "../../entities/bond/api/bondsApi";
+import { getBondHistoriesByIsin } from "../../entities/bond/api/bondHistoriesApi";
 import {
     BondType, BondView,
     LseSpecificData, WbSpecificData, SgSpecificData, MeSpecificData,
@@ -22,6 +23,7 @@ import {
     isBondType,
     mapBondsInfoToViews,
 } from "../../entities/bond/model/bond-mappers";
+import { BondHistoryModel } from "../../entities/bond/model/bond-history";
 import PaginationControl from "../../shared/ui/pagination/PaginationControl";
 import { DataTable, TableColumn } from "../../shared/ui/data-table/DataTable";
 import { LineChart } from "../../shared/ui/charts/LineChart";
@@ -29,8 +31,9 @@ import { BondDetailsCard, BondDetailRow } from "../../entities/bond/ui/BondDetai
 import { SearchFilters } from "../../shared/ui/search-filters/SearchFilters";
 import { StatusBadge } from "../../shared/ui/status-badge/StatusBadge";
 import { useUrlQuery } from "../../shared/lib/routing/useUrlQuery";
+import { useTheme } from "../../shared/theme/ThemeContext";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, ChartTooltip, Legend);
 
 type SortField = "id" | "name" | "isin" | "type" | "price" | "yield" | "maturity";
 type SortDirection = "asc" | "desc" | null;
@@ -38,6 +41,9 @@ type SortDirection = "asc" | "desc" | null;
 const BondsPage = () => {
     const { searchParams, updateParams } = useUrlQuery();
     const { isAdmin, isAuthenticated } = useAuth();
+    const { theme } = useTheme();
+    const chartTextColor = theme === "dark" ? "#ffffff" : "#172033";
+    const chartMutedColor = theme === "dark" ? "#a0aabf" : "#5f6b7c";
 
     const isinFromUrl = searchParams.get("isin");
     const pageFromUrl = (() => {
@@ -51,6 +57,11 @@ const BondsPage = () => {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
+    // Состояния для серверной фильтрации
+    const [serverBonds, setServerBonds] = useState<BondView[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState<string | null>(null); // ✅ Ошибка сервера для поиска
+
     // Состояния для уведомлений
     const [showSlowWarning, setShowSlowWarning] = useState(false);
     const [showEmptyWarning, setShowEmptyWarning] = useState(false);
@@ -62,26 +73,19 @@ const BondsPage = () => {
             setLoadError(null);
             setShowEmptyWarning(false);
             setShowSlowWarning(false);
+            setServerBonds([]); 
+            setSearchError(null);
 
-            // Запускаем таймер на 5 секунд
-            timerRef.current = setTimeout(() => {
-                setShowSlowWarning(true);
-            }, 5000);
+            timerRef.current = setTimeout(() => setShowSlowWarning(true), 5000);
 
             const data = await getBondsInfo();
             setBondsInfo(data);
 
-            // Если данные пришли, но список пуст
-            if (data.bondsByTable.length === 0) {
-                setShowEmptyWarning(true);
-            }
+            if (data.bondsByTable.length === 0) setShowEmptyWarning(true);
         } catch (err: unknown) {
-            console.error("Ошибка загрузки облигаций:", err);
             const message = err instanceof ApiRequestError
                 ? err.serverMessage || err.message
-                : err instanceof Error
-                    ? err.message
-                    : "Не удалось загрузить облигации";
+                : "Не удалось загрузить облигации";
             setLoadError(message);
         } finally {
             setLoading(false);
@@ -93,6 +97,51 @@ const BondsPage = () => {
         fetchBondsInfo(); 
         return () => { if (timerRef.current) clearTimeout(timerRef.current); }
     }, []);
+
+    // ✅ Серверный поиск
+    const handleServerSearch = async (type: string, isin: string) => {
+        if (!type && !isin) {
+            setServerBonds([]);
+            setSearchError(null);
+            return;
+        }
+
+        try {
+            setIsSearching(true);
+            setSearchError(null);
+            const filteredDtos = await getBondsByFilter(type || undefined, isin || undefined);
+            
+            const mappedViews: BondView[] = filteredDtos
+                .filter((dto): dto is any => dto.bond !== null && isBondType(dto.type))
+                .map((dto) => ({
+                    id: dto.bond.id,
+                    name: dto.bond.name,
+                    isin: dto.bond.isin,
+                    type: dto.type,
+                    updatedAt: dto.bond.updatedAt,
+                    price: 0, 
+                    yield: null,
+                    maturity: null,
+                    currency: "RUB",
+                    currencyRate: 1,
+                    currencyRatesId: dto.bond.currencyRatesId,
+                    currencyRateDate: "—",
+                    specificData: dto.specificData,
+                }));
+
+            setServerBonds(mappedViews);
+        } catch (error: unknown) {
+            // ✅ Ловим ошибку сервера (BadRequest) и выводим на клиенте
+            if (error instanceof ApiRequestError) {
+                setSearchError(error.serverMessage || "Ошибка валидации данных");
+            } else {
+                setSearchError("Ошибка при поиске облигаций");
+            }
+            setServerBonds([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
 
     const currencyRatesByCode = useMemo<Record<string, number>>(() => {
         const map: Record<string, number> = { RUB: 1 };
@@ -121,6 +170,9 @@ const BondsPage = () => {
     const [searchType, setSearchType] = useState<string>("");
     const [searchIsin, setSearchIsin] = useState<string>("");
     const [selectedBond, setSelectedBond] = useState<BondView | null>(null);
+    const [bondHistory, setBondHistory] = useState<BondHistoryModel[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyError, setHistoryError] = useState<string | null>(null);
     const [selectedCurrency, setSelectedCurrency] = useState<string>("RUB");
     const [notFound, setNotFound] = useState<boolean>(false);
     const [badRequest, setBadRequest] = useState<string | null>(null);
@@ -156,18 +208,38 @@ const BondsPage = () => {
 
     useEffect(() => { setCurrentPage(pageFromUrl); }, [pageFromUrl]);
 
-    const filteredBonds = useMemo(() => {
-        return bondsData.filter((bond) => {
-            const matchType = searchType === "" || bond.type === searchType;
-            const matchIsin = searchIsin === "" || bond.isin.toLowerCase().includes(searchIsin.toLowerCase());
-            return matchType && matchIsin;
-        });
-    }, [bondsData, searchType, searchIsin]);
+    useEffect(() => {
+        if (!selectedBond) {
+            setBondHistory([]);
+            setHistoryError(null);
+            setHistoryLoading(false);
+            return;
+        }
+
+        let isCurrentRequest = true;
+        setBondHistory([]);
+        setHistoryError(null);
+        setHistoryLoading(true);
+
+        getBondHistoriesByIsin(selectedBond.isin)
+            .then((history) => { if (isCurrentRequest) setBondHistory(history); })
+            .catch(() => { if (isCurrentRequest) setHistoryError("Не удалось загрузить историю"); })
+            .finally(() => { if (isCurrentRequest) setHistoryLoading(false); });
+
+        return () => { isCurrentRequest = false; };
+    }, [selectedBond?.isin]);
+
+    const displayBonds = useMemo(() => {
+        if (searchType || searchIsin) {
+            return serverBonds;
+        }
+        return bondsData;
+    }, [serverBonds, bondsData, searchType, searchIsin]);
 
     const sortedBonds = useMemo(() => {
-        if (!sortField || !sortDirection) return filteredBonds;
+        if (!sortField || !sortDirection) return displayBonds;
         const direction = sortDirection === "asc" ? 1 : -1;
-        return [...filteredBonds].sort((a, b) => {
+        return [...displayBonds].sort((a, b) => {
             const aVal = a[sortField];
             const bVal = b[sortField];
             if (aVal === null && bVal === null) return 0;
@@ -176,7 +248,7 @@ const BondsPage = () => {
             if (typeof aVal === "number" && typeof bVal === "number") return (aVal - bVal) * direction;
             return String(aVal).localeCompare(String(bVal), "ru") * direction;
         });
-    }, [filteredBonds, sortField, sortDirection]);
+    }, [displayBonds, sortField, sortDirection]);
 
     const totalPages = Math.max(1, Math.ceil(sortedBonds.length / pageSize));
     const safePage = Math.min(currentPage, totalPages);
@@ -244,10 +316,11 @@ const BondsPage = () => {
             pointRadius: 6,
             pointHoverRadius: 8,
         };
-        if (!selectedBond || !bondsInfo?.bondByChart) return { labels: [], datasets: [emptyDataset] };
+        if (!selectedBond) return { labels: [], datasets: [emptyDataset] };
 
-        const history = bondsInfo.bondByChart
+        const history = bondHistory
             .filter((h) => h.isin === selectedBond.isin)
+            .filter((h) => Number.isFinite(Number(h.bondPrice)))
             .sort((a, b) => a.recordedDate.localeCompare(b.recordedDate));
 
         if (history.length === 0) return { labels: [], datasets: [emptyDataset] };
@@ -256,10 +329,10 @@ const BondsPage = () => {
             labels: history.map((h) => h.recordedDate),
             datasets: [{
                 ...emptyDataset,
-                data: history.map((h) => convertToSelected(Number(h.bondPrice), selectedBond.currency, selectedCurrency)),
+                data: history.map((h) => convertToSelected(Number(h.bondPrice), "RUB", selectedCurrency)),
             }],
         };
-    }, [selectedBond, bondsInfo, selectedCurrency, currencyRatesByCode]);
+    }, [selectedBond, bondHistory, selectedCurrency, currencyRatesByCode]);
 
     const chartOptions = useMemo(() => ({
         responsive: true,
@@ -270,14 +343,20 @@ const BondsPage = () => {
                 display: true,
                 text: selectedBond ? `Динамика цены: ${selectedBond.name}` : "Выберите облигацию",
                 font: { size: 16 },
-                color: "#ffffff",
+                color: chartTextColor,
             },
         },
         scales: {
-            x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#a0aabf" } },
-            y: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#a0aabf", callback: (value: string | number) => `${value} ${selectedCurrency}` } },
+            x: { grid: { color: "rgba(127, 140, 160, 0.18)" }, ticks: { color: chartMutedColor } },
+            y: {
+                grid: { color: "rgba(127, 140, 160, 0.18)" },
+                ticks: {
+                    color: chartMutedColor,
+                    callback: (value: string | number) => `${formatBondNumber(Number(value))} ${selectedCurrency}`,
+                },
+            },
         },
-    }), [selectedBond, selectedCurrency]);
+    }), [selectedBond, selectedCurrency, chartTextColor, chartMutedColor]);
 
     const handleBondClick = (bond: BondView) => {
         setSelectedBond(bond);
@@ -289,10 +368,6 @@ const BondsPage = () => {
             isin: bond.isin,
             ...(safePage > 1 ? { page: String(safePage) } : {}),
         });
-    };
-
-    const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedCurrency(e.target.value);
     };
 
     const selectedBondDetails: BondDetailRow[] = useMemo(() => {
@@ -333,21 +408,9 @@ const BondsPage = () => {
         { key: "num", title: "№", render: (_item, rowNumber) => rowNumber },
         { key: "name", title: <>Название <span className={styles.sortIcon}>{getSortIcon("name")}</span></>, onClick: () => handleSort("name") },
         { key: "isin", title: <>ISIN <span className={styles.sortIcon}>{getSortIcon("isin")}</span></>, onClick: () => handleSort("isin"), className: styles.isin },
-        {
-            key: "type",
-            title: <>Тип <span className={styles.sortIcon}>{getSortIcon("type")}</span></>,
-            onClick: () => handleSort("type"),
-            render: (bond) => <StatusBadge variantType="type" value={bond.type} />
-        },
+        { key: "type", title: <>Тип <span className={styles.sortIcon}>{getSortIcon("type")}</span></>, onClick: () => handleSort("type"), render: (bond) => <StatusBadge variantType="type" value={bond.type} /> },
         { key: "price", title: <>Цена <span className={styles.headerCurrency}>({selectedCurrency})</span> <span className={styles.sortIcon}>{getSortIcon("price")}</span></>, onClick: () => handleSort("price"), render: (bond) => formatPrice(bond) },
-        {
-            key: "yield",
-            title: <>Доходность <span className={styles.sortIcon}>{getSortIcon("yield")}</span></>,
-            onClick: () => handleSort("yield"),
-            render: (bond) => bond.yield !== null
-                ? <StatusBadge variantType="yield" value={bond.yield} />
-                : "—"
-        },
+        { key: "yield", title: <>Доходность <span className={styles.sortIcon}>{getSortIcon("yield")}</span></>, onClick: () => handleSort("yield"), render: (bond) => bond.yield !== null ? <StatusBadge variantType="yield" value={bond.yield} /> : "—" },
         { key: "maturity", title: <>Дата погашения <span className={styles.sortIcon}>{getSortIcon("maturity")}</span></>, onClick: () => handleSort("maturity"), render: (bond) => bond.maturity ?? "—" },
     ];
 
@@ -362,26 +425,14 @@ const BondsPage = () => {
 
     return (
         <div className={styles.bondsPage}>
-            {/* Контейнер уведомлений в правом верхнем углу */}
             <ToastContainer position="top-end" className="p-3" style={{ position: "fixed", zIndex: 9999 }}>
                 <Toast show={showSlowWarning} onClose={() => setShowSlowWarning(false)} bg="warning" delay={15000} autohide>
-                    <Toast.Header>
-                        <strong className="me-auto">⏳ Загрузка занимает много времени</strong>
-                    </Toast.Header>
-                    <Toast.Body className="text-dark">
-                        Данных слишком много. Загрузка может занять больше минуты. Пожалуйста, подождите.
-                    </Toast.Body>
+                    <Toast.Header><strong className="me-auto">⏳ Загрузка занимает много времени</strong></Toast.Header>
+                    <Toast.Body className="text-dark">Данных слишком много. Загрузка может занять больше минуты.</Toast.Body>
                 </Toast>
-
                 <Toast show={showEmptyWarning} onClose={() => setShowEmptyWarning(false)} bg="primary" delay={15000} autohide>
-                    <Toast.Header>
-                        <strong className="me-auto">📭 Облигаций нет в системе</strong>
-                    </Toast.Header>
-                    <Toast.Body className="text-white">
-                        Упс, облигаций нет в системе. Если это ошибка, обратитесь в поддержку: <br/>
-                        <b>Email:</b> support@bondbank.ru <br/>
-                        <b>Телефон:</b> 8 (800) 555-35-35
-                    </Toast.Body>
+                    <Toast.Header><strong className="me-auto">📭 Облигаций нет в системе</strong></Toast.Header>
+                    <Toast.Body className="text-white">Упс, облигаций нет в системе. Обратитесь в поддержку.</Toast.Body>
                 </Toast>
             </ToastContainer>
 
@@ -390,49 +441,58 @@ const BondsPage = () => {
                     <h1 className={styles.pageTitle}>📈 Облигации</h1>
                 </div>
                 <div className={styles.headerActions}>
-                    {isAdmin && <ImportBonds onImport={handleImport} />}
-                    {isAuthenticated && <ExportBonds bonds={sortedBonds} filename="bonds" />}
+                    {isAdmin && (
+                        <OverlayTrigger placement="bottom" delay={{ show: 1500, hide: 0 }} overlay={<Tooltip>Импорт облигаций из CSV</Tooltip>}>
+                            <div><ImportBonds onImport={handleImport} /></div>
+                        </OverlayTrigger>
+                    )}
+                    {isAuthenticated && (
+                        <OverlayTrigger placement="bottom" delay={{ show: 1500, hide: 0 }} overlay={<Tooltip>Экспорт облигаций в CSV</Tooltip>}>
+                            <div><ExportBonds bonds={sortedBonds} filename="bonds" /></div>
+                        </OverlayTrigger>
+                    )}
+                </div>
+            </div>
+
+            <section className={styles.tableSection}>
+                <div className={styles.tableHeader}>
+                    <h2 className={styles.sectionTitle}>
+                        Список облигаций {!loading && !isSearching && `(${sortedBonds.length})`}
+                        {isSearching && " (поиск...)"}
+                    </h2>
+                    
                     <Dropdown align="end">
                         <Dropdown.Toggle variant="outline-info" id="currency-dropdown" size="sm">
-                            💱 {selectedCurrency}
+                            💱 Валюта: {selectedCurrency}
                         </Dropdown.Toggle>
-
-                        <Dropdown.Menu
-                            className="bg-dark border-secondary"
-                            style={{ maxHeight: "250px", overflowY: "auto" }}
-                        >
+                        <Dropdown.Menu className="bg-dark border-secondary" style={{ maxHeight: "250px", overflowY: "auto" }}>
                             {availableCurrencies.map((curr) => (
-                                <Dropdown.Item
-                                    key={curr}
-                                    onClick={() => setSelectedCurrency(curr)}
-                                    active={curr === selectedCurrency}
-                                    className={styles.currencyItem}
-                                >
+                                <Dropdown.Item key={curr} onClick={() => setSelectedCurrency(curr)} active={curr === selectedCurrency} className={styles.currencyItem}>
                                     {curr}
                                 </Dropdown.Item>
                             ))}
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
-            </div>
-
-            <section className={styles.tableSection}>
-                <h2 className={styles.sectionTitle}>
-                    Список облигаций {!loading && `(${sortedBonds.length})`}
-                </h2>
 
                 <SearchFilters
                     searchType={searchType}
                     searchIsin={searchIsin}
-                    onTypeChange={setSearchType}
-                    onIsinChange={setSearchIsin}
+                    onSearch={(type, isin) => {
+                        setSearchType(type);
+                        setSearchIsin(isin);
+                        handleServerSearch(type, isin);
+                    }}
                     onReset={() => {
                         setSearchType("");
                         setSearchIsin("");
                         setSortField(null);
                         setSortDirection(null);
+                        setServerBonds([]);
+                        setSearchError(null); // Сбрасываем ошибку
                     }}
                     availableTypes={searchAvailableTypes}
+                    serverError={searchError} // ✅ Передаем ошибку сервера
                 />
 
                 <DataTable 
@@ -441,13 +501,12 @@ const BondsPage = () => {
                     keyExtractor={(bond) => bond.id} 
                     onRowClick={handleBondClick} 
                     rowClassName={(bond) => selectedBond?.id === bond.id ? styles.selectedRow : ""} 
-                    emptyMessage={loading ? "" : "Облигации не найдены"}
+                    emptyMessage={loading || isSearching ? "" : "Облигации не найдены"}
                     startIndex={(safePage - 1) * pageSize + 1} 
-                    isLoading={loading} 
+                    isLoading={loading || isSearching} 
                 />
 
-                {/* Прячем пагинацию во время загрузки */}
-                {!loading && totalPages > 0 && (
+                {!loading && !isSearching && totalPages > 0 && (
                     <PaginationControl 
                         currentPage={safePage} 
                         totalPages={totalPages} 
@@ -458,32 +517,26 @@ const BondsPage = () => {
                 )}
             </section>
 
-            <Modal
-                show={isModalOpen}
-                onHide={() => setIsModalOpen(false)}
-                centered
-                size="lg"
-                scrollable
-                contentClassName="bg-dark text-white border-secondary"
-            >
+            <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} centered size="lg" scrollable contentClassName="bg-dark text-white border-secondary">
                 <Modal.Header closeButton closeVariant="white" className="border-secondary">
                     <Modal.Title>Облигация: {selectedBond?.name}</Modal.Title>
                 </Modal.Header>
-
                 <Modal.Body>
                     {selectedBond && (
-                        <Tabs
-                            defaultActiveKey="chart"
-                            id="bond-details-tabs"
-                            className="mb-3 custom-tabs"
-                            fill
-                        >
+                        <Tabs defaultActiveKey="chart" id="bond-details-tabs" className="mb-3 custom-tabs" fill>
                             <Tab eventKey="chart" title="📈 График">
                                 <div style={{ height: "400px", position: "relative", marginTop: "16px" }}>
-                                    <LineChart labels={chartData.labels} datasets={chartData.datasets} options={chartOptions} />
+                                    {historyLoading ? (
+                                        <p>Загружаем историю облигации...</p>
+                                    ) : historyError ? (
+                                        <p role="alert">{historyError}</p>
+                                    ) : chartData.labels.length === 0 ? (
+                                        <p>История по этой облигации не найдена.</p>
+                                    ) : (
+                                        <LineChart labels={chartData.labels} datasets={chartData.datasets} options={chartOptions} />
+                                    )}
                                 </div>
                             </Tab>
-
                             <Tab eventKey="info" title="📋 Информация">
                                 <div style={{ marginTop: "16px" }}>
                                     <BondDetailsCard title="" rows={selectedBondDetails} />

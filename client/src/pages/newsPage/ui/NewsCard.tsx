@@ -1,5 +1,4 @@
 import React from "react";
-import { Badge } from "react-bootstrap"; // ✅ Обязательно импортируем Badge
 import styles from "../../../shared/ui/info-card/InfoCard.module.css";
 import { News } from "../../../entities/news/model/types";
 
@@ -12,39 +11,31 @@ interface NewsCardProps {
 }
 
 export const NewsCard: React.FC<NewsCardProps> = ({ news, onClick }) => {
-    const getBadgeBg = (category: string) => {
-        switch (category.toLowerCase()) {
-            case "биржи": return "primary";
-            case "облигации": return "success";
-            case "аналитика": return "warning";
-            default: return "secondary";
-        }
-    };
+    const formattedDate = new Intl.DateTimeFormat("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    }).format(new Date(news.date));
 
     return (
-        <div 
-            className={styles.card} 
-            onClick={() => onClick && onClick(news)}
-            style={{ cursor: onClick ? "pointer" : "default" }}
-        >
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", alignItems: "center" }}>
-                <Badge bg={getBadgeBg(news.category)} pill style={{ fontSize: "0.85em", padding: "0.4em 0.8em" }}>
-                    {news.category.toUpperCase()}
-                </Badge>
-                <span className={styles.meta} style={{ margin: 0 }}>{news.date}</span>
+        <article className={styles.card}>
+            {news.image && (
+                <img className={styles.image} src={news.image} alt={news.title} loading="lazy" />
+            )}
+            <div className={styles.cardBody}>
+                <div className={styles.metaRow}>
+                    <span className={styles.category}>{news.category}</span>
+                    <time className={styles.meta} dateTime={news.date}>{formattedDate}</time>
+                </div>
+                <h2 className={styles.title}>{news.title}</h2>
+                <p className={styles.textMuted}>{news.body}</p>
+                {onClick && (
+                    <button className={styles.readMore} type="button" onClick={() => onClick(news)}>
+                        Читать новость <span aria-hidden="true">→</span>
+                    </button>
+                )}
             </div>
-
-            <h3 className={styles.title}>{news.title}</h3>
-            
-            <p className={styles.textMuted} style={{ marginBottom: "20px", flexGrow: 1 }}>
-                {news.content}
-            </p>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "auto" }}>
-                <span>✍️</span>
-                <span className={styles.meta} style={{ margin: 0 }}>{news.author}</span>
-            </div>
-        </div>
+        </article>
     );
 };
 

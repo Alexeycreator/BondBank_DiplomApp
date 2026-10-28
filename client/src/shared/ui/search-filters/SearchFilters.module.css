@@ -1,63 +1,79 @@
+.searchSectionWrapper {
+    margin-bottom: 20px;
+}
+
 .searchSection {
     display: flex;
     gap: 16px;
-    align-items: flex-end;
-    margin-bottom: 20px;
+    align-items: center;
     padding: 20px;
-    background-color: rgba(255, 255, 255, 0.03); /* Легкий светлый фон на темной теме */
+    background-color: var(--surface, rgba(255, 255, 255, 0.03));
     border-radius: 12px;
-    border: 1px solid #2d3b5e; /* Темная рамка */
+    border: 1px solid var(--border, #2d3b5e);
     flex-wrap: wrap;
+    transition: border-color 0.3s;
 }
 
 .searchField {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
     flex: 1;
     min-width: 200px;
-}
-
-.searchField label {
-    font-size: 13px;
-    color: #a0aabf;
-    font-weight: 500;
 }
 
 .searchSelect,
 .searchInput {
     padding: 10px 12px;
-    border: 1px solid #2d3b5e;
+    border: 1px solid var(--border, #2d3b5e);
     border-radius: 8px;
     font-size: 14px;
     outline: none;
-    transition: border-color 0.3s;
-    background-color: #1a1a2e; /* Темный фон инпута */
-    color: #ffffff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background-color: var(--surface-raised, #1a1a2e);
+    color: var(--text-primary, #ffffff);
+    height: 42px;
 }
 
 .searchSelect:focus,
 .searchInput:focus {
-    border-color: #4fc3f7;
+    border-color: var(--primary, #4fc3f7);
+    box-shadow: 0 0 0 0.2rem rgba(79, 195, 247, 0.25);
 }
 
 .searchInput::placeholder {
-    color: #6c757d;
+    color: var(--text-muted, #6c757d);
+}
+
+/* ✅ Красная рамка при ошибке */
+.inputError {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* ✅ Анимация дергания */
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 .resetButton {
-    padding: 10px 20px;
-    background-color: #2d3b5e;
-    color: #ffffff;
+    padding: 0 20px;
+    background-color: var(--border, #2d3b5e);
+    color: var(--text-primary, #ffffff);
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
     transition: all 0.3s;
-    height: 42px; /* Подгоняем под высоту инпутов */
+    height: 42px;
+    white-space: nowrap;
 }
 
 .resetButton:hover {
-    background-color: #3a4a6e;
+    background-color: var(--text-muted, #3a4a6e);
 }

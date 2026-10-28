@@ -36,21 +36,30 @@ export interface MockUser extends User {
     password: string;
 }
 
-export interface UserModel {
+export interface UserResponseDto {
     id: number;
     secondName: string;
     firstName: string;
     surName: string;
     emailAddress: string;
-    phoneNumber?: string;
-    tin?: string;
+    phoneNumber: string | null;
+    tin: string | null;
     login: string;
-    lastLoginAt?: string;
-    passportId?: number;
-    passportSeries?: string;
-    passportNumber?: string;
-    passportIssuedBy?: string;
-    passportIssueDate?: string;
-    snilsId?: number;
-    keycloakId: string;
+    lastLoginAt: string | null;
+    passportId: number | null;
+    snilsId: number | null;
+}
+
+export type UserModel = UserResponseDto;
+
+export interface AdminUserResponseDto {
+    id: number;
+    secondName: string;
+    firstName: string;
+    surName: string;
+    emailAddress: string;
+    phoneNumber: string | null;
+    tin: string | null;
+    login: string;
+    lastLoginAt: string | null;
 }

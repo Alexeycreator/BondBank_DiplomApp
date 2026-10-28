@@ -4,8 +4,8 @@
  * Используется для отображения контактной информации и копирайта
  */
 .footer {
-    background-color: #1a1a2e;          /* Темно-синий фон */
-    color: #ffffff;                     /* Белый цвет текста */
+    background-color: var(--surface);
+    color: var(--text-primary);
     padding: 40px 20px 20px 20px;       /* Внутренние отступы: верх, бока, низ */
     margin-top :auto;                   /* Прижимает футер к низу страницы */
     font-family: Arial, sans-serif;     /* Шрифт для всего футера */
@@ -46,7 +46,7 @@
 .title {
     font-size: 24px;                    /* Размер шрифта */
     margin-bottom: 10px;                /* Отступ снизу */
-    color: #4fc3f7;                     /* Голубой акцентный цвет */
+    color: var(--accent);
 }
 
 /* ==================== ОПИСАНИЕ КОМПАНИИ ==================== */
@@ -66,7 +66,7 @@
 .subtitle {
     font-size: 18px;                    /* Размер шрифта */
     margin-bottom: 12px;                /* Отступ снизу */
-    color: #4fc3f7;                     /* Голубой акцентный цвет */
+    color: var(--accent);
 }
 
 /* ==================== ЭЛЕМЕНТЫ КОНТАКТОВ ==================== */
@@ -85,7 +85,7 @@
  */
 .copyright {
     text-align: center;                 /* Выравнивание по центру */
-    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Тонкая полупрозрачная линия */
+    border-top: 1px solid var(--border);
     padding-top: 20px;                  /* Отступ сверху от линии */
     margin-top: 30px;                   /* Отступ от контента */
     font-size: 14px;                    /* Размер шрифта */

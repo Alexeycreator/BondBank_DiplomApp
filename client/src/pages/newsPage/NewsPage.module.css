@@ -1,216 +1,149 @@
-/* ==================== ОСНОВНОЙ КОНТЕЙНЕР ==================== */
 .newsPage {
-    padding: 20px 0;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 48px) 0;
 }
 
 .pageHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 16px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .pageTitle {
-    font-size: 32px;
-    color: #ffffff;
-    margin-bottom: 8px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
 }
 
 .pageDescription {
-    font-size: 16px;
-    color: #a0aabf;
-    margin: 0;
+  max-width: 620px;
+  margin: 14px 0 0;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.65;
 }
 
-/* ==================== КНОПКА СОЗДАНИЯ ==================== */
-.createButton {
-    padding: 10px 20px;
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
+.newsCount {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.createButton:hover {
-    background-color: #38b0e8;
-    transform: translateY(-2px);
-}
-
-/* ==================== КАТЕГОРИИ (В СТИЛЕ ТАБОВ) ==================== */
 .categories {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #2d3b5e; /* Линия, как у табов */
-    flex-wrap: wrap;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+  padding: 3px 2px 12px;
+  scrollbar-width: thin;
 }
 
 .categoryBtn {
-    padding: 10px 20px;
-    background-color: transparent;
-    color: #a0aabf;
-    border: none;
-    border-bottom: 3px solid transparent; /* Место под голубую линию */
-    border-radius: 0;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 
 .categoryBtn:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 8px 8px 0 0; /* Скругление сверху при наведении */
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.categoryBtn:focus-visible,
+.retryButton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: 2px;
 }
 
 .activeCategory {
-    color: #4fc3f7 !important;
-    border-bottom: 3px solid #4fc3f7 !important; /* Голубая полоса снизу */
-    font-weight: 600;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent);
 }
 
-/* ==================== СЕТКА НОВОСТЕЙ ==================== */
 .newsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  align-items: stretch;
+  gap: 20px;
 }
 
-.noNews {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: #a0aabf;
-    padding: 40px;
-    background-color: #1f2a44;
-    border-radius: 12px;
-    border: 1px solid #2d3b5e;
+.stateCard {
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text-muted);
+  text-align: center;
 }
 
-/* ==================== МОДАЛЬНОЕ ОКНО РЕДАКТОРА ==================== */
-.modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    padding: 20px;
+.stateCard p {
+  margin: 0;
 }
 
-.modal {
-    background-color: #1f2a44;
-    padding: 32px;
-    border-radius: 16px;
-    max-width: 600px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    border: 1px solid #2d3b5e;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+.retryButton {
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--background);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.modalTitle {
-    font-size: 22px;
-    color: #ffffff;
-    margin-bottom: 24px;
-}
-
-.formGroup {
-    display: flex;
+@media (max-width: 640px) {
+  .pageHeader {
+    align-items: flex-start;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 20px;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .newsCount {
+    order: 1;
+  }
 }
 
-.formGroup label {
-    font-size: 13px;
-    color: #a0aabf;
-    font-weight: 600;
-}
-
-.formGroup input,
-.formGroup select,
-.formGroup textarea {
-    padding: 12px 14px;
-    border: 1px solid #2d3b5e;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    background-color: #1a1a2e;
-    color: #ffffff;
-    font-family: inherit;
-}
-
-.formGroup input:focus,
-.formGroup select:focus,
-.formGroup textarea:focus {
-    border-color: #4fc3f7;
-}
-
-.modalActions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #2d3b5e;
-}
-
-.cancelButton {
-    padding: 12px 24px;
-    background-color: transparent;
-    color: #ffffff;
-    border: 1px solid #2d3b5e;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.cancelButton:hover {
-    background-color: #2d3b5e;
-}
-
-.saveButton {
-    padding: 12px 32px;
-    background-color: #4fc3f7;
-    color: #1a1a2e;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.saveButton:hover {
-    background-color: #38b0e8;
-}
-
-/* ==================== АДАПТИВНОСТЬ ==================== */
-@media (max-width: 768px) {
-    .pageTitle {
-        font-size: 24px;
-    }
-
-    .newsGrid {
-        grid-template-columns: 1fr;
-    }
-
-    .modal {
-        padding: 24px 20px;
-    }
+@media (prefers-reduced-motion: reduce) {
+  .categoryBtn {
+    transition: none;
+  }
 }

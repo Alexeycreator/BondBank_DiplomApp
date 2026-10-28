@@ -55,7 +55,10 @@ export function handleApiError(error: unknown): never {
 
     if (error.response) {
         throw new ApiRequestError(error.message, {
-            serverMessage: error.response.data?.message || "Неизвестная ошибка",
+            serverMessage:
+                error.response.data?.message ||
+                error.response.data?.error ||
+                "Неизвестная ошибка",
             statusCode: error.response.status,
         });
     }

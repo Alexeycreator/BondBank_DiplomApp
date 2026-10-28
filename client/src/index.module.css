@@ -1,50 +1,261 @@
+:root {
+    color-scheme: dark;
+    --background: #0b1220;
+    --surface: #111c2e;
+    --surface-raised: #18263b;
+    --border: #263750;
+    --text-primary: #f3f7fc;
+    --text-muted: #9aabc0;
+    --accent: #55c5d5;
+    --accent-strong: #f2b66d;
+    --shadow-card: 0 8px 24px rgba(1, 8, 20, 0.2);
+    --shadow-raised: 0 16px 40px rgba(1, 8, 20, 0.3);
+    --bs-body-bg: var(--background);
+    --bs-body-color: var(--text-primary);
+    --bs-border-color: var(--border);
+    --bs-secondary-color: var(--text-muted);
+}
+
+:global(html[data-theme="light"]) {
+    color-scheme: light;
+    --background: #f3f6f8;
+    --surface: #ffffff;
+    --surface-raised: #f7f9fc;
+    --border: #dbe3e9;
+    --text-primary: #172633;
+    --text-muted: #5e707d;
+    --accent: #087f8c;
+    --accent-strong: #a65d1f;
+    --shadow-card: 0 8px 24px rgba(31, 50, 65, 0.06);
+    --shadow-raised: 0 16px 40px rgba(31, 50, 65, 0.12);
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background-color: #1a1a2e !important;
-    font-family: Arial, sans-serif;
-    color: #ffffff;
+html,
+body {
+    min-height: 100%;
+    background-color: var(--background);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+    line-height: 1.5;
 }
 
 #root {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #1a1a2e !important;
-    width: 100%; /* ✅ Добавлено */
-    overflow-x: hidden; /* ✅ Добавлено, чтобы предотвратить горизонтальную прокрутку */
+    width: 100%;
+    overflow-x: hidden;
+    background-color: var(--background);
 }
 
-.app {
+:global(.app) {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #1a1a2e !important;
-    width: 100%; /* ✅ Добавлено */
+    width: 100%;
+    background-color: var(--background);
 }
 
-/* ✅ Основной контейнер с жесткими отступами от краев */
-.main {
+:global(.main) {
     flex: 1;
     background-color: transparent;
-    padding: 20px 40px !important; /* ✅ Жесткий отступ */
-    max-width: 1200px;
+    padding: 28px clamp(16px, 4vw, 48px);
+    max-width: 1440px;
     width: 100%;
     margin: 0 auto;
-    box-sizing: border-box; 
+}
+
+:global(button),
+:global(a),
+:global(input),
+:global(select),
+:global(textarea) {
+    -webkit-tap-highlight-color: transparent;
+}
+
+:global(:focus-visible) {
+    outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    outline-offset: 3px;
+}
+
+:global(::selection) {
+    background: color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+:global(html[data-theme="light"] [class*="card"]),
+:global(html[data-theme="light"] [class*="Card"]),
+:global(html[data-theme="light"] [class*="Section"]),
+:global(html[data-theme="light"] [class*="section"]),
+:global(html[data-theme="light"] [class*="Panel"]),
+:global(html[data-theme="light"] [class*="panel"]),
+:global(html[data-theme="light"] [class*="portfolioItem"]),
+:global(html[data-theme="light"] [class*="searchSection"]),
+:global(html[data-theme="light"] [class*="dateSection"]),
+:global(html[data-theme="light"] [class*="chartSection"]),
+:global(html[data-theme="light"] [class*="noData"]),
+:global(html[data-theme="light"] [class*="Table"]),
+:global(html[data-theme="light"] [class*="table"]) {
+    background-color: var(--surface) !important;
+    border-color: var(--border) !important;
+    box-shadow: var(--shadow-card);
+}
+
+:global(html[data-theme="light"] [class*="header"]),
+:global(html[data-theme="light"] [class*="footer"]) {
+    background-color: var(--surface) !important;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-card);
+}
+
+:global(html[data-theme="light"] [class*="navLink"]),
+:global(html[data-theme="light"] [class*="userIconToggle"]) {
+    color: var(--text-primary) !important;
+}
+
+:global(html[data-theme="light"] [class*="pageTitle"]),
+:global(html[data-theme="light"] [class*="sectionTitle"]),
+:global(html[data-theme="light"] [class*="title"]),
+:global(html[data-theme="light"] [class*="Title"]),
+:global(html[data-theme="light"] [class*="warningTitle"]) {
+    color: var(--text-primary) !important;
+}
+
+:global(html[data-theme="light"] [class*="description"]),
+:global(html[data-theme="light"] [class*="Description"]),
+:global(html[data-theme="light"] [class*="muted"]),
+:global(html[data-theme="light"] [class*="Muted"]),
+:global(html[data-theme="light"] [class*="warningText"]),
+:global(html[data-theme="light"] [class*="label"]),
+:global(html[data-theme="light"] [class*="Label"]) {
+    color: var(--text-muted) !important;
+}
+
+:global(html[data-theme="light"] input),
+:global(html[data-theme="light"] select),
+:global(html[data-theme="light"] textarea) {
+    color-scheme: light;
+    color: var(--text-primary);
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+:global(html[data-theme="light"] .dropdown-menu),
+:global(html[data-theme="light"] .modal-content) {
+    color: var(--text-primary);
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+:global(html[data-theme="light"] .bg-dark),
+:global(html[data-theme="light"] .text-white) {
+    color: var(--text-primary) !important;
+    background-color: var(--surface) !important;
+}
+
+:global(html[data-theme="light"] h1),
+:global(html[data-theme="light"] h2),
+:global(html[data-theme="light"] h3),
+:global(html[data-theme="light"] h4) {
+    color: var(--text-primary) !important;
+}
+
+:global(html[data-theme="light"] [class*="value"]),
+:global(html[data-theme="light"] [class*="Value"]),
+:global(html[data-theme="light"] [class*="logoLink"]),
+:global(html[data-theme="light"] [class*="currencyLabel"]) {
+    color: var(--text-primary);
+}
+
+:global(html[data-theme="light"] .dropdown-item) {
+    color: var(--text-primary);
+}
+
+:global(html[data-theme="light"] .dropdown-item:hover),
+:global(html[data-theme="light"] .dropdown-item:focus) {
+    background-color: var(--surface-raised);
+}
+
+:global(.dropdown-menu),
+:global(.modal-content),
+:global(.popover),
+:global(.offcanvas) {
+    color: var(--text-primary);
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+:global(.modal-header),
+:global(.modal-footer) {
+    border-color: var(--border);
+}
+
+:global(.modal-title),
+:global(.modal-body) {
+    color: var(--text-primary);
+}
+
+:global(.form-control),
+:global(.form-select) {
+    color: var(--text-primary);
+    background-color: var(--surface-raised);
+    border-color: var(--border);
+}
+
+:global(.form-control:focus),
+:global(.form-select:focus) {
+    color: var(--text-primary);
+    background-color: var(--surface);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+:global(.table) {
+    --bs-table-color: var(--text-primary);
+    --bs-table-bg: transparent;
+    --bs-table-border-color: var(--border);
+    --bs-table-hover-color: var(--text-primary);
+    --bs-table-hover-bg: var(--surface-raised);
+}
+
+:global(.nav-tabs) {
+    --bs-nav-tabs-border-color: var(--border);
+    --bs-nav-tabs-link-hover-border-color: var(--border) var(--border) var(--surface);
+    --bs-nav-tabs-link-active-color: var(--text-primary);
+    --bs-nav-tabs-link-active-bg: var(--surface);
+    --bs-nav-tabs-link-active-border-color: var(--border) var(--border) var(--surface);
+}
+
+:global(.nav-tabs .nav-link) {
+    color: var(--text-muted);
+}
+
+:global(.nav-tabs .nav-link:hover),
+:global(.nav-tabs .nav-link.active) {
+    color: var(--text-primary);
+}
+
+:global(.btn-close) {
+    filter: var(--btn-close-filter, none);
+}
+
+:global(html[data-theme="dark"]) {
+    --btn-close-filter: invert(1) grayscale(100%) brightness(200%);
 }
 
 @media (max-width: 1024px) {
-    .main { padding: 20px 24px !important; }
+    :global(.main) {
+        padding: 20px 24px;
+    }
 }
 
 @media (max-width: 768px) {
-    .main { padding: 16px !important; }
+    :global(.main) {
+        padding: 16px;
+    }
 }

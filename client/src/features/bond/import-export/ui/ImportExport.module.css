@@ -8,24 +8,63 @@
 }
 
 .hiddenInput {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.hiddenInput:focus-visible + .importButton {
+    outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    outline-offset: 2px;
+}
+
+.exchangeSelectLabel {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.exchangeSelect {
+    min-height: 40px;
+    padding: 8px 32px 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--text-primary);
+    font: inherit;
+    cursor: pointer;
+}
+
+.exchangeSelect:focus-visible,
+.importButton:focus-visible,
+.exportButton:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    outline-offset: 2px;
 }
 
 /* ==================== КНОПКА ИМПОРТА ==================== */
 .importButton {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
     padding: 10px 20px;
-    background-color: #4fc3f7;
-    color: #1a1a2e;
+    background-color: var(--accent);
+    color: var(--background);
     border: none;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background-color 160ms ease, transform 160ms ease;
+    cursor: pointer;
 }
 
 .importButton:hover:not(:disabled) {
-    background-color: #38b0e8;
+    background-color: color-mix(in srgb, var(--accent) 84%, black);
     transform: translateY(-1px);
 }
 
@@ -37,7 +76,7 @@
 /* ==================== КНОПКА ЭКСПОРТА ==================== */
 .exportButton {
     padding: 10px 20px;
-    background-color: #2ecc71;
+    background-color: #159570;
     color: #ffffff;
     border: none;
     border-radius: 8px;

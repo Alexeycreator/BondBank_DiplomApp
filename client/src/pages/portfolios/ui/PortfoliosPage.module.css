@@ -168,6 +168,31 @@
     gap: 20px;
 }
 
+.portfolioItem {
+    background: #1f2a44;
+    border: 1px solid #2d3b5e;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.portfolioItem h3 {
+    color: #fff;
+}
+
+.portfolioItem p {
+    color: #a0aabf;
+}
+
+.metadataButton {
+    background: #4fc3f7;
+    color: #0f172a;
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 /* ==================== ДЕТАЛИ ПОРТФЕЛЯ ==================== */
 .detailsSection {
     background-color: #1f2a44;
@@ -241,6 +266,92 @@
     font-family: monospace;
     font-size: 12px;
     color: #a0aabf !important;
+}
+
+.portfolioLoading {
+    display: flex;
+    justify-content: center;
+    padding: 48px 16px;
+}
+
+.portfolioItemSelected {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.portfolioDetails {
+    margin-top: 28px;
+    padding: 24px;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+}
+
+.portfolioDetailsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.portfolioStats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.portfolioStat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 92px;
+    padding: 16px;
+    color: var(--text-muted);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.portfolioStat strong {
+    color: var(--text-primary);
+    font-size: 18px;
+}
+
+.portfolioChart {
+    margin: 20px 0;
+}
+
+.portfolioIsin {
+    display: inline-block;
+    padding: 4px 7px;
+    color: var(--text-primary);
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.historyTable {
+    margin-bottom: 24px;
+}
+
+.selectedHistoryRow td {
+    background-color: color-mix(in srgb, var(--accent) 16%, var(--surface)) !important;
+}
+
+@media (max-width: 640px) {
+    .portfolioDetails {
+        padding: 16px;
+    }
+
+    .portfolioDetailsHeader {
+        flex-direction: column;
+    }
 }
 
 /* ==================== КНОПКИ УПРАВЛЕНИЯ ==================== */

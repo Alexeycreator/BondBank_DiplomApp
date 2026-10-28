@@ -1,21 +1,21 @@
 /* ==================== ОСНОВНОЙ КОНТЕЙНЕР ==================== */
 .mainPage {
-  padding: 20px 0;
-  max-width: 1200px;
+  padding: 12px 0 36px;
+  max-width: 1320px;
   margin: 0 auto;
 }
 
 /* ==================== КАРУСЕЛЬ ==================== */
 .carouselSection {
-  margin-bottom: 40px;
-  border-radius: 16px;
+  margin-bottom: 48px;
+  border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-raised);
+  border: 1px solid var(--border);
 }
 
 .carouselSlide {
-  height: 450px;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -25,40 +25,45 @@
 }
 
 .slide1Bg {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background:
+    radial-gradient(ellipse at 82% 18%, rgba(85, 197, 213, 0.2), transparent 34%),
+    linear-gradient(135deg, #0e1b2b 0%, #172b3b 100%);
 }
 .slide2Bg {
-  background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+  background: linear-gradient(135deg, #101c2c 0%, #142737 100%);
   padding: 40px;
 }
 .slide3Bg {
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  background: linear-gradient(135deg, #101c2c 0%, #1b2d3e 100%);
   padding: 40px;
 }
 
 .slideTitle {
-  font-size: 48px;
-  color: #4fc3f7;
+  max-width: 850px;
+  font-size: clamp(36px, 5vw, 58px);
+  color: #8ce2e7;
   margin-bottom: 16px;
-  font-weight: bold;
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
 }
 
 .slideSubtitle {
   font-size: 20px;
-  color: #a0aabf;
+  color: #b7c5d2;
   max-width: 800px;
   line-height: 1.6;
 }
 
 /* Макеты внутри карусели */
 .mockupWindow {
-  background: #1e293b;
+  background: rgba(17, 28, 46, 0.94);
   border-radius: 12px;
   padding: 24px;
   width: 100%;
   max-width: 900px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-  border: 1px solid #334155;
+  border: 1px solid rgba(166, 190, 208, 0.2);
   text-align: left;
 }
 
@@ -124,17 +129,19 @@
 }
 
 .statCardNew {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 30px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
+  box-shadow: var(--shadow-card);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .statCardNew:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: var(--shadow-raised);
 }
 
 .statIcon {
@@ -151,9 +158,10 @@
 }
 
 .statValueNew {
-  color: #4fc3f7;
+  color: var(--accent);
   font-size: 36px;
-  font-weight: bold;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==================== С ЧЕГО НАЧАТЬ ==================== */
@@ -190,16 +198,17 @@
 
 .stepCard {
   flex: 1 1 200px;
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   padding: 24px;
   position: relative;
-  transition: transform 0.2s;
+  transition: transform 180ms ease, border-color 180ms ease;
 }
 
 .stepCard:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }
 
 .stepNumber {

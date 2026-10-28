@@ -52,6 +52,70 @@
   font-size: 14px;
 }
 
+.cardBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.image {
+  display: block;
+  width: calc(100% + 48px);
+  max-height: 220px;
+  margin: -24px -24px 0;
+  border-radius: 12px 12px 0 0;
+  object-fit: cover;
+}
+
+.metaRow {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.metaRow .meta {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.category {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.readMore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 10px 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.readMore:hover {
+  color: var(--text-primary);
+}
+
 /* ==================== СТАТИСТИКА ==================== */
 .statsRow {
   display: flex;

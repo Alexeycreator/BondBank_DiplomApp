@@ -1,6 +1,7 @@
 import React from "react";
 import { Doughnut } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
+import { useTheme } from "../../theme/ThemeContext";
 
 interface DoughnutChartProps {
     labels: string[];
@@ -10,6 +11,8 @@ interface DoughnutChartProps {
 }
 
 export const DoughnutChart: React.FC<DoughnutChartProps> = ({ labels, data, options, height = 300 }) => {
+    const { theme } = useTheme();
+    const textColor = theme === "dark" ? "#a0aabf" : "#5f6b7c";
     const defaultOptions: ChartOptions<"doughnut"> = {
         responsive: true,
         maintainAspectRatio: false,
@@ -17,7 +20,7 @@ export const DoughnutChart: React.FC<DoughnutChartProps> = ({ labels, data, opti
             legend: { 
                 display: true, 
                 position: "bottom" as const,
-                labels: { color: "#a0aabf" } // Светлый текст для темной темы
+                labels: { color: textColor }
             },
         },
     };

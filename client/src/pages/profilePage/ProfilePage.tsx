@@ -4,14 +4,13 @@ import { Tabs, Tab, Form, Button, Accordion, Spinner } from "react-bootstrap";
 import styles from "./ProfilePage.module.css";
 import { useToast } from "../../shared/notifications/ToastContext";
 import { usersApi } from "../../entities/user/api/usersApi";
-import keycloak from "../../keycloak";
+import { getPassportById, getSnilsById } from "../../entities/user/api/securityDataApi";
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   // Данные формы
   const [formData, setFormData] = useState({
@@ -44,7 +43,6 @@ const ProfilePage = () => {
       try {
         setLoading(true);
         const data = await usersApi.getMyProfile();
-
         setFormData({
           lastName: data.secondName || "",
           firstName: data.firstName || "",
@@ -52,14 +50,29 @@ const ProfilePage = () => {
           email: data.emailAddress || "",
           phone: data.phoneNumber || "",
         });
+        setDocData((current) => ({ ...current, inn: data.tin || "" }));
+
+        const [passportResult, snilsResult] = await Promise.allSettled([
+          data.passportId !== null ? getPassportById(data.passportId) : Promise.resolve(null),
+          data.snilsId !== null ? getSnilsById(data.snilsId) : Promise.resolve(null),
+        ]);
+        const passport = passportResult.status === "fulfilled" ? passportResult.value : null;
+        const snils = snilsResult.status === "fulfilled" ? snilsResult.value : null;
+        if (passportResult.status === "rejected" || snilsResult.status === "rejected") {
+          console.error("Не удалось загрузить данные документов профиля:", {
+            passportError: passportResult.status === "rejected" ? passportResult.reason : undefined,
+            snilsError: snilsResult.status === "rejected" ? snilsResult.reason : undefined,
+          });
+          showToast("Предупреждение", "Не удалось загрузить данные документов профиля", "warning");
+        }
 
         setDocData({
           inn: data.tin || "",
-          passportSeries: data.passportSeries || "",
-          passportNumber: data.passportNumber || "",
-          passportIssuedBy: data.passportIssuedBy || "",
-          passportIssueDate: data.passportIssueDate || "",
-          snils: data.snilsId ? String(data.snilsId) : "",
+          passportSeries: passport ? String(passport.series).padStart(4, "0") : "",
+          passportNumber: passport ? String(passport.number).padStart(6, "0") : "",
+          passportIssuedBy: passport?.issuedBy || "",
+          passportIssueDate: passport?.dateOfIssue || "",
+          snils: snils?.number || "",
         });
       } catch (error: unknown) {
         console.error("Ошибка загрузки профиля:", error);
@@ -72,17 +85,12 @@ const ProfilePage = () => {
     fetchProfile();
   }, [showToast]);
 
-  const handleSaveProfile = async () => {
-    try {
-      setSaving(true);
-      // TODO: Здесь отправляем PUT запрос на сохранение профиля
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Имитация
-      showToast("Успешно", "Данные профиля обновлены", "success");
-    } catch (e) {
-      showToast("Ошибка", "Не удалось сохранить профиль", "danger");
-    } finally {
-      setSaving(false);
-    }
+  const handleSaveProfile = () => {
+    showToast(
+      "Сохранение недоступно",
+      "Сервер пока не предоставляет API для обновления профиля.",
+      "info",
+    );
   };
 
   const handleChangePassword = async () => {
@@ -95,28 +103,11 @@ const ProfilePage = () => {
       return;
     }
 
-    try {
-      setSaving(true);
-      // ✅ Отправляем запрос на бэкенд для смены пароля через Keycloak Admin API
-      // Вам нужно будет создать этот метод в usersApi
-      //await usersApi.changePassword(passwords.new);
-
-      showToast("Успешно", "Пароль изменен. Войдите заново.", "success");
-
-      // Принудительный разлогин
-      setTimeout(() => {
-        keycloak.logout({ redirectUri: window.location.origin });
-      }, 1500);
-    } catch (error: unknown) {
-      console.error("Ошибка смены пароля:", error);
-      showToast(
-        "Ошибка",
-        "Не удалось сменить пароль. Проверьте текущий пароль.",
-        "danger",
-      );
-    } finally {
-      setSaving(false);
-    }
+    showToast(
+      "Смена пароля недоступна",
+      "Для этой операции ещё не подключён запрос к Keycloak.",
+      "info",
+    );
   };
 
   if (loading) {
@@ -237,10 +228,9 @@ const ProfilePage = () => {
                   <Button
                     variant="info"
                     onClick={handleSaveProfile}
-                    disabled={saving}
                     className="text-dark fw-bold"
                   >
-                    {saving ? "Сохранение..." : "Сохранить"}
+                    Сохранить
                   </Button>
                 </div>
               </Form>
@@ -363,10 +353,9 @@ const ProfilePage = () => {
                 <Button
                   variant="info"
                   onClick={handleSaveProfile}
-                  disabled={saving}
                   className="text-dark fw-bold"
                 >
-                  {saving ? "Сохранение..." : "Сохранить"}
+                  Сохранить
                 </Button>
               </div>
             </div>
@@ -417,10 +406,9 @@ const ProfilePage = () => {
                   <Button
                     variant="info"
                     onClick={handleChangePassword}
-                    disabled={saving}
                     className="text-dark fw-bold"
                   >
-                    {saving ? "Смена пароля..." : "Сменить пароль"}
+                    Сменить пароль
                   </Button>
                 </div>
               </Form>

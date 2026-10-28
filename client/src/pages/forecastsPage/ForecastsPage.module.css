@@ -19,13 +19,29 @@
 
 /* ==================== ГРАФИК ==================== */
 .chartSection {
-  background-color: #1f2a44;
+  background-color: var(--surface);
+  color: var(--text-primary);
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid #2d3b5e;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
   margin-bottom: 32px;
   animation: slideDown 0.3s ease;
+}
+
+.forecastModal {
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.forecastModal :global(.modal-header),
+.forecastModal :global(.modal-footer) {
+  border-color: var(--border);
+}
+
+.forecastModal :global(.modal-title) {
+  color: var(--text-primary);
 }
 
 .chartContainer {

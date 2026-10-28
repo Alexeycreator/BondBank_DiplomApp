@@ -1,7 +1,8 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { LineChart } from "../../../shared/ui/charts/LineChart";
 import { ForecastItem } from "../model/types";
+import { formatForecastDate, getForecastDates } from "../model/forecast-dates";
+import { useTheme } from "../../../shared/theme/ThemeContext";
 import styles from "../ForecastsPage.module.css";
 
 interface ForecastChartProps {
@@ -9,35 +10,41 @@ interface ForecastChartProps {
 }
 
 const ForecastChart = ({ forecast }: ForecastChartProps) => {
-  const navigate = useNavigate();
+  const { theme } = useTheme();
+  const chartTextColor = theme === "dark" ? "#ffffff" : "#172033";
+  const chartMutedColor = theme === "dark" ? "#a0aabf" : "#5f6b7c";
   const chartData = useMemo(() => {
-    const historyLength = forecast.history.length;
+    const forecastDates = getForecastDates(forecast.currentDate, forecast.forecast.length);
+    const historyPoints = forecast.history;
+    const historyCount = historyPoints.length;
+
     return {
       labels: [
-        ...forecast.history.map((_, index) => `День ${index + 1}`),
-        "Завтра",
-        "Послезавтра",
+        ...historyPoints.map((point) => formatForecastDate(point.date)),
+        ...forecastDates.map(formatForecastDate),
       ],
       datasets: [
         {
-          label: "История цены",
-          data: [...forecast.history, null, null],
+          label: "История",
+          data: [
+            ...historyPoints.map((point) => point.price),
+            ...forecast.forecast.map(() => null),
+          ],
           borderColor: "#4fc3f7",
-          backgroundColor: "rgba(79, 195, 247, 0.1)",
-          fill: true,
+          backgroundColor: "rgba(79, 195, 247, 0.08)",
+          fill: false,
           tension: 0.3,
           pointBackgroundColor: "#4fc3f7",
         },
         {
           label: "Прогноз",
           data: [
-            ...Array<number | null>(historyLength - 1).fill(null),
-            forecast.history[historyLength - 1] ?? forecast.currentPrice,
-            forecast.forecastTomorrow,
-            forecast.forecastDayAfter,
+            ...Array(Math.max(0, historyCount - 1)).fill(null),
+            ...(historyCount > 0 ? [historyPoints[historyCount - 1].price] : []),
+            ...forecast.forecast,
           ],
           borderColor: "#ff9800",
-          backgroundColor: "rgba(255, 152, 0, 0.1)",
+          backgroundColor: "rgba(255, 152, 0, 0.08)",
           borderDash: [5, 5],
           fill: true,
           tension: 0.3,
@@ -58,30 +65,25 @@ const ForecastChart = ({ forecast }: ForecastChartProps) => {
               title: {
                 display: true,
                 text: `Прогноз для ${forecast.name}`,
-                color: "#ffffff",
+                color: chartTextColor,
                 font: { size: 16, weight: "bold" },
               },
-              legend: { labels: { color: "#a0aabf" } },
+              legend: { labels: { color: chartMutedColor } },
             },
             scales: {
-              x: { ticks: { color: "#a0aabf" } },
+              x: { ticks: { color: chartMutedColor } },
               y: {
                 beginAtZero: false,
                 ticks: {
-                  color: "#a0aabf",
-                  callback: (value: string | number) => `${value} ₽`,
+                  color: chartMutedColor,
+                  callback: (value: string | number) =>
+                    `${Number(value).toLocaleString("ru-RU", { maximumFractionDigits: 2 })} ₽`,
                 },
               },
             },
           }}
         />
       </div>
-      <button
-        className={styles.actionButton}
-        onClick={() => navigate(`/bonds?isin=${forecast.isin}`)}
-      >
-        Перейти к облигации →
-      </button>
     </section>
   );
 };

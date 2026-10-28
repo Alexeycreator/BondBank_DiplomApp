@@ -6,23 +6,26 @@ import Footer from "../widgets/site-footer/ui/Footer";
 import ServerHealthCheck from "../widgets/server-health-check/ui/ServerHealthCheck";
 import { Breadcrumbs } from "../widgets/breadcrumbs/ui/Breadcrumbs";
 import AppRouter from "./router";
+import { ThemeProvider } from "../shared/theme/ThemeContext";
 
 function App() {
     return (
-        <AuthProvider>
-            <ToastProvider>
-                <BrowserRouter>
+        <ThemeProvider>
+            <AuthProvider>
+                <ToastProvider>
+                    <BrowserRouter>
                         <div className="app">
                             <Header />
-                            <main className="main" style={{ padding: "20px 40px" }}>
+                            <main className="main">
                                 <Breadcrumbs />
                                 <AppRouter />
                             </main>
                             <Footer />
                         </div>
-                </BrowserRouter>
-            </ToastProvider>
-        </AuthProvider>
+                    </BrowserRouter>
+                </ToastProvider>
+            </AuthProvider>
+        </ThemeProvider>
     );
 }
 

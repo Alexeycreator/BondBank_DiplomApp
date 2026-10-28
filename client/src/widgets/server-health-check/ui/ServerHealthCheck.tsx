@@ -1,13 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import ErrorCard from "../../../shared/ui/error-card/ErrorCard";
-
-const apiUrl =
-    import.meta.env.VITE_API_URL_HTTPS ||
-    import.meta.env.VITE_API_URL_HTTP ||
-    "https://localhost:57041/api";
-
-const HEALTH_ENDPOINT = "/Health/ping";
+import { api } from "../../../shared/api/client";
 const REQUEST_TIMEOUT = 5000;
 
 export interface ServerHealthCheckProps {
@@ -31,7 +25,7 @@ const ServerHealthCheck: React.FC<ServerHealthCheckProps> = ({
         setIsChecking(true);
 
         try {
-            await axios.get(`${apiUrl}${HEALTH_ENDPOINT}`, {
+            await api.get("/server/ping", {
                 timeout: REQUEST_TIMEOUT,
             });
 
