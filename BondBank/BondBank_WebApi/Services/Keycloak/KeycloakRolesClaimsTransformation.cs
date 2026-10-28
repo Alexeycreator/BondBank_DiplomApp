@@ -9,7 +9,7 @@ public class KeycloakRolesClaimsTransformation(
 {
     public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
     {
-        var identity = (ClaimsIdentity)principal.Identity;
+        var identity = (ClaimsIdentity)principal.Identity!;
 
         // Проверяем, не добавились ли уже роли (чтобы не дублировать при повторном вызове)
         if (identity.HasClaim(c => c.Type == ClaimTypes.Role))
