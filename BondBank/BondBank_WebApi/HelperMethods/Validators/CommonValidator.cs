@@ -17,10 +17,9 @@ public sealed class CommonValidator(ILogger<CommonValidator> logger)
 
     public IActionResult? ValidateDate(DateOnly date)
     {
-        var currentDate = DateTime.UtcNow;
-        if (Convert.ToDateTime(date) > currentDate)
+        var currentDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        if (date > currentDate)
         {
-            logger.LogWarning("Дата '{DateOnly}' не может быть позднее текущей '{CurrentDate}'", date, currentDate);
             return new BadRequestObjectResult(new
                 { message = $"Дата '{date}' не может быть позднее текущей '{currentDate}'" });
         }
