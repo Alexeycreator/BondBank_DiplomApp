@@ -141,13 +141,19 @@ public sealed class BondsController(
             if (string.IsNullOrWhiteSpace(type) && string.IsNullOrWhiteSpace(isin))
                 return BadRequest(new { message = "Укажите хотя бы один параметр для фильтрации" });
 
-            var typeValidation = validator.ValidateType(type);
-            if (typeValidation != null)
-                return typeValidation;
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                var typeValidation = validator.ValidateType(type);
+                if (typeValidation != null)
+                    return typeValidation;
+            }
 
-            var isinValidation = validator.ValidateIsin(isin);
-            if (isinValidation != null)
-                return isinValidation;
+            if (!string.IsNullOrWhiteSpace(isin))
+            {
+                var isinValidation = validator.ValidateIsin(isin);
+                if (isinValidation != null)
+                    return isinValidation;
+            }
 
             var bonds = await bondService.GetBondsByFilterAsync(type, isin);
             var bondDtos = bonds.ToList();

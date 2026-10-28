@@ -153,7 +153,7 @@ public sealed class BondControllerService(
         }
     }
 
-    private async Task<IEnumerable<BondDto>> SearchByFilterAsync(string? isin, string? type)
+    private async Task<IEnumerable<BondDto>> SearchByFilterAsync(string? type, string? isin)
     {
         if (!string.IsNullOrWhiteSpace(isin) && string.IsNullOrWhiteSpace(type))
         {
