@@ -64,6 +64,11 @@ public sealed class PortfoliosControllerService(
             }
 
             portfolio.Name = dto.Name;
+            portfolio.Description = dto.Description;
+            portfolio.Type = dto.Type;
+
+            if (portfolioId is null or 0)
+                portfolio.CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow);
 
             await dbContext.SaveChangesAsync();
             logger.LogInformation("Портфель ID={Id} успешно сохранен для {Email}", portfolio.Id, user.EmailAddress);

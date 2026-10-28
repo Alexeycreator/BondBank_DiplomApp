@@ -12,7 +12,8 @@ public sealed class PortfoliosController(
     ILogger<PortfoliosController> logger,
     IPortfoliosControllerService portfoliosService,
     IUsersControllerService usersService,
-    CommonValidator commonValidator) : ControllerBase
+    CommonValidator commonValidator,
+    PortfolioValidator validator) : ControllerBase
 {
     [HttpGet("all")]
     [Authorize(Roles = "admin")]
@@ -70,7 +71,7 @@ public sealed class PortfoliosController(
             if (validationResult != null)
                 return validationResult;
 
-            var email = User.FindFirst("email")?.Value;
+            var email = validator.GetEmail(User);
             if (string.IsNullOrWhiteSpace(email))
                 return Unauthorized(new { message = "В токене пользователя отсутствует email." });
 
@@ -93,21 +94,23 @@ public sealed class PortfoliosController(
             return StatusCode(500, new { message = "Не удалось загрузить историю портфеля." });
         }
     }
-    
+
     [HttpPost("save")]
     [Authorize]
-    public async Task<IActionResult> SavePortfolioAsync([FromQuery] int? portfolioId, [FromBody] PortfolioRequestDto dto)
+    public async Task<IActionResult> SavePortfolioAsync([FromQuery] int? portfolioId,
+        [FromBody] PortfolioRequestDto dto)
     {
         try
         {
             var keycloakId = User.FindFirst("sub")?.Value
-                             ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                             ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                                 ?.Value;
 
             if (string.IsNullOrEmpty(keycloakId))
                 return Unauthorized(new { message = "В токене отсутствует идентификатор пользователя" });
 
             var savedId = await portfoliosService.SavePortfolioAsync(keycloakId, portfolioId, dto);
-            
+
             if (savedId > 0)
                 return Ok(new { id = savedId, message = "Портфель успешно сохранен" });
 
@@ -119,7 +122,7 @@ public sealed class PortfoliosController(
             return StatusCode(500, new { error = $"Внутренняя ошибка сервера: {ex.Message}" });
         }
     }
-    
+
     [HttpDelete("{portfolioId}")]
     [Authorize]
     public async Task<IActionResult> DeletePortfolioAsync([FromRoute] int portfolioId)
@@ -131,13 +134,14 @@ public sealed class PortfoliosController(
                 return validationResult;
 
             var keycloakId = User.FindFirst("sub")?.Value
-                             ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                             ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                                 ?.Value;
 
             if (string.IsNullOrEmpty(keycloakId))
                 return Unauthorized(new { message = "В токене отсутствует идентификатор пользователя" });
 
             var success = await portfoliosService.DeletePortfolioAsync(keycloakId, portfolioId);
-            
+
             if (success)
                 return Ok(new { message = "Портфель успешно удален" });
 

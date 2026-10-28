@@ -158,6 +158,7 @@ builder.Services.AddSingleton<BondValidator>();
 builder.Services.AddSingleton<CommonValidator>();
 builder.Services.AddSingleton<CurrencyRateValidator>();
 builder.Services.AddSingleton<UserValidator>();
+builder.Services.AddSingleton<PortfolioValidator>();
 
 var minioConfig = new MinioConfig
 {
