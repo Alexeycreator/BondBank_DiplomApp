@@ -26,7 +26,7 @@ import ImportBonds from "../../features/bond/import-export/ui/ImportBonds";
 import ExportBonds from "../../features/bond/import-export/ui/ExportBonds";
 import ErrorCard from "../../shared/ui/error-card/ErrorCard";
 import { useAuth } from "../../shared/auth/AuthContext";
-import { useToast } from "../../shared/notifications/ToastContext"; // ✅ Импортируем контекст уведомлений
+import { useToast } from "../../shared/notifications/ToastContext";
 import { ApiRequestError } from "../../shared/api/client";
 import {
   getBondsInfo,
@@ -86,7 +86,7 @@ const BondsPage = () => {
   const { searchParams, updateParams } = useUrlQuery();
   const { isAdmin, isAuthenticated } = useAuth();
   const { theme } = useTheme();
-  const { showToast } = useToast(); // ✅ Получаем метод для показа уведомлений
+  const { showToast } = useToast();
 
   const chartTextColor = theme === "dark" ? "#ffffff" : "#172033";
   const chartMutedColor = theme === "dark" ? "#a0aabf" : "#5f6b7c";
@@ -145,7 +145,6 @@ const BondsPage = () => {
 
       setLoadError(errorMessage);
 
-      // ✅ Если это повторная попытка, показываем Toast с ошибкой
       if (isRetry) {
         showToast("Ошибка", errorMessage, "danger");
       }
@@ -164,7 +163,6 @@ const BondsPage = () => {
     };
   }, []);
 
-  // ✅ Серверный поиск
   const handleServerSearch = async (type: string, isin: string) => {
     if (!type && !isin) {
       setServerBonds([]);
@@ -175,28 +173,22 @@ const BondsPage = () => {
     try {
       setIsSearching(true);
       setSearchError(null);
+
+      // Получаем отфильтрованные данные с сервера
       const filteredDtos = await getBondsByFilter(
         type || undefined,
         isin || undefined,
       );
 
-      const mappedViews: BondView[] = filteredDtos
-        .filter((dto): dto is any => dto.bond !== null && isBondType(dto.type))
-        .map((dto) => ({
-          id: dto.bond.id,
-          name: dto.bond.name,
-          isin: dto.bond.isin,
-          type: dto.type,
-          updatedAt: dto.bond.updatedAt,
-          price: 0,
-          yield: null,
-          maturity: null,
-          currency: "RUB",
-          currencyRate: 1,
-          currencyRatesId: dto.bond.currencyRatesId,
-          currencyRateDate: "—",
-          specificData: dto.specificData,
-        }));
+      // ✅ Создаем временный объект BondsInfo, чтобы использовать ваш маппер
+      const fakeBondsInfo: BondsInfo = {
+        bondsByTable: filteredDtos,
+        typeBondsByFilter: [],
+        currencyRates: bondsInfo?.currencyRates || [], // Берем курсы из основного стейта
+      };
+
+      // ✅ Прогоняем через маппер, который правильно достанет цену, доходность и т.д.
+      const mappedViews = mapBondsInfoToViews(fakeBondsInfo);
 
       setServerBonds(mappedViews);
     } catch (error: unknown) {
@@ -796,19 +788,21 @@ const BondsPage = () => {
             setSortField(null);
             setSortDirection(null);
             setServerBonds([]);
-            setSearchError(null); // Сбрасываем ошибку
+            setSearchError(null);
           }}
           availableTypes={searchAvailableTypes}
-          serverError={searchError} // ✅ Передаем ошибку сервера
+          serverError={searchError}
         />
 
         <DataTable
           data={paginatedBonds}
           columns={bondColumns}
-          keyExtractor={(bond) => bond.id}
+          keyExtractor={(bond) => `${bond.type}-${bond.id}`}
           onRowClick={handleBondClick}
           rowClassName={(bond) =>
-            selectedBond?.id === bond.id ? styles.selectedRow : ""
+            selectedBond?.id === bond.id && selectedBond?.type === bond.type
+              ? styles.selectedRow
+              : ""
           }
           emptyMessage={loading || isSearching ? "" : "Облигации не найдены"}
           startIndex={(safePage - 1) * pageSize + 1}
