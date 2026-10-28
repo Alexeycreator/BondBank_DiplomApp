@@ -156,8 +156,26 @@ public sealed class BondHistoriesController(
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(type) && !date.HasValue)
-                return BadRequest();
+            if (!string.IsNullOrWhiteSpace(isin))
+            {
+                var validationIsin = validator.ValidateIsin(isin);
+                if (validationIsin != null)
+                    return validationIsin;
+            }
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                var validationType = validator.ValidateType(type);
+                if (validationType != null)
+                    return validationType;
+            }
+
+            if (date.HasValue)
+            {
+                var validationDate = commonValidator.ValidateDate(date.Value);
+                if (validationDate != null)
+                    return validationDate;
+            }
 
             var result = await bondHistoriesService.GetByFilterAsync(isin, type, date);
             return Ok(result);
