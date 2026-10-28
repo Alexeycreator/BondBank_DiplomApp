@@ -8,20 +8,47 @@ export type { ForecastItem } from "../model/types";
 
 interface ForecastCardProps {
   forecast: ForecastItem;
+  currency: string;
+  rates: Record<string, number>;
   onClick?: (forecast: ForecastItem) => void;
 }
 
-const formatPrice = (value: number): string =>
-  `${value.toLocaleString("ru-RU", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} ₽`;
-
 export const ForecastCard: React.FC<ForecastCardProps> = ({
   forecast,
+  currency,
+  rates,
   onClick,
 }) => {
-  const forecastDates = getForecastDates(forecast.currentDate, forecast.forecast.length);
+  const forecastDates = getForecastDates(
+    forecast.currentDate,
+    forecast.forecast.length,
+  );
+
+  // ✅ Конвертируем историю (из валюты облигации в выбранную)
+  const convertHistoryPrice = (
+    value: number | null | undefined,
+  ): number | null => {
+    if (value === null || value === undefined) return null;
+    const fromRate = rates[forecast.currency] ?? 1;
+    const toRate = rates[currency] ?? 1;
+    return (value * fromRate) / toRate;
+  };
+
+  // ✅ Конвертируем прогноз (из RUB в выбранную)
+  // Если прогноз уже в RUB (как в вашем случае), мы просто делим на курс выбранной валюты.
+  // Если выбран RUB, то toRate = 1, значение не меняется.
+  const convertForecastPrice = (value: number): number => {
+    const toRate = rates[currency] ?? 1;
+    return value / toRate;
+  };
+
+  const formatPrice = (value: number | null): string =>
+    value === null
+      ? "—"
+      : `${value.toLocaleString("ru-RU", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} ${currency}`;
 
   return (
     <button
@@ -40,9 +67,8 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
       <div className={styles.currentPrice}>
         <span className={styles.label}>Текущая цена</span>
         <span className={styles.price}>
-          {forecast.currentPrice === null
-            ? "—"
-            : formatPrice(forecast.currentPrice)}
+          {/* ✅ Текущую цену конвертируем из валюты облигации */}
+          {formatPrice(convertHistoryPrice(forecast.currentPrice))}
         </span>
         <span className={styles.date}>
           {forecast.currentDate
@@ -55,10 +81,15 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
         {forecast.forecast.map((value, index) => {
           const date = forecastDates[index];
           return (
-            <div className={styles.forecastPrice} key={`${date ?? "forecast"}-${index}`}>
-              <span className={styles.label}>{date ? formatForecastDate(date) : "Прогноз"}</span>
+            <div
+              className={styles.forecastPrice}
+              key={`${date ?? "forecast"}-${index}`}
+            >
+              <span className={styles.label}>
+                {date ? formatForecastDate(date) : "Прогноз"}
+              </span>
               <span className={styles.forecastValue}>
-                {formatPrice(Number(value))}
+                {formatPrice(convertForecastPrice(Number(value)))}
               </span>
             </div>
           );

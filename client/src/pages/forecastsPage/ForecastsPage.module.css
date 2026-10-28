@@ -7,13 +7,13 @@
 
 .pageTitle {
   font-size: 32px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   margin-bottom: 8px;
 }
 
 .pageDescription {
   font-size: 16px;
-  color: #a0aabf;
+  color: var(--text-muted, #a0aabf);
   margin-bottom: 32px;
 }
 
@@ -77,19 +77,30 @@
 /* ==================== СЕТКА ПРОГНОЗОВ ==================== */
 .forecastGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  /* ✅ Используем auto-fill, чтобы карточки не растягивались на 100% ширины */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
+  /* ✅ Центрируем сетку, если карточек мало */
+  justify-content: center; 
+}
+
+/* ✅ Ограничиваем максимальную ширину карточки на широких экранах */
+@media (min-width: 1024px) {
+  .forecastGrid {
+    /* Принудительно делаем 3 колонки, чтобы карточки не были слишком широкими */
+    grid-template-columns: repeat(3, 1fr); 
+  }
 }
 
 .noData {
   grid-column: 1 / -1;
   text-align: center;
   padding: 40px;
-  color: #a0aabf;
+  color: var(--text-muted, #a0aabf);
   font-size: 16px;
-  background-color: #1f2a44;
+  background-color: var(--surface, #1f2a44);
   border-radius: 12px;
-  border: 1px solid #2d3b5e;
+  border: 1px solid var(--border, #2d3b5e);
 }
 
 /* ==================== АНИМАЦИИ ==================== */
@@ -107,7 +118,7 @@
 /* ==================== АДАПТИВНОСТЬ ==================== */
 @media (max-width: 1024px) {
   .forecastGrid {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
 
@@ -120,7 +131,7 @@
     margin-bottom: 24px;
   }
   .forecastGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* На мобильных 1 карточка в ряд */
   }
   .chartSection {
     padding: 16px;

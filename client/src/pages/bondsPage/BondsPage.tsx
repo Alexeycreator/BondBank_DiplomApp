@@ -3,11 +3,11 @@ import {
   Modal,
   Tabs,
   Tab,
-  Dropdown,
   Toast,
   ToastContainer,
   OverlayTrigger,
   Tooltip,
+  Button,
 } from "react-bootstrap";
 import {
   Chart as ChartJS,
@@ -61,6 +61,7 @@ import { SearchFilters } from "../../shared/ui/search-filters/SearchFilters";
 import { StatusBadge } from "../../shared/ui/status-badge/StatusBadge";
 import { useUrlQuery } from "../../shared/lib/routing/useUrlQuery";
 import { useTheme } from "../../shared/theme/ThemeContext";
+import { useCurrency } from "../../shared/currency/CurrencyContext";
 
 ChartJS.register(
   CategoryScale,
@@ -82,11 +83,20 @@ type SortField =
   | "maturity";
 type SortDirection = "asc" | "desc" | null;
 
+const getMonthKey = (dateStr: string) => dateStr.slice(0, 7);
+
+const formatMonthLabel = (monthKey: string) => {
+  const [year, month] = monthKey.split("-");
+  const date = new Date(Number(year), Number(month) - 1, 1);
+  return date.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
+};
+
 const BondsPage = () => {
   const { searchParams, updateParams } = useUrlQuery();
   const { isAdmin, isAuthenticated } = useAuth();
   const { theme } = useTheme();
   const { showToast } = useToast();
+  const { selectedCurrency, rates: currencyRatesByCode } = useCurrency();
 
   const chartTextColor = theme === "dark" ? "#ffffff" : "#172033";
   const chartMutedColor = theme === "dark" ? "#a0aabf" : "#5f6b7c";
@@ -103,15 +113,17 @@ const BondsPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Состояния для серверной фильтрации
   const [serverBonds, setServerBonds] = useState<BondView[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // Состояния для уведомлений
   const [showSlowWarning, setShowSlowWarning] = useState(false);
   const [showEmptyWarning, setShowEmptyWarning] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    new Date().toISOString().slice(0, 7),
+  );
 
   const fetchBondsInfo = async (isRetry = false) => {
     try {
@@ -119,39 +131,23 @@ const BondsPage = () => {
         setLoading(true);
         setLoadError(null);
       }
-
       setShowEmptyWarning(false);
       setShowSlowWarning(false);
       setServerBonds([]);
-
       timerRef.current = setTimeout(() => setShowSlowWarning(true), 5000);
 
       const data = await getBondsInfo();
       setBondsInfo(data);
-
-      if (data.bondsByTable.length === 0) {
-        setShowEmptyWarning(true);
-      }
+      if (data.bondsByTable.length === 0) setShowEmptyWarning(true);
     } catch (err: unknown) {
-      console.error("Ошибка загрузки облигаций:", err);
-
       let errorMessage = "Не удалось загрузить облигации";
-
-      if (err instanceof ApiRequestError) {
+      if (err instanceof ApiRequestError)
         errorMessage = err.serverMessage || errorMessage;
-      } else if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-
+      else if (err instanceof Error) errorMessage = err.message;
       setLoadError(errorMessage);
-
-      if (isRetry) {
-        showToast("Ошибка", errorMessage, "danger");
-      }
+      if (isRetry) showToast("Ошибка", errorMessage, "danger");
     } finally {
-      if (!isRetry) {
-        setLoading(false);
-      }
+      if (!isRetry) setLoading(false);
       if (timerRef.current) clearTimeout(timerRef.current);
     }
   };
@@ -169,54 +165,28 @@ const BondsPage = () => {
       setSearchError(null);
       return;
     }
-
     try {
       setIsSearching(true);
       setSearchError(null);
-
-      // Получаем отфильтрованные данные с сервера
       const filteredDtos = await getBondsByFilter(
         type || undefined,
         isin || undefined,
       );
-
-      // ✅ Создаем временный объект BondsInfo, чтобы использовать ваш маппер
       const fakeBondsInfo: BondsInfo = {
         bondsByTable: filteredDtos,
         typeBondsByFilter: [],
-        currencyRates: bondsInfo?.currencyRates || [], // Берем курсы из основного стейта
+        currencyRates: bondsInfo?.currencyRates || [],
       };
-
-      // ✅ Прогоняем через маппер, который правильно достанет цену, доходность и т.д.
-      const mappedViews = mapBondsInfoToViews(fakeBondsInfo);
-
-      setServerBonds(mappedViews);
+      setServerBonds(mapBondsInfoToViews(fakeBondsInfo));
     } catch (error: unknown) {
-      if (error instanceof ApiRequestError) {
+      if (error instanceof ApiRequestError)
         setSearchError(error.serverMessage || "Ошибка валидации данных");
-      } else {
-        setSearchError("Ошибка при поиске облигаций");
-      }
+      else setSearchError("Ошибка при поиске облигаций");
       setServerBonds([]);
     } finally {
       setIsSearching(false);
     }
   };
-
-  const currencyRatesByCode = useMemo<Record<string, number>>(() => {
-    const map: Record<string, number> = { RUB: 1 };
-    if (!bondsInfo?.currencyRates) return map;
-    for (const rate of bondsInfo.currencyRates)
-      map[rate.letterCode] = rate.rate;
-    return map;
-  }, [bondsInfo]);
-
-  const availableCurrencies = useMemo<string[]>(() => {
-    if (!bondsInfo?.currencyRates) return ["RUB"];
-    const set = new Set<string>(["RUB"]);
-    for (const rate of bondsInfo.currencyRates) set.add(rate.letterCode);
-    return Array.from(set);
-  }, [bondsInfo]);
 
   const bondsData: BondView[] = useMemo(() => {
     if (!bondsInfo) return [];
@@ -234,7 +204,6 @@ const BondsPage = () => {
   const [bondHistory, setBondHistory] = useState<BondHistoryModel[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
-  const [selectedCurrency, setSelectedCurrency] = useState<string>("RUB");
   const [notFound, setNotFound] = useState<boolean>(false);
   const [badRequest, setBadRequest] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(pageFromUrl);
@@ -247,7 +216,6 @@ const BondsPage = () => {
     setNotFound(false);
     setBadRequest(null);
     setSelectedBond(null);
-
     if (!isinFromUrl) return;
     if (isinFromUrl.trim() === "") {
       setBadRequest("ISIN не может быть пустым или состоять из пробелов");
@@ -259,7 +227,6 @@ const BondsPage = () => {
       );
       return;
     }
-
     const foundBond = bondsData.find(
       (b) => b.isin.toLowerCase() === isinFromUrl.toLowerCase(),
     );
@@ -282,15 +249,22 @@ const BondsPage = () => {
       setHistoryLoading(false);
       return;
     }
-
     let isCurrentRequest = true;
     setBondHistory([]);
     setHistoryError(null);
     setHistoryLoading(true);
-
     getBondHistoriesByIsin(selectedBond.isin)
       .then((history) => {
-        if (isCurrentRequest) setBondHistory(history);
+        if (isCurrentRequest) {
+          setBondHistory(history);
+          if (history.length > 0) {
+            const latestDate = history.reduce(
+              (max, h) => (h.recordedDate > max ? h.recordedDate : max),
+              history[0].recordedDate,
+            );
+            setSelectedMonth(getMonthKey(latestDate));
+          }
+        }
       })
       .catch(() => {
         if (isCurrentRequest) setHistoryError("Не удалось загрузить историю");
@@ -298,16 +272,29 @@ const BondsPage = () => {
       .finally(() => {
         if (isCurrentRequest) setHistoryLoading(false);
       });
-
     return () => {
       isCurrentRequest = false;
     };
   }, [selectedBond?.isin]);
 
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    for (const h of bondHistory) months.add(getMonthKey(h.recordedDate));
+    return Array.from(months).sort();
+  }, [bondHistory]);
+
+  const currentMonthIndex = availableMonths.indexOf(selectedMonth);
+  const handlePrevMonth = () => {
+    if (currentMonthIndex > 0)
+      setSelectedMonth(availableMonths[currentMonthIndex - 1]);
+  };
+  const handleNextMonth = () => {
+    if (currentMonthIndex < availableMonths.length - 1)
+      setSelectedMonth(availableMonths[currentMonthIndex + 1]);
+  };
+
   const displayBonds = useMemo(() => {
-    if (searchType || searchIsin) {
-      return serverBonds;
-    }
+    if (searchType || searchIsin) return serverBonds;
     return bondsData;
   }, [serverBonds, bondsData, searchType, searchIsin]);
 
@@ -335,9 +322,7 @@ const BondsPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-    if (searchParams.has("page")) {
-      updateParams({ page: null });
-    }
+    if (searchParams.has("page")) updateParams({ page: null });
   }, [searchType, searchIsin, updateParams]);
 
   const handlePageChange = (page: number) => {
@@ -413,6 +398,7 @@ const BondsPage = () => {
     const history = bondHistory
       .filter((h) => h.isin === selectedBond.isin)
       .filter((h) => Number.isFinite(Number(h.bondPrice)))
+      .filter((h) => getMonthKey(h.recordedDate) === selectedMonth)
       .sort((a, b) => a.recordedDate.localeCompare(b.recordedDate));
 
     if (history.length === 0) return { labels: [], datasets: [emptyDataset] };
@@ -422,13 +408,24 @@ const BondsPage = () => {
       datasets: [
         {
           ...emptyDataset,
+          // ✅ Конвертируем из валюты облигации (selectedBond.currency) в выбранную (selectedCurrency)
           data: history.map((h) =>
-            convertToSelected(Number(h.bondPrice), "RUB", selectedCurrency),
+            convertToSelected(
+              Number(h.bondPrice),
+              selectedBond.currency,
+              selectedCurrency,
+            ),
           ),
         },
       ],
     };
-  }, [selectedBond, bondHistory, selectedCurrency, currencyRatesByCode]);
+  }, [
+    selectedBond,
+    bondHistory,
+    selectedCurrency,
+    currencyRatesByCode,
+    selectedMonth,
+  ]);
 
   const chartOptions = useMemo(
     () => ({
@@ -439,7 +436,7 @@ const BondsPage = () => {
         title: {
           display: true,
           text: selectedBond
-            ? `Динамика цены: ${selectedBond.name}`
+            ? `Динамика цены: ${selectedBond.name} (${formatMonthLabel(selectedMonth)})`
             : "Выберите облигацию",
           font: { size: 16 },
           color: chartTextColor,
@@ -460,7 +457,13 @@ const BondsPage = () => {
         },
       },
     }),
-    [selectedBond, selectedCurrency, chartTextColor, chartMutedColor],
+    [
+      selectedBond,
+      selectedCurrency,
+      chartTextColor,
+      chartMutedColor,
+      selectedMonth,
+    ],
   );
 
   const handleBondClick = (bond: BondView) => {
@@ -468,7 +471,6 @@ const BondsPage = () => {
     setNotFound(false);
     setBadRequest(null);
     setIsModalOpen(true);
-
     updateParams({
       isin: bond.isin,
       ...(safePage > 1 ? { page: String(safePage) } : {}),
@@ -652,7 +654,7 @@ const BondsPage = () => {
         returnLabel="Вернуться"
       />
     );
-  if (loadError) {
+  if (loadError)
     return (
       <div className={styles.bondsPage}>
         <ErrorCard
@@ -664,7 +666,6 @@ const BondsPage = () => {
         />
       </div>
     );
-  }
 
   const searchAvailableTypes = typeBonds.map((type) => ({
     value: type,
@@ -747,31 +748,6 @@ const BondsPage = () => {
             {!loading && !isSearching && `(${sortedBonds.length})`}
             {isSearching && " (поиск...)"}
           </h2>
-
-          <Dropdown align="end">
-            <Dropdown.Toggle
-              variant="outline-info"
-              id="currency-dropdown"
-              size="sm"
-            >
-              💱 Валюта: {selectedCurrency}
-            </Dropdown.Toggle>
-            <Dropdown.Menu
-              className="bg-dark border-secondary"
-              style={{ maxHeight: "250px", overflowY: "auto" }}
-            >
-              {availableCurrencies.map((curr) => (
-                <Dropdown.Item
-                  key={curr}
-                  onClick={() => setSelectedCurrency(curr)}
-                  active={curr === selectedCurrency}
-                  className={styles.currencyItem}
-                >
-                  {curr}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
         </div>
 
         <SearchFilters
@@ -844,26 +820,57 @@ const BondsPage = () => {
               fill
             >
               <Tab eventKey="chart" title="📈 График">
-                <div
-                  style={{
-                    height: "400px",
-                    position: "relative",
-                    marginTop: "16px",
-                  }}
-                >
-                  {historyLoading ? (
-                    <p>Загружаем историю облигации...</p>
-                  ) : historyError ? (
-                    <p role="alert">{historyError}</p>
-                  ) : chartData.labels.length === 0 ? (
-                    <p>История по этой облигации не найдена.</p>
-                  ) : (
-                    <LineChart
-                      labels={chartData.labels}
-                      datasets={chartData.datasets}
-                      options={chartOptions}
-                    />
-                  )}
+                <div style={{ position: "relative", marginTop: "16px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    <Button
+                      variant="outline-info"
+                      size="sm"
+                      onClick={handlePrevMonth}
+                      disabled={currentMonthIndex <= 0}
+                    >
+                      ◀ Предыдущий
+                    </Button>
+                    <span style={{ color: chartTextColor, fontWeight: "bold" }}>
+                      {formatMonthLabel(selectedMonth)}
+                    </span>
+                    <Button
+                      variant="outline-info"
+                      size="sm"
+                      onClick={handleNextMonth}
+                      disabled={
+                        currentMonthIndex >= availableMonths.length - 1 ||
+                        availableMonths.length === 0
+                      }
+                    >
+                      Следующий ▶
+                    </Button>
+                  </div>
+
+                  <div style={{ height: "400px" }}>
+                    {historyLoading ? (
+                      <p>Загружаем историю облигации...</p>
+                    ) : historyError ? (
+                      <p role="alert">{historyError}</p>
+                    ) : chartData.labels.length === 0 ? (
+                      <p>
+                        За выбранный месяц ({formatMonthLabel(selectedMonth)})
+                        данных нет.
+                      </p>
+                    ) : (
+                      <LineChart
+                        labels={chartData.labels}
+                        datasets={chartData.datasets}
+                        options={chartOptions}
+                      />
+                    )}
+                  </div>
                 </div>
               </Tab>
               <Tab eventKey="info" title="📋 Информация">

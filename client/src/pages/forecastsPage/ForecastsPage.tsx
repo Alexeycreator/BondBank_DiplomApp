@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, Toast, ToastContainer } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import styles from "./ForecastsPage.module.css";
 import { ForecastCard } from "./ui/ForecastCard";
@@ -7,6 +7,9 @@ import ForecastChart from "./ui/ForecastChart";
 import { SearchFilters } from "../../shared/ui/search-filters/SearchFilters";
 import { ForecastItem } from "./model/types";
 import { useForecasts } from "./model/useForecasts";
+import ErrorCard from "../../shared/ui/error-card/ErrorCard";
+import { useToast } from "../../shared/notifications/ToastContext";
+import { useCurrency } from "../../shared/currency/CurrencyContext";
 
 const AVAILABLE_TYPES = [
   { value: "lse", label: "LSE (Любляна)" },
@@ -18,10 +21,31 @@ const AVAILABLE_TYPES = [
 const ForecastsPage = () => {
   const [searchType, setSearchType] = useState("");
   const [searchIsin, setSearchIsin] = useState("");
-  const [selectedForecast, setSelectedForecast] =
-    useState<ForecastItem | null>(null);
+  const [selectedForecast, setSelectedForecast] = useState<ForecastItem | null>(
+    null,
+  );
+
+  // ✅ Берем валюту и курсы из контекста
+  const { selectedCurrency, rates } = useCurrency();
+
+  const [showSlowWarning, setShowSlowWarning] = useState(false);
+  const [showEmptyWarning, setShowEmptyWarning] = useState(false);
+
   const navigate = useNavigate();
-  const { forecasts, isLoading, error } = useForecasts();
+  const { showToast } = useToast();
+  const { forecasts, isLoading, error, reload } = useForecasts();
+
+  const handleRetry = async () => {
+    try {
+      await reload(true);
+    } catch (err: any) {
+      showToast(
+        "Ошибка",
+        err.message || "Не удалось загрузить прогнозы",
+        "danger",
+      );
+    }
+  };
 
   const filteredForecasts = useMemo(
     () =>
@@ -37,18 +61,85 @@ const ForecastsPage = () => {
     [forecasts, searchType, searchIsin],
   );
 
+  if (error && !isLoading) {
+    return (
+      <div className={styles.forecastsPage}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "60vh",
+          }}
+        >
+          <ErrorCard
+            icon={error.includes("авторизац") ? "🔒" : "⚠️"}
+            title={error.includes("авторизац") ? "Требуется вход" : "Ошибка"}
+            message={error}
+            retryLabel="Повторить"
+            onRetry={handleRetry}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.forecastsPage}>
-      <h1 className={styles.pageTitle}>📊 Прогнозы</h1>
-      <p className={styles.pageDescription}>
-        Прогнозы цен облигаций на основе алгоритмов машинного обучения (SSA)
-      </p>
+      <ToastContainer
+        position="top-end"
+        className="p-3"
+        style={{ position: "fixed", zIndex: 9999 }}
+      >
+        <Toast
+          show={showSlowWarning}
+          onClose={() => setShowSlowWarning(false)}
+          bg="warning"
+          delay={15000}
+          autohide
+        >
+          <Toast.Header>
+            <strong className="me-auto">
+              ⏳ Загрузка занимает много времени
+            </strong>
+          </Toast.Header>
+          <Toast.Body className="text-dark">
+            Данных слишком много. Загрузка может занять больше минуты.
+          </Toast.Body>
+        </Toast>
+        <Toast
+          show={showEmptyWarning}
+          onClose={() => setShowEmptyWarning(false)}
+          bg="primary"
+          delay={15000}
+          autohide
+        >
+          <Toast.Header>
+            <strong className="me-auto">📭 Прогнозов нет</strong>
+          </Toast.Header>
+          <Toast.Body className="text-white">
+            Прогнозы не найдены. Обратитесь в поддержку.
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
+
+      <div className={styles.pageHeader}>
+        <div>
+          <h1 className={styles.pageTitle}>📊 Прогнозы</h1>
+          <p className={styles.pageDescription}>
+            Прогнозы цен облигаций на основе алгоритмов машинного обучения (SSA)
+          </p>
+        </div>
+        {/* ❌ Убрали Dropdown, он теперь в шапке */}
+      </div>
 
       <SearchFilters
         searchType={searchType}
         searchIsin={searchIsin}
-        onTypeChange={setSearchType}
-        onIsinChange={setSearchIsin}
+        onSearch={(type, isin) => {
+          setSearchType(type);
+          setSearchIsin(isin);
+        }}
         onReset={() => {
           setSearchType("");
           setSearchIsin("");
@@ -72,7 +163,11 @@ const ForecastsPage = () => {
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <ForecastChart forecast={selectedForecast} />
+              <ForecastChart
+                forecast={selectedForecast}
+                currency={selectedCurrency}
+                rates={rates}
+              />
             </Modal.Body>
             <Modal.Footer>
               <Button
@@ -83,7 +178,11 @@ const ForecastsPage = () => {
               </Button>
               <Button
                 variant="info"
-                onClick={() => navigate(`/bonds?isin=${encodeURIComponent(selectedForecast.isin)}`)}
+                onClick={() =>
+                  navigate(
+                    `/bonds?isin=${encodeURIComponent(selectedForecast.isin)}`,
+                  )
+                }
               >
                 Перейти к облигации
               </Button>
@@ -95,13 +194,13 @@ const ForecastsPage = () => {
       <div className={styles.forecastGrid}>
         {isLoading ? (
           <div className={styles.noData}>Загрузка прогнозов…</div>
-        ) : error ? (
-          <div className={styles.noData} role="alert">{error}</div>
         ) : filteredForecasts.length > 0 ? (
           filteredForecasts.map((forecast) => (
             <ForecastCard
               key={forecast.isin}
               forecast={forecast}
+              currency={selectedCurrency}
+              rates={rates}
               onClick={setSelectedForecast}
             />
           ))

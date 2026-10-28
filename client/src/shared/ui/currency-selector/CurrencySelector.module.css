@@ -1,0 +1,22 @@
+.currencyMenu {
+    background-color: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.currencyItem {
+    color: var(--text-primary) !important;
+    background-color: transparent !important;
+}
+
+.currencyItem:hover, 
+.currencyItem:focus {
+    color: var(--accent) !important;
+    background-color: color-mix(in srgb, var(--accent) 15%, transparent) !important;
+}
+
+.currencyItem.active, 
+.currencyItem:active {
+    background-color: var(--accent) !important;
+    color: var(--background) !important;
+    font-weight: bold;
+}
